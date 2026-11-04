@@ -21,6 +21,9 @@ window.__ModuleLoader__.load({
     const LS_SECTIONS = 'dsh.todo-notes.sections.v1'
     const LS_WIDTH = 'dsh.todo-notes.panel.width.v1'
     const LS_HEIGHT = 'dsh.todo-notes.panel.height.v1'
+    const LS_MODE = 'dsh.todo-notes.mode.v1'
+    // 浮动面板与右侧栏两个实例之间的同步信号：任一侧写入成功后广播一次。
+    const SYNC_BUS = typeof EventTarget === 'function' ? new EventTarget() : null
     // 面板最窄与 DSH 侧边栏一致（264），收起时也用这个宽度。
     const MIN_PANEL_WIDTH = 264
 
@@ -39,9 +42,22 @@ window.__ModuleLoader__.load({
   border-radius: 12px;
   box-shadow: 0 16px 48px rgba(0,0,0,.42);
   font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
-  overflow: hidden;
-}
+  overflow: hidden;}
 .dtn-root.dtn-collapsed { width: 264px; }
+.dtn-root.dtn-hidden { display: none; }
+.dtn-root.dtn-embedded {
+  position: static;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.dtn-root.dtn-embedded .dtn-head { cursor: default; background: transparent; }
+.dtn-root.dtn-embedded .dtn-body { max-height: none; flex: 1; }
 .dtn-resize { position: absolute; z-index: 3; }
 .dtn-resize-br {
   right: 0; bottom: 0; width: 14px; height: 14px; cursor: nwse-resize;
@@ -588,6 +604,10 @@ window.__ModuleLoader__.load({
         ],
       },
       add: { box: 512, paths: [{ d: 'M256 112v288M400 256H112', width: 32 }] },
+      // 显示到右侧栏：左列 + 右列的分栏图形。
+      panelRight: { box: 24, filled: true, paths: [{ d: 'M3 4H21V20H3V4M5 6V18H10V6H5M12 6V18H19V6H12Z' }] },
+      // 切回浮动面板：从右列浮出的小窗图形。
+      panelFloat: { box: 24, filled: true, paths: [{ d: 'M3 3H21V21H3V3M5 5V7H19V5H5M5 9V19H19V9H5M7 11H17V17H7V11Z' }] },
       close: { box: 512, paths: [{ d: 'M368 368L144 144M368 144L144 368', width: 32 }] },
       addBatch: {
         box: 512,
@@ -671,6 +691,29 @@ window.__ModuleLoader__.load({
       const cwd = currentSummary !== undefined && currentSummary !== null && typeof currentSummary.cwd === 'string' ? currentSummary.cwd : ''
       const sessionId = currentSummary !== undefined && currentSummary !== null && typeof currentSummary.id === 'string' ? currentSummary.id : ''
       const sessionTitle = currentSummary !== undefined && currentSummary !== null && typeof currentSummary.title === 'string' ? currentSummary.title : ''
+
+      // 浮动面板与右侧栏两个实例共享同一个渲染体：embedded=true 时塞进右侧栏页签。
+      const embedded = props.embedded === true
+      const [mode, setMode] = React.useState(function () {
+        return readStored(LS_MODE, 'float') === 'sidebar' ? 'sidebar' : 'float'
+      })
+      function applyMode(next) {
+        writeStored(LS_MODE, next)
+        setMode(next)
+        if (typeof window !== 'undefined') window.dispatchEvent(new Event('todo-notes-mode'))
+      }
+      React.useEffect(function () {
+        const onMode = function () { setMode(readStored(LS_MODE, 'float') === 'sidebar' ? 'sidebar' : 'float') }
+        if (typeof window !== 'undefined') window.addEventListener('todo-notes-mode', onMode)
+        return function () { if (typeof window !== 'undefined') window.removeEventListener('todo-notes-mode', onMode) }
+      }, [])
+      // 另一侧写入成功后广播 refresh，本实例立刻重拉，不等轮询。
+      React.useEffect(function () {
+        if (SYNC_BUS === null) return undefined
+        const onSync = function () { refresh(true) }
+        SYNC_BUS.addEventListener('refresh', onSync)
+        return function () { SYNC_BUS.removeEventListener('refresh', onSync) }
+      }, [])
 
       const maxPanelWidth = function () {
         const view = typeof window === 'undefined' ? 1440 : window.innerWidth
@@ -1090,12 +1133,34 @@ window.__ModuleLoader__.load({
       function toggleCollapsed() {
         setCollapsed(function (value) {
           writeStored(LS_COLLAPSED, !value)
+          if (value && mode === 'sidebar') {
+            // 从收起态展开 = 回到浮动面板，同时收起右侧栏，避免两处都占着。
+            applyMode('float')
+            if (typeof props.closeSidebar === 'function') props.closeSidebar()
+          }
           return !value
         })
       }
 
-      function refresh() {
+      // 面板 → 右侧栏：收起浮动面板，并让宿主打开右侧栏里的 TODO 页签。
+      function showInSidebar() {
+        applyMode('sidebar')
+        setCollapsed(true)
+        writeStored(LS_COLLAPSED, true)
+        if (typeof props.openSidebar === 'function') props.openSidebar(sessionId)
+      }
+
+      // 右侧栏 → 浮动面板：恢复浮动面板并关掉右侧栏。
+      function showFloating() {
+        applyMode('float')
+        setCollapsed(false)
+        writeStored(LS_COLLAPSED, false)
+        if (typeof props.closeSidebar === 'function') props.closeSidebar()
+      }
+
+      function refresh(quiet) {
         setVersion(function (value) { return value + 1 })
+        if (quiet !== true && SYNC_BUS !== null) SYNC_BUS.dispatchEvent(new Event('refresh'))
       }
 
       function postApi(body) {
@@ -2122,28 +2187,36 @@ window.__ModuleLoader__.load({
       const panel = h(
         'div',
         {
-          className: 'dtn-root' + (collapsed ? ' dtn-collapsed' : ''),
-          style: {
-            left: panelPos.x + 'px',
-            top: panelPos.y + 'px',
-            width: collapsed ? undefined : panelWidth + 'px',
-            height: collapsed || panelHeight === null ? undefined : panelHeight + 'px',
-          },
+          className:
+            'dtn-root' +
+            (collapsed ? ' dtn-collapsed' : '') +
+            (embedded ? ' dtn-embedded' : '') +
+            (embedded && mode !== 'sidebar' ? ' dtn-hidden' : ''),
+          style: embedded
+            ? {}
+            : {
+                left: panelPos.x + 'px',
+                top: panelPos.y + 'px',
+                width: collapsed ? undefined : panelWidth + 'px',
+                height: collapsed || panelHeight === null ? undefined : panelHeight + 'px',
+              },
         },
         h(
           'div',
           {
             className: 'dtn-head',
-            onPointerDown: function (event) { startDrag(event, 'main') },
-            onClick: function (event) {
-              // 拖动结束后的 click 不算收展。
-              if (dragMoved.current) {
-                dragMoved.current = false
-                return
-              }
-              if (event.target !== null && typeof event.target.closest === 'function' && event.target.closest('button') !== null) return
-              toggleCollapsed()
-            },
+            onPointerDown: embedded ? undefined : function (event) { startDrag(event, 'main') },
+            onClick: embedded
+              ? undefined
+              : function (event) {
+                  // 拖动结束后的 click 不算收展。
+                  if (dragMoved.current) {
+                    dragMoved.current = false
+                    return
+                  }
+                  if (event.target !== null && typeof event.target.closest === 'function' && event.target.closest('button') !== null) return
+                  toggleCollapsed()
+                },
           },
           h('span', { className: 'dtn-logo' }, '▤'),
           h('span', { className: 'dtn-title' }, 'TODO 便签'),
@@ -2151,19 +2224,32 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { className: 'dtn-actions' },
-            h(
-              'button',
-              {
-                type: 'button',
-                className: 'dtn-btn',
-                title: collapsed ? '展开面板' : '折叠面板',
-                onClick: toggleCollapsed,
-              },
-              collapsed ? icon('chevronDown') : icon('chevronUp'),
-            ),
+            embedded
+              ? h(
+                  'button',
+                  { type: 'button', className: 'dtn-btn', title: '切回浮动面板', onClick: function (event) { event.stopPropagation(); showFloating() } },
+                  icon('panelFloat'),
+                )
+              : h(
+                  'button',
+                  { type: 'button', className: 'dtn-btn', title: '显示到右侧栏', onClick: function (event) { event.stopPropagation(); showInSidebar() } },
+                  icon('panelRight'),
+                ),
+            embedded
+              ? null
+              : h(
+                  'button',
+                  {
+                    type: 'button',
+                    className: 'dtn-btn',
+                    title: collapsed ? '展开面板' : '折叠面板',
+                    onClick: toggleCollapsed,
+                  },
+                  collapsed ? icon('chevronDown') : icon('chevronUp'),
+                ),
           ),
         ),
-        collapsed
+        collapsed && !embedded
           ? null
           : h(
               'div',
@@ -2173,7 +2259,7 @@ window.__ModuleLoader__.load({
               renderSection('workspace', '工作区级TODO', workspaceGroups),
               renderSection('session', '会话级TODO', sessionGroups),
             ),
-        collapsed
+        collapsed || embedded
           ? null
           : [
               h('div', { key: 'r-r', className: 'dtn-resize dtn-resize-r', title: '拖动调整宽度', onPointerDown: function (event) { beginResize(event, 'r') } }),
@@ -2518,9 +2604,65 @@ window.__ModuleLoader__.load({
     exports.inject = ['slots']
     exports.apply = function apply(ctx) {
       ctx.effect(function () { return injectStyles() }, 'dsh-todo-notes: styles')
+
+      const host = {
+        openSidebar: function (sessionId) {
+          try {
+            if (ctx.layout !== undefined && ctx.layout !== null && typeof ctx.layout.openRightbar === 'function') ctx.layout.openRightbar(true, false)
+          } catch (error) { /* 右侧栏打开失败不阻断浮动面板 */ }
+          try {
+            const service = typeof ctx.get === 'function' ? ctx.get('sidebarRight') : ctx.sidebarRight
+            if (service !== undefined && service !== null && typeof service.openTabIn === 'function' && typeof sessionId === 'string' && sessionId !== '') {
+              service.openTabIn(sessionId, 'todo-notes', {})
+            }
+          } catch (error) { /* 页签打不开时保持面板收起，用户可点左上角恢复 */ }
+        },
+        closeSidebar: function () {
+          try {
+            if (ctx.layout !== undefined && ctx.layout !== null && typeof ctx.layout.closeRightbar === 'function') ctx.layout.closeRightbar()
+          } catch (error) { /* 忽略 */ }
+        },
+      }
+      function wrap(extra) {
+        return function Wrapped(props) {
+          return h(TodoNotes, Object.assign({}, props, extra))
+        }
+      }
+
       ctx.slots.inject('shell.overlay', function () {
-        return ctx.slots.register({ name: 'shell.overlay', id: 'todo-notes', order: 45, label: 'TODO 便签' }, TodoNotes)
+        return ctx.slots.register(
+          { name: 'shell.overlay', id: 'todo-notes', order: 45, label: 'TODO 便签' },
+          wrap(host),
+        )
       })
+      ctx.slots.inject('sidebar.right.pane.tab', function () {
+        return ctx.slots.register(
+          { name: 'sidebar.right.pane.tab', key: 'todo-notes' },
+          wrap(Object.assign({ embedded: true }, host)),
+        )
+      })
+
+      const registerTabs = function (tabs) {
+        if (tabs === undefined || tabs === null || typeof tabs.register !== 'function') return
+        ctx.effect(function () {
+          return tabs.register({
+            id: 'todo-notes',
+            kind: 'todo-notes',
+            priority: 'builtin',
+            keepMounted: true,
+            title: function () { return 'TODO 便签' },
+            canOpen: function (address) { return address === 'todo-notes://panel' },
+          })
+        }, 'dsh-todo-notes: right sidebar tab type')
+      }
+      const tabsNow = typeof ctx.get === 'function' ? ctx.get('sidebarRightTabs') : ctx.sidebarRightTabs
+      if (tabsNow !== undefined && tabsNow !== null) registerTabs(tabsNow)
+      else if (typeof ctx.inject === 'function') {
+        ctx.inject(['sidebarRightTabs'], function (child) {
+          const tabs = typeof child.get === 'function' ? child.get('sidebarRightTabs') : child.sidebarRightTabs
+          registerTabs(tabs)
+        })
+      }
     }
 
     return module.exports
