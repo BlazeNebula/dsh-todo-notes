@@ -1,0 +1,49 @@
+{
+  "name": "dsh-todo-notes",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "license": "MIT",
+  "author": "heshujiang",
+  "description": "TODO 便签：用户级 / 工作区级 / 会话级三区浮动便签面板，数据在 $DSH_HOME/todo-notes 下分层存放，提供只读预览与 Agent 只读工具。",
+  "keywords": [
+    "deepseek",
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "todo",
+    "notes",
+    "便签",
+    "待办"
+  ],
+  "dsh": {
+    "category": "extension",
+    "displayName": "TODO 便签",
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-theme"
+      ]
+    }
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "client",
+    "locale",
+    "cordis.patch.yml",
+    "README.md",
+    "icon.svg"
+  ]
+}

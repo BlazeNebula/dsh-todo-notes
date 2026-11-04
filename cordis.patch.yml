@@ -1,0 +1,7 @@
+# dsh-todo-notes bundle patch: one insert over the profile tree.
+#
+# 这是一个 insert：把 todo-notes 行插进 profile 组合。不要再在自己的
+# cordis.patch.yml 顶层声明同 id 的 `- id:` 条目，否则插件会注册两次。
+- insert:
+    - id: todo-notes
+      name: 'dsh-todo-notes'
