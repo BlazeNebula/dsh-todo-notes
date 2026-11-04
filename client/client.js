@@ -218,6 +218,7 @@ window.__ModuleLoader__.load({
   position: relative;
 }
 .dtn-menu-item .dtn-icon { color: var(--dsw-alias-label-secondary, #a3a3ab); }
+.dtn-menu-check { width: 14px; flex: none; color: var(--dsw-alias-brand-primary, #4d9cff); font-size: 12px; }
 .dtn-menu-item:hover { background: var(--dsw-alias-bg-layer-2, #2b2b31); }
 .dtn-menu-item-off,
 .dtn-menu-item-off:hover { background: transparent; color: var(--dsw-alias-label-secondary, #9a9aa3); opacity: .45; cursor: default; }
@@ -723,10 +724,13 @@ window.__ModuleLoader__.load({
       const previewRef = React.useRef(null)
       const batchGutterRef = React.useRef(null)
       const rowRectsRef = React.useRef({})
+      const animateOrderRef = React.useRef(false)
 
-      // 排序动画（FLIP）：每次渲染后对比条目上一帧位置，位移过的条目先反向偏移，
-      // 下一帧再过渡回 0，形成 180ms 的重排动画。
+      // 排序动画（FLIP）：只在「主观排序」后触发（拖动完成、改优先级），
+      // 滚动、缩放窗口等被动重排只更新基准位置，不播放位移动画。
       React.useLayoutEffect(function () {
+        const animate = animateOrderRef.current
+        animateOrderRef.current = false
         const nodes = document.querySelectorAll('.dtn-root [data-todo-id]')
         const next = {}
         for (let i = 0; i < nodes.length; i += 1) {
@@ -735,20 +739,22 @@ window.__ModuleLoader__.load({
           if (id === null || id === '') continue
           next[id] = node.getBoundingClientRect().top
         }
-        const prev = rowRectsRef.current
-        for (let i = 0; i < nodes.length; i += 1) {
-          const node = nodes[i]
-          const id = node.getAttribute('data-todo-id')
-          if (id === null || id === '' || typeof prev[id] !== 'number') continue
-          const delta = prev[id] - next[id]
-          if (Math.abs(delta) < 1) continue
-          node.style.transition = 'none'
-          node.style.transform = 'translateY(' + delta + 'px)'
-          const moved = node
-          window.requestAnimationFrame(function () {
-            moved.style.transition = 'transform 180ms ease'
-            moved.style.transform = 'translateY(0)'
-          })
+        if (animate) {
+          const prev = rowRectsRef.current
+          for (let i = 0; i < nodes.length; i += 1) {
+            const node = nodes[i]
+            const id = node.getAttribute('data-todo-id')
+            if (id === null || id === '' || typeof prev[id] !== 'number') continue
+            const delta = prev[id] - next[id]
+            if (Math.abs(delta) < 1) continue
+            node.style.transition = 'none'
+            node.style.transform = 'translateY(' + delta + 'px)'
+            const moved = node
+            window.requestAnimationFrame(function () {
+              moved.style.transition = 'transform 180ms ease'
+              moved.style.transform = 'translateY(0)'
+            })
+          }
         }
         rowRectsRef.current = next
       })
@@ -1172,7 +1178,7 @@ window.__ModuleLoader__.load({
 
       function onTodoDragStart(event, group, todo) {
         dragPayloadKey.current = group.key
-        setDragData(event, { kind: 'todo', key: group.key, id: todo.id, priority: typeof todo.priority === 'number' ? todo.priority : 1 })
+        setDragData(event, { kind: 'todo', key: group.key, id: todo.id, folder: typeof todo.primaryFolder === 'string' && todo.primaryFolder !== '' ? todo.primaryFolder : PRIMARY, priority: typeof todo.priority === 'number' ? todo.priority : 1 })
       }
 
       function onTodoDrop(event, group, target) {
@@ -1181,13 +1187,16 @@ window.__ModuleLoader__.load({
         dragPayloadKey.current = ''
         if (payload === null || payload.kind !== 'todo' || payload.key !== group.key || payload.id === target.id) return
         const next = Math.max(0, Math.min(9, typeof target.priority === 'number' ? target.priority : 1))
-        const changed = payload.priority === undefined || payload.priority !== next
         const folder = typeof target.primaryFolder === 'string' && target.primaryFolder !== '' ? target.primaryFolder : PRIMARY
+        const fromFolder = typeof payload.folder === 'string' && payload.folder !== '' ? payload.folder : PRIMARY
+        // 只有同一文件夹内的移动才同化优先级；跨文件夹只移动、不改优先级。
+        const changed = fromFolder === folder && (payload.priority === undefined || payload.priority !== next)
         const flash = group.key + ':' + payload.id
         postApi({ action: 'moveTodo', key: group.key, id: payload.id, folder: folder })
           .then(function () { return postApi({ action: 'reorder', key: group.key, id: payload.id, folder: folder, beforeId: target.id }) })
-          .then(function () { return postApi({ action: 'priority', key: group.key, id: payload.id, priority: next }) })
+          .then(function () { return fromFolder === folder ? postApi({ action: 'priority', key: group.key, id: payload.id, priority: next }) : null })
           .then(function () {
+            animateOrderRef.current = true
             setFlashKey(flash)
             setTimeout(function () { setFlashKey('') }, 400)
             if (changed) showBubble('已调整优先级为T' + next, event)
@@ -1413,6 +1422,7 @@ window.__ModuleLoader__.load({
       function deleteFolderTree(group, folderId, event) {
         setFolderMenu(null)
         if (folderId === PRIMARY) return
+        if (!window.confirm('会连同子文件夹里的全部 TODO 一起删除，且不可恢复，确认删除整个文件夹？')) return
         postApi({ action: 'deleteFolderTree', key: group.key, folder: folderId })
           .then(function (result) {
             showBubble('已删除整个文件夹' + (result !== null && result !== undefined && result.count !== undefined ? '（' + result.count + ' 条）' : ''), event)
@@ -1504,6 +1514,7 @@ window.__ModuleLoader__.load({
 
       function deleteTodo(group, todoId, event) {
         setTodoMenu(null)
+        if (!window.confirm('删除后不可恢复，确认删除这条 TODO？')) return
         postApi({ action: 'deleteTodo', key: group.key, id: todoId })
           .then(function () { refresh() })
           .catch(function (err) { failWith(event, err) })
@@ -1541,6 +1552,24 @@ window.__ModuleLoader__.load({
             refresh()
           })
           .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+      }
+
+      // 右键「管理收录」：勾选/取消某条 TODO 与各文件夹的收录关系。
+      function toggleTodoReference(group, todo, folderId, event) {
+        const lists = group.folderTodos !== null && typeof group.folderTodos === 'object' ? group.folderTodos : {}
+        const list = Array.isArray(lists[folderId]) ? lists[folderId] : []
+        const joined = list.indexOf(todo.id) >= 0
+        postApi({ action: joined ? 'removeReference' : 'reference', key: group.key, id: todo.id, folder: folderId })
+          .then(function () {
+            showBubble(joined ? '已取消收录到' + folderLabel(folderId) : '已收录到' + folderLabel(folderId), event)
+            refresh()
+          })
+          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+      }
+
+      function todoJoined(group, todo, folderId) {
+        const lists = group.folderTodos !== null && typeof group.folderTodos === 'object' ? group.folderTodos : {}
+        return Array.isArray(lists[folderId]) && lists[folderId].indexOf(todo.id) >= 0
       }
 
       // 文件夹拖到组名 = 归为主归属（顶层）。
@@ -1647,7 +1676,11 @@ window.__ModuleLoader__.load({
               onChange: function (event) {
                 const value = Number(event.currentTarget.value)
                 postApi({ action: 'priority', key: group.key, id: todo.id, priority: value })
-                  .then(function () { showBubble('已调整优先级为T' + value, event); refresh() })
+                  .then(function () {
+                    animateOrderRef.current = true
+                    showBubble('已调整优先级为T' + value, event)
+                    refresh()
+                  })
                   .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
               },
             },
@@ -2360,6 +2393,33 @@ window.__ModuleLoader__.load({
                       onClick: function (event) { event.stopPropagation(); moveTodoToFolder(todoMenu.group, menuTodo.id, opt.id, event) },
                     },
                     icon('folder'),
+                    opt.label,
+                  )
+                }),
+              ),
+            ),
+            h('div', { className: 'dtn-menu-sep' }),
+            h(
+              'div',
+              { className: 'dtn-menu-item dtn-has-sub' },
+              icon('folder'),
+              '管理收录',
+              h('span', { className: 'dtn-menu-arrow' }, '›'),
+              h(
+                'div',
+                { className: 'dtn-submenu' },
+                folderOptions(todoMenu.group).map(function (opt) {
+                  const joined = todoJoined(todoMenu.group, menuTodo, opt.id)
+                  return h(
+                    'button',
+                    {
+                      key: opt.id,
+                      type: 'button',
+                      className: 'dtn-menu-item',
+                      style: { paddingLeft: (10 + (opt.depth + 1) * 14) + 'px' },
+                      onClick: function (event) { event.stopPropagation(); toggleTodoReference(todoMenu.group, menuTodo, opt.id, event) },
+                    },
+                    h('span', { className: 'dtn-menu-check' }, joined ? '☑' : '☐'),
                     opt.label,
                   )
                 }),
