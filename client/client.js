@@ -722,6 +722,36 @@ window.__ModuleLoader__.load({
       const previewRect = React.useRef(null)
       const previewRef = React.useRef(null)
       const batchGutterRef = React.useRef(null)
+      const rowRectsRef = React.useRef({})
+
+      // 排序动画（FLIP）：每次渲染后对比条目上一帧位置，位移过的条目先反向偏移，
+      // 下一帧再过渡回 0，形成 180ms 的重排动画。
+      React.useLayoutEffect(function () {
+        const nodes = document.querySelectorAll('.dtn-root [data-todo-id]')
+        const next = {}
+        for (let i = 0; i < nodes.length; i += 1) {
+          const node = nodes[i]
+          const id = node.getAttribute('data-todo-id')
+          if (id === null || id === '') continue
+          next[id] = node.getBoundingClientRect().top
+        }
+        const prev = rowRectsRef.current
+        for (let i = 0; i < nodes.length; i += 1) {
+          const node = nodes[i]
+          const id = node.getAttribute('data-todo-id')
+          if (id === null || id === '' || typeof prev[id] !== 'number') continue
+          const delta = prev[id] - next[id]
+          if (Math.abs(delta) < 1) continue
+          node.style.transition = 'none'
+          node.style.transform = 'translateY(' + delta + 'px)'
+          const moved = node
+          window.requestAnimationFrame(function () {
+            moved.style.transition = 'transform 180ms ease'
+            moved.style.transform = 'translateY(0)'
+          })
+        }
+        rowRectsRef.current = next
+      })
 
       React.useEffect(function () {
         return function () {
@@ -1546,6 +1576,7 @@ window.__ModuleLoader__.load({
           'div',
           {
             key: rowKey,
+            'data-todo-id': todo.id,
             className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
             title: todo.title,
             draggable: !renamingTodo,
