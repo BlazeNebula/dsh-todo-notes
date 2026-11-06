@@ -54,28 +54,41 @@ $DSH_HOME/todo-notes/
 ```
 lib/
   index.js           入口：Config 与 apply，只做组装
-  core/data.js       数据层：目录布局、组与条目读写、写操作
-  core/http.js       HTTP 层：/dsh-todo-notes/api
-  core/tools.js      Agent 工具：只读工具与带审批的写工具
+  core/paths.js      数据根目录、工作区 slug、文件读取
+  core/text.js       frontmatter 拆分与首行提取
+  core/groups.js     组结构、条目摘要、三区负载、按 id 查条目
+  core/write.js      文件夹树、条目字段与写接口
+  core/http.js       /dsh-todo-notes/api
+  core/tools.js      Agent 工具与 DSH 审批
 client/
-  client.js          构建产物（DSH 只加载这一个文件）
-  src/               源码分段，按顺序拼成 client.js
+  client.js          构建产物（DSH 只加载这一个文件，约 4000 行）
+  src/               源码分段，按 build-client.mjs 的顺序拼成 client.js
    00-bootstrap.js   模块工厂外壳与常量
    10-styles.js      样式表
-   20-storage.js     本地存储与几何计算
+   20-storage.js     本地存储与几何
    30-markdown.js    markdown 渲染
    40-priority.js    优先级色与排序
    50-icons.js       图标表
-   60-panel.js       面板组件
+   60-panel.js       组件：状态与副作用
+   62-panel-layout.js 面板几何、拖动、缩放、预览开合
+   63-panel-folders.js 文件夹与条目操作
+   64-panel-batch.js 多选、框选、批量操作
+   65-panel-rows.js  条目 / 文件夹 / 组的渲染
+   66-panel-surface.js 三区表面、面板头部、预览
+   67-panel-menus.js 右键菜单与优先级菜单
+   68-panel-tail.js  批量面板、确认浮层与根节点
    90-entry.js       样式注入、导出与注册
 scripts/
   build-client.mjs    拼接 client/src 生成 client/client.js
 ```
 
+除构建产物 `client/client.js` 外，所有源码文件都在 500 行以内。
+
 ## 开发
 
-- 修改 `client/src/*` 后运行 `node scripts/build-client.mjs`（或 `npm run build:client`）重新生成 `client/client.js`；直接改 `client/client.js` 会在下次构建时被覆盖。
+- 修改 `client/src/*` 后运行 `node scripts/build-client.mjs`（或 `npm run build:client`）重新生成 `client/client.js`；直接改生成文件会在下次构建被覆盖。
 - 检查语法：`npm run check`。
 - 数据目录默认 `$DSH_HOME/todo-notes`，可直接手工改 `group.json` 与 `.md` 验证渲染。
-- 面板组件目前仍是单文件（`client/src/60-panel.js`），状态、交互与渲染都在一个函数里；下一步才是拆 hooks 与子组件，需要浏览器实测配合。
+- `client/src` 的分段共享同一个模块工厂作用域：这是 DSH 客户端加载器只接受单文件所决定的，拼接后的 `client/client.js` 才是浏览器执行的代码。
+
 

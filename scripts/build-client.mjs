@@ -1,6 +1,10 @@
 /**
- * 鎶?client/src 涓嬬殑鍒嗘鎷兼垚 DSH 闇€瑕佺殑鍗曟枃浠舵祻瑙堝櫒鍖呫€? *
- * DSH 鐨勫鎴风妯″潡鍔犺浇鍣ㄥ彧鎺ュ彈涓€涓?CJS 宸ュ巶鏂囦欢锛屼笉鑳藉悓姝?require 鐩搁偦鐨? * 鏈湴鏂囦欢锛屽洜姝よ繖閲屾寜鍥哄畾椤哄簭鎷兼帴锛涘垎娈典箣闂村叡浜悓涓€涓伐鍘備綔鐢ㄥ煙銆? * 杩愯锛歯ode scripts/build-client.mjs锛堟垨 pnpm run build:client锛? */
+ * 把 client/src 下的分段拼成 DSH 需要的单文件浏览器包。
+ *
+ * DSH 的客户端模块加载器只接受一个 CJS 工厂文件，不能同步 require 相邻的
+ * 本地文件，因此这里按固定顺序拼接；分段之间共享同一个工厂作用域。
+ * 运行：node scripts/build-client.mjs（或 pnpm run build:client）
+ */
 import { promises as fsp } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -14,6 +18,13 @@ const sources = [
   '40-priority.js',
   '50-icons.js',
   '60-panel.js',
+  '62-panel-layout.js',
+  '63-panel-folders.js',
+  '64-panel-batch.js',
+  '65-panel-rows.js',
+  '66-panel-surface.js',
+  '67-panel-menus.js',
+  '68-panel-tail.js',
   '90-entry.js',
 ]
 

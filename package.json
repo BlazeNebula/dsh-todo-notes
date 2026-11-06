@@ -45,7 +45,7 @@
   },
   "scripts": {
     "build:client": "node scripts/build-client.mjs",
-    "check": "node --check lib/index.js && node --check lib/core/data.js && node --check lib/core/http.js && node --check lib/core/tools.js && node --check client/client.js"
+    "check": "node --check lib/index.js && node --check lib/core/paths.js && node --check lib/core/text.js && node --check lib/core/groups.js && node --check lib/core/write.js && node --check lib/core/http.js && node --check lib/core/tools.js && node --check client/client.js"
   },
   "files": [
     "lib",
