@@ -1,6 +1,7 @@
 {
   "meta": {
     "title": "TODO Notes",
-    "description": "A floating notes board with user, workspace and session sections, read-only preview and Agent read tools."
+    "description": "User, workspace and session TODO board: folder references, priorities, batch editing, markdown preview, and approval-gated Agent tools.",
+    "detail": "README.md"
   }
 }

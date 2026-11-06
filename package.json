@@ -5,7 +5,7 @@
   "type": "module",
   "license": "MIT",
   "author": "heshujiang",
-  "description": "TODO 便签：用户级 / 工作区级 / 会话级三区浮动便签面板，数据在 $DSH_HOME/todo-notes 下分层存放，提供只读预览与 Agent 只读工具。",
+  "description": "TODO 便签：用户级 / 工作区级 / 会话级三区待办面板，支持文件夹多引用、优先级、批量整理与 DSH 审批下的 Agent 读写工具。",
   "keywords": [
     "deepseek",
     "deepseek-harness",
@@ -36,7 +36,12 @@
     ".": "./lib/index.js",
     "./client": "./client/client.js",
     "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
     "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.4"
   },
   "files": [
     "lib",

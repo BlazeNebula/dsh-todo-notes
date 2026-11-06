@@ -191,6 +191,12 @@ window.__ModuleLoader__.load({
   font-size: 10px; line-height: 1;
 }
 .dtn-check.dtn-check-on { border-color: var(--dsw-alias-state-success-primary, #4cc38a); }
+.dtn-check.dtn-check-partial {
+  border-color: var(--dsw-alias-state-warn-primary, #d6a63c);
+  color: var(--dsw-alias-state-warn-primary, #d6a63c);
+  background: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d6a63c) 18%, transparent);
+}
+.dtn-todo.dtn-partial .dtn-todo-title { opacity: .78; }
 .dtn-todo-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .dtn-grip {
   flex: none; width: 28px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
@@ -625,10 +631,17 @@ window.__ModuleLoader__.load({
       return PRIO_PALETTE[value]
     }
 
+    // 排序口径：未勾选 > 中间态（智能体勾选等人工确认）> 已勾选。
+    function statusRank(status) {
+      if (status === 'done') return 2
+      if (status === 'partial') return 1
+      return 0
+    }
+
     function sortTodosForView(list) {
       return (Array.isArray(list) ? list.slice() : []).sort(function (a, b) {
-        const ad = a.status === 'done' ? 1 : 0
-        const bd = b.status === 'done' ? 1 : 0
+        const ad = statusRank(a.status)
+        const bd = statusRank(b.status)
         if (ad !== bd) return ad - bd
         const ap = typeof a.priority === 'number' ? a.priority : 0
         const bp = typeof b.priority === 'number' ? b.priority : 0
@@ -2465,6 +2478,7 @@ window.__ModuleLoader__.load({
 
       function renderTodoRow(group, todo, folderId) {
         const isDone = todo.status === 'done'
+        const isPartial = todo.status === 'partial'
         const rowScope = typeof folderId === 'string' && folderId !== '' ? folderId : 'loose'
         const rowKey = group.key + ':' + todo.id + ':' + rowScope
         const selectItem = { key: rowKey, type: 'todo', groupKey: group.key, id: todo.id, folder: rowScope }
@@ -2480,7 +2494,7 @@ window.__ModuleLoader__.load({
             'data-select-group': group.key,
             'data-select-id': todo.id,
             'data-select-folder': rowScope,
-            className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
+            className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
             title: todo.title,
             draggable: !renamingTodo,
             onDragStart: function (event) {
@@ -2527,8 +2541,8 @@ window.__ModuleLoader__.load({
             'button',
             {
               type: 'button',
-              className: 'dtn-check' + (isDone ? ' dtn-check-on' : ''),
-              title: isDone ? '取消完成' : '标记完成',
+              className: 'dtn-check' + (isDone ? ' dtn-check-on' : '') + (isPartial ? ' dtn-check-partial' : ''),
+              title: isDone ? '取消完成' : isPartial ? '中间态：点一下确认完成' : '标记完成',
               onClick: function (event) {
                 event.stopPropagation()
                 const action = isDone ? 'reopen' : 'complete'
@@ -2540,7 +2554,7 @@ window.__ModuleLoader__.load({
                   .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
               },
             },
-            isDone ? '✓' : '',
+            isDone ? '✓' : isPartial ? '–' : '',
           ),
           h(
             'button',
@@ -2606,8 +2620,8 @@ window.__ModuleLoader__.load({
         const rank = {}
         ids.forEach(function (id, index) { rank[id] = index })
         rows.sort(function (a, b) {
-          const ad = a.status === 'done' ? 1 : 0
-          const bd = b.status === 'done' ? 1 : 0
+          const ad = statusRank(a.status)
+          const bd = statusRank(b.status)
           if (ad !== bd) return ad - bd
           const ap = typeof a.priority === 'number' ? a.priority : 1
           const bp = typeof b.priority === 'number' ? b.priority : 1
@@ -3183,7 +3197,7 @@ window.__ModuleLoader__.load({
                 { key: 'meta', className: 'dtn-preview-meta' },
                 previewData !== null
                   ? [
-                      h('span', { key: 'status' }, previewData.status === 'done' ? '已完成' : '未完成'),
+                      h('span', { key: 'status' }, previewData.status === 'done' ? '已完成' : previewData.status === 'partial' ? '中间态（待人工确认）' : '未完成'),
                       isAiSource(previewData.source)
                         ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13))
                         : null,
