@@ -43,12 +43,17 @@
   "dependencies": {
     "@deepseek-ai/schemastery": "^3.18.4"
   },
+  "scripts": {
+    "build:client": "node scripts/build-client.mjs",
+    "check": "node --check lib/index.js && node --check lib/core/data.js && node --check lib/core/http.js && node --check lib/core/tools.js && node --check client/client.js"
+  },
   "files": [
     "lib",
     "client",
     "locale",
     "cordis.patch.yml",
     "README.md",
-    "icon.svg"
+    "icon.svg",
+    "scripts"
   ]
 }

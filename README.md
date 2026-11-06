@@ -49,9 +49,33 @@ $DSH_HOME/todo-notes/
 
 所有写工具在修改用户手写条目时受 `agentWriteUserTodos` 控制；无论设置如何，写前都会调用 DSH approval 服务，未获批准不写入。
 
+## 代码结构
+
+```
+lib/
+  index.js           入口：Config 与 apply，只做组装
+  core/data.js       数据层：目录布局、组与条目读写、写操作
+  core/http.js       HTTP 层：/dsh-todo-notes/api
+  core/tools.js      Agent 工具：只读工具与带审批的写工具
+client/
+  client.js          构建产物（DSH 只加载这一个文件）
+  src/               源码分段，按顺序拼成 client.js
+   00-bootstrap.js   模块工厂外壳与常量
+   10-styles.js      样式表
+   20-storage.js     本地存储与几何计算
+   30-markdown.js    markdown 渲染
+   40-priority.js    优先级色与排序
+   50-icons.js       图标表
+   60-panel.js       面板组件
+   90-entry.js       样式注入、导出与注册
+scripts/
+  build-client.mjs    拼接 client/src 生成 client/client.js
+```
+
 ## 开发
 
-- Host 半：`lib/index.js`（数据层、`/dsh-todo-notes/api` 路由、Agent 工具、`Config` 设置）。
-- Browser 半：`client/client.js`（`shell.overlay` 浮动面板与 `sidebar.right.pane.tab` 右栏页签）。
-- 本地检查：`node --check lib/index.js` 与 `node --check client/client.js`。
+- 修改 `client/src/*` 后运行 `node scripts/build-client.mjs`（或 `npm run build:client`）重新生成 `client/client.js`；直接改 `client/client.js` 会在下次构建时被覆盖。
+- 检查语法：`npm run check`。
 - 数据目录默认 `$DSH_HOME/todo-notes`，可直接手工改 `group.json` 与 `.md` 验证渲染。
+- 面板组件目前仍是单文件（`client/src/60-panel.js`），状态、交互与渲染都在一个函数里；下一步才是拆 hooks 与子组件，需要浏览器实测配合。
+
