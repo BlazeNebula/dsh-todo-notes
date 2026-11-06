@@ -36,14 +36,17 @@ window.__ModuleLoader__.load({
   max-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
-  color: var(--dsw-alias-label-primary, #e8e8ea);
+  color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   background: var(--dsw-alias-bg-base, #18181a);
   border: 1px solid var(--dsw-alias-border-l2, #3a3a40);
   border-radius: 12px;
   box-shadow: 0 16px 48px rgba(0,0,0,.42);
   font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
-  overflow: hidden;}
+  overflow: hidden;
+  transition: width 180ms cubic-bezier(.22,.61,.36,1), left 180ms cubic-bezier(.22,.61,.36,1);}
 .dtn-root.dtn-collapsed { width: 264px; }
+.dtn-root.dtn-resizing { transition: none; }
+.dtn-root.dtn-dragging { transition: none; }
 .dtn-root.dtn-hidden { display: none; }
 .dtn-root.dtn-embedded {
   position: static;
@@ -95,14 +98,27 @@ window.__ModuleLoader__.load({
   display: inline-flex; align-items: center; justify-content: center;
   padding: 0;
 }
-.dtn-btn:hover { background: var(--dsw-alias-bg-layer-2, #2b2b31); color: var(--dsw-alias-label-primary, #e8e8ea); }
+.dtn-btn:hover { background: var(--dsw-alias-bg-layer-2, #2b2b31); color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); }
 .dtn-body {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
   overflow: auto;
+  opacity: 1;
+  transition: opacity 140ms ease;
 }
+.dtn-body-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  min-height: 0;
+  transition: grid-template-rows 190ms cubic-bezier(.22,.61,.36,1);
+}
+.dtn-root.dtn-collapsed .dtn-body-wrap { grid-template-rows: 0fr; }
+.dtn-root.dtn-collapsed .dtn-body { opacity: 0; pointer-events: none; }
+.dtn-root.dtn-embedded .dtn-body-wrap { grid-template-rows: 1fr; }
+.dtn-root.dtn-embedded .dtn-body { opacity: 1; pointer-events: auto; }
 .dtn-sec {
   background: transparent;
   min-width: 0;
@@ -132,7 +148,7 @@ window.__ModuleLoader__.load({
   color: var(--dsw-alias-label-secondary, #a3a3ab);
 }
 .dtn-group-head:hover { background: var(--dsw-alias-bg-layer-1, #232328); }
-.dtn-group-head.dtn-current { color: var(--dsw-alias-label-primary, #e8e8ea); }
+.dtn-group-head.dtn-current { color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); }
 .dtn-group-caret { display: inline-flex; align-items: center; width: 14px; flex: none; }
 .dtn-group-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dtn-group-count { margin-left: auto; font-size: 11px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
@@ -146,12 +162,12 @@ window.__ModuleLoader__.load({
 }
 .dtn-folder-head:hover { background: var(--dsw-alias-bg-layer-1, #232328); }
 .dtn-folder-caret { display: inline-flex; align-items: center; width: 14px; flex: none; }
-.dtn-folder-name { display: flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dtn-folder-name { display: flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 65%, transparent); }
 .dtn-folder-count { margin-left: auto; font-size: 10.5px; }
 .dtn-todo {
   display: flex; align-items: center; gap: 6px;
-  padding: 3px 6px; border-radius: 6px; cursor: pointer;
-  color: var(--dsw-alias-label-primary, #e8e8ea);
+  padding: 3px 0 3px 6px; border-radius: 6px; cursor: pointer;
+  color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   font-size: 12.5px; line-height: 1.35;
   border-bottom: 1px dashed var(--dsw-alias-border-l1, #2e2e34);
   transition: opacity 180ms ease, background 180ms ease;
@@ -177,11 +193,28 @@ window.__ModuleLoader__.load({
 .dtn-check.dtn-check-on { border-color: var(--dsw-alias-state-success-primary, #4cc38a); }
 .dtn-todo-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .dtn-grip {
-  flex: none; width: 14px; height: 15px; display: inline-flex; align-items: center; justify-content: center;
+  flex: none; width: 28px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
   color: var(--dsw-alias-label-secondary, #a3a3ab); opacity: 0; cursor: grab;
 }
 .dtn-todo:hover .dtn-grip, .dtn-folder-head:hover .dtn-grip { opacity: .8; }
 .dtn-grip:active { cursor: grabbing; }
+.dtn-folder-caret { cursor: pointer; }
+.dtn-selected,
+.dtn-selected:hover {
+  background: color-mix(in srgb, var(--dsw-alias-brand-primary, #4d9cff) 16%, transparent);
+}
+.dtn-marquee {
+  position: fixed;
+  z-index: 2147482500;
+  border: 1px dashed var(--dsw-alias-brand-primary, #4d9cff);
+  background: color-mix(in srgb, var(--dsw-alias-brand-primary, #4d9cff) 9%, transparent);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.dtn-menu-item:disabled { opacity: .42; cursor: default; }
+.dtn-menu-dim { opacity: .42; }
+.dtn-menu-dim > .dtn-submenu { display: none !important; }
+.dtn-menu-hide { display: none !important; }
 .dtn-tag {
   flex: none; font-size: 9.5px; line-height: 1; padding: 1px 5px; border-radius: 4px;
   background: transparent;
@@ -211,11 +244,11 @@ window.__ModuleLoader__.load({
   color: var(--dsw-alias-label-secondary, #a3a3ab); cursor: pointer;
   display: inline-flex; align-items: center; border-radius: 4px;
 }
-.dtn-copy:hover { color: var(--dsw-alias-label-primary, #e8e8ea); background: var(--dsw-alias-bg-layer-2, #2b2b31); }
+.dtn-copy:hover { color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); background: var(--dsw-alias-bg-layer-2, #2b2b31); }
 .dtn-sec-head .dtn-sec-add { margin-left: 6px; }
 .dtn-rename {
   flex: 1; min-width: 0; height: 20px; padding: 0 5px;
-  font-size: 12px; color: var(--dsw-alias-label-primary, #e8e8ea);
+  font-size: 12px; color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   background: var(--dsw-alias-bg-layer-2, #2b2b31);
   border: 1px solid var(--dsw-alias-brand-primary, #4d9cff);
   border-radius: 4px; outline: none;
@@ -229,12 +262,18 @@ window.__ModuleLoader__.load({
 }
 .dtn-menu-item {
   display: flex; align-items: center; gap: 8px; padding: 6px 9px;
-  font-size: 12px; text-align: left; color: var(--dsw-alias-label-primary, #e8e8ea);
+  font-size: 12px; text-align: left; color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   background: transparent; border: none; border-radius: 6px; cursor: pointer;
   position: relative;
 }
+.dtn-confirm { width: 252px; padding: 0; }
+.dtn-confirm-text { padding: 10px 12px 6px; font-size: 12px; line-height: 1.55; color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 72%, transparent); }
+.dtn-confirm-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 6px 10px 10px; }
+.dtn-preview-btn-danger { color: #fff; background: var(--dsw-alias-state-error-primary, #e55353); border-color: transparent; font-weight: 600; }
+.dtn-preview-btn-danger:hover { filter: brightness(1.08); }
 .dtn-menu-item .dtn-icon { color: var(--dsw-alias-label-secondary, #a3a3ab); }
-.dtn-menu-check { width: 14px; flex: none; color: var(--dsw-alias-brand-primary, #4d9cff); font-size: 12px; }
+.dtn-menu-check { width: 14px; height: 14px; flex: none; margin: 0 6px 0 0; accent-color: var(--dsw-alias-brand-primary, #4d9cff); }
+.dtn-menu-check-row { display: flex; align-items: center; }
 .dtn-menu-item:hover { background: var(--dsw-alias-bg-layer-2, #2b2b31); }
 .dtn-menu-item-off,
 .dtn-menu-item-off:hover { background: transparent; color: var(--dsw-alias-label-secondary, #9a9aa3); opacity: .45; cursor: default; }
@@ -252,7 +291,17 @@ window.__ModuleLoader__.load({
   border-radius: 10px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
   flex-direction: column;
 }
-.dtn-has-sub:hover > .dtn-submenu { display: flex; }
+.dtn-submenu.dtn-submenu-open { display: flex; }
+.dtn-submenu.dtn-submenu-left { left: auto; right: 100%; }
+.dtn-prio-submenu {
+  display: grid; grid-template-columns: repeat(2, minmax(72px, 1fr));
+  grid-template-rows: repeat(5, auto); grid-auto-flow: column; gap: 2px;
+}
+.dtn-prio-choice { gap: 8px; font-variant-numeric: tabular-nums; }
+.dtn-prio-dot {
+  flex: none; width: 12px; height: 12px; border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
 .dtn-prio {
   flex: none; height: 20px; padding: 0 4px; margin-left: 2px;
   font-size: 11px; line-height: 20px; text-align: center;
@@ -261,21 +310,36 @@ window.__ModuleLoader__.load({
   border-radius: 4px; outline: none; cursor: pointer;
   -webkit-appearance: none; appearance: none;
 }
-.dtn-prio:hover { color: var(--dsw-alias-label-primary, #e8e8ea); border-color: var(--dsw-alias-label-secondary, #a3a3ab); }
-.dtn-prio option { background: var(--dsw-alias-bg-overlay, #242429); color: var(--dsw-alias-label-primary, #e8e8ea); }
+.dtn-prio:hover { color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); border-color: var(--dsw-alias-label-secondary, #a3a3ab); }
+.dtn-prio option { background: var(--dsw-alias-bg-overlay, #242429); color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); }
+.dtn-prio-menu {
+  position: fixed; z-index: 2147482502; display: flex; flex-direction: column;
+  padding: 4px; border-radius: 8px;
+  background: var(--dsw-alias-bg-overlay, #242429);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+.dtn-prio-row { display: flex; gap: 2px; }
+.dtn-prio-row + .dtn-prio-row { margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.07); }
+.dtn-prio-item {
+  width: 29px; height: 24px; padding: 0; border: 0; border-radius: 4px;
+  background: transparent; font: 600 11px/1 inherit; cursor: pointer;
+}
+.dtn-prio-item:hover { background: var(--dsw-alias-bg-layer-2, #2c2c31); }
+.dtn-prio-item.dtn-prio-on { background: var(--dsw-alias-bg-layer-2, #2c2c31); }
 .dtn-rename-todo { flex: 1 1 auto; min-width: 0; margin-left: 6px; }
 .dtn-bubble {
   position: fixed; z-index: 2147482501; pointer-events: none;
   padding: 3px 8px; border-radius: 999px; font-size: 11px; white-space: nowrap;
-  color: var(--dsw-alias-label-primary, #e8e8ea);
+  color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   background: var(--dsw-alias-bg-overlay, #303036);
   border: 1px solid var(--dsw-alias-border-l2, #3a3a40);
-  animation: dtn-bubble-up 1000ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation: dtn-bubble-up 3500ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 @keyframes dtn-bubble-up {
   0% { opacity: 0; transform: translate(-50%, 6px); }
-  12% { opacity: 1; transform: translate(-50%, 0); }
-  72% { opacity: 1; transform: translate(-50%, 0); }
+  5% { opacity: 1; transform: translate(-50%, 0); }
+  29% { opacity: 1; transform: translate(-50%, 0); }
   100% { opacity: 0; transform: translate(-50%, 0); }
 }
 
@@ -301,14 +365,14 @@ window.__ModuleLoader__.load({
   box-sizing: border-box; flex: 1; min-height: 0; width: 100%; resize: none; padding: 8px;
   font: 12.5px/1.6 ui-monospace, "Cascadia Mono", Consolas, monospace;
   white-space: pre; overflow-x: auto; overflow-y: auto;
-  color: var(--dsw-alias-label-primary, #e8e8ea);
+  color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   background: transparent;
   border: none; border-radius: 0; outline: none;
 }
 .dtn-batch-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .dtn-preview-btn {
   height: 26px; padding: 0 12px; font-size: 12px; cursor: pointer;
-  color: var(--dsw-alias-label-primary, #e8e8ea);
+  color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   background: var(--dsw-alias-bg-layer-2, #2a2a30);
   border: 1px solid var(--dsw-alias-border-l2, #3a3a40); border-radius: 6px;
 }
@@ -320,7 +384,7 @@ window.__ModuleLoader__.load({
   position: fixed; z-index: 2147482499; width: 440px;
   max-width: calc(100vw - 24px); max-height: 72vh;
   display: flex; flex-direction: column;
-  color: var(--dsw-alias-label-primary, #e8e8ea);
+  color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   background: var(--dsw-alias-bg-base, #18181a);
   border: 1px solid var(--dsw-alias-border-l2, #3a3a40);
   border-radius: 12px;
@@ -548,13 +612,12 @@ window.__ModuleLoader__.load({
       return typeof source === 'string' && source !== '' && source !== 'user' ? '由智能体创建' : ''
     }
 
-    // 优先级颜色：T0 用主题的 warn 色，T1~T9 用 ColorBrewer 的 YlGnBu 9 档顺序色阶
-    // （浅黄 → 绿 → 蓝 → 深蓝），亮度递减，没有红色中段；最后两档在 B 通道各 +5/+10，
-    // 提高深色背景上的可读性，亮度仍低于倒数第三档。
+    // 优先级颜色：T0 用主题的 warn 色，T1~T9 用 ColorBrewer 的 YlGnBu 9 档顺序色阶。
+    // T1~T4 保留原始的浅色饱和度，保证四档并列时仍能分出层次；T5~T9 统一到平均饱和度。
     const PRIO_PALETTE = [
       'var(--dsw-alias-state-warn-primary, #d9a441)',
-      '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4',
-      '#1d91c0', '#225ea8', '#26369a', '#103ab0',
+      '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8',
+      '#238fba', '#205eaa', '#1e30a2', '#1e41a2',
     ]
 
     function prioColor(priority) {
@@ -578,6 +641,22 @@ window.__ModuleLoader__.load({
       return typeof source === 'string' && source !== '' && source !== 'user'
     }
 
+    // 预览里的时间统一成「YYYY-MM-DD hh:mm:ss:mil」（24 小时制，本地时区）。
+    function formatStamp(value) {
+      const text = typeof value === 'string' ? value.trim() : ''
+      if (text === '') return ''
+      const date = new Date(text)
+      if (Number.isNaN(date.getTime())) return text
+      const pad = function (number, size) {
+        let out = String(number)
+        while (out.length < size) out = '0' + out
+        return out
+      }
+      return date.getFullYear() + '-' + pad(date.getMonth() + 1, 2) + '-' + pad(date.getDate(), 2) +
+        ' ' + pad(date.getHours(), 2) + ':' + pad(date.getMinutes(), 2) + ':' + pad(date.getSeconds(), 2) +
+        '.' + pad(date.getMilliseconds(), 3)
+    }
+
     function folderLabel(folderId) {
       return folderId === PRIMARY ? '无文件夹' : String(folderId)
     }
@@ -588,6 +667,8 @@ window.__ModuleLoader__.load({
       chevronDown: { box: 512, paths: [{ d: 'M112 184l144 144 144-144', width: 48 }] },
       chevronRight: { box: 512, paths: [{ d: 'M184 112l144 144-144 144', width: 48 }] },
       chevronUp: { box: 512, paths: [{ d: 'M112 328l144-144 144 144', width: 48 }] },
+      // 优先级：旗杆 + 旗面，线性。
+      flag: { box: 24, paths: [{ d: 'M6 3v18M6 4h11l-2 4 2 4H6', width: 2 }] },
       folder: {
         box: 512,
         paths: [{
@@ -618,9 +699,11 @@ window.__ModuleLoader__.load({
         ],
       },
       folderAdd: {
-        box: 24,
-        filled: true,
-        paths: [{ d: 'M10 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V8C22 6.9 21.1 6 20 6H12L10 4M16 10V12H19V14H16V17H14V14H11V12H14V10H16Z' }],
+        box: 512,
+        paths: [
+          { d: 'M440 432H72a40 40 0 01-40-40V120a40 40 0 0140-40h75.89a40 40 0 0122.19 6.72l27.84 18.56a40 40 0 0022.19 6.72H440a40 40 0 0140 40v240a40 40 0 01-40 40z', width: 32 },
+          { d: 'M320 264v96M272 312h96', width: 32 },
+        ],
       },
       edit: {
         box: 512,
@@ -732,6 +815,14 @@ window.__ModuleLoader__.load({
       const storedPanel = React.useState(function () { return clampPos(readStored(LS_PANEL, defaultPanelPos()), panelWidth, 200, 56) })[0]
       const [panelPos, setPanelPos] = React.useState(storedPanel)
       const [collapsed, setCollapsed] = React.useState(function () { return readStored(LS_COLLAPSED, false) === true })
+      // 收起状态下的悬停临展：只影响显示，不写入持久状态，点击收展仍按 collapsed 走。
+      const [hoverOpen, setHoverOpen] = React.useState(false)
+      const [resizing, setResizing] = React.useState(false)
+      const [dragging, setDragging] = React.useState(false)
+      const viewportSizeRef = React.useRef(
+        typeof window === 'undefined' ? { w: 1200, h: 800 } : { w: window.innerWidth, h: window.innerHeight },
+      )
+      const panelRef = React.useRef(null)
       const [sections, setSections] = React.useState(function () {
         const stored = readStored(LS_SECTIONS, null)
         return stored !== null && typeof stored === 'object' ? stored : { user: false, workspace: false, session: false }
@@ -740,6 +831,43 @@ window.__ModuleLoader__.load({
       const [error, setError] = React.useState('')
       const [openGroups, setOpenGroups] = React.useState({})
       const [openFolders, setOpenFolders] = React.useState({})
+      const [treeMenu, setTreeMenu] = React.useState(null)
+      const [selection, setSelection] = React.useState([])
+      const selectionRef = React.useRef([])
+      const selectAnchorRef = React.useRef('')
+      const marqueeMovedRef = React.useRef(false)
+      const [marquee, setMarquee] = React.useState(null)
+      const [batchMenu, setBatchMenu] = React.useState(null)
+      const [batchRename, setBatchRename] = React.useState(null)
+      React.useEffect(function () { selectionRef.current = selection }, [selection])
+      // 窗口尺寸变化后，浮动面板按原位置在视口内的比例重新落位。
+      React.useEffect(function () {
+        const onResize = function () {
+          const prev = viewportSizeRef.current
+          const next = { w: window.innerWidth, h: window.innerHeight }
+          viewportSizeRef.current = next
+          if (prev.w <= 0 || prev.h <= 0) return
+          setPanelPos(function (pos) {
+            const moved = {
+              x: Math.round((pos.x * next.w) / prev.w),
+              y: Math.round((pos.y * next.h) / prev.h),
+            }
+            return clampPos(moved, panelWidth, 200, 56)
+          })
+        }
+        window.addEventListener('resize', onResize)
+        return function () { window.removeEventListener('resize', onResize) }
+      }, [panelWidth])
+      // 拖动手柄的按下标记只在本次指针交互内有效，避免残留后从条目其它位置误触发拖动。
+      React.useEffect(function () {
+        const clear = function () { dragArmedRef.current = false }
+        window.addEventListener('pointerup', clear)
+        window.addEventListener('pointercancel', clear)
+        return function () {
+          window.removeEventListener('pointerup', clear)
+          window.removeEventListener('pointercancel', clear)
+        }
+      }, [])
       const [preview, setPreview] = React.useState(null)
       const [previewData, setPreviewData] = React.useState(null)
       const [previewError, setPreviewError] = React.useState('')
@@ -747,27 +875,35 @@ window.__ModuleLoader__.load({
         return clampPos(readStored(LS_PREVIEW, defaultPreviewPos(storedPanel)), 440, 200)
       })
       const dragMoved = React.useRef(false)
-      const [bubble, setBubble] = React.useState(null)
+      const [bubbles, setBubbles] = React.useState([])
+      const bubbleSeq = React.useRef(0)
+      const bubbleTimers = React.useRef([])
       const [version, setVersion] = React.useState(0)
       const [flashKey, setFlashKey] = React.useState('')
       const [dropKey, setDropKey] = React.useState('')
       const [editingFolder, setEditingFolder] = React.useState(null)
       const [folderMenu, setFolderMenu] = React.useState(null)
+      const [confirmDialog, setConfirmDialog] = React.useState(null)
+      const confirmResolveRef = React.useRef(null)
       const [editingTodo, setEditingTodo] = React.useState(null)
       const [todoMenu, setTodoMenu] = React.useState(null)
+      const [prioMenu, setPrioMenu] = React.useState(null)
+      const [subOpen, setSubOpen] = React.useState('')
       const [batchCreate, setBatchCreate] = React.useState(null)
       const [batchPos, setBatchPos] = React.useState(null)
       const hoverTimer = React.useRef(null)
       const closeTimer = React.useRef(null)
-      const bubbleTimer = React.useRef(null)
       const folderClickTimer = React.useRef(null)
       const checkClickTimer = React.useRef(null)
       const dragPayloadKey = React.useRef('')
+      const dragArmedRef = React.useRef(false)
       const previewRect = React.useRef(null)
       const previewRef = React.useRef(null)
       const batchGutterRef = React.useRef(null)
+      const renameGutterRef = React.useRef(null)
       const rowRectsRef = React.useRef({})
       const animateOrderRef = React.useRef(false)
+      const animatePendingRef = React.useRef(false)
 
       // 排序动画（FLIP）：只在「主观排序」后触发（拖动完成、改优先级），
       // 滚动、缩放窗口等被动重排只更新基准位置，不播放位移动画。
@@ -806,7 +942,8 @@ window.__ModuleLoader__.load({
         return function () {
           if (hoverTimer.current !== null) clearTimeout(hoverTimer.current)
           if (closeTimer.current !== null) clearTimeout(closeTimer.current)
-          if (bubbleTimer.current !== null) clearTimeout(bubbleTimer.current)
+          for (let i = 0; i < bubbleTimers.current.length; i += 1) clearTimeout(bubbleTimers.current[i])
+          bubbleTimers.current = []
           if (folderClickTimer.current !== null) clearTimeout(folderClickTimer.current)
           if (checkClickTimer.current !== null) clearTimeout(checkClickTimer.current)
         }
@@ -869,6 +1006,12 @@ window.__ModuleLoader__.load({
             })
             .then(function (payload) {
               if (!alive) return
+              // 只有主观排序（拖动、改优先级）后的下一次数据刷新才播放位移动画；
+              // 标记必须等到真正的新数据落地时才消费，否则会被中间渲染提前清掉。
+              if (animatePendingRef.current) {
+                animatePendingRef.current = false
+                animateOrderRef.current = true
+              }
               setData(payload)
               setError('')
             })
@@ -937,6 +1080,15 @@ window.__ModuleLoader__.load({
         }
       }, [preview === null ? '' : preview.id])
 
+      // 收起与展开共用同一个横向中心：收起后的左边缘由中心减去半宽得出。
+      function panelLeftOf(pos, width, collapsedNow) {
+        if (typeof window === 'undefined') return pos.x
+        const center = pos.x + width / 2
+        const renderedWidth = collapsedNow ? MIN_PANEL_WIDTH : width
+        const raw = center - renderedWidth / 2
+        return Math.max(8, Math.min(raw, window.innerWidth - renderedWidth - 8))
+      }
+
       function startDrag(event, kind) {
         if (event.button !== 0) return
         const target = event.target
@@ -945,23 +1097,29 @@ window.__ModuleLoader__.load({
         dragMoved.current = false
         const startX = event.clientX
         const startY = event.clientY
-        const base = kind === 'main' ? panelPos : kind === 'batch' ? (batchPos || (batchCreate !== null && batchCreate.pos) || { x: 12, y: 64 }) : previewPos
+        const mainCollapsed = kind === 'main' && collapsed && !(hoverOpen && !embedded)
+        const centerOffset = mainCollapsed ? (panelWidth - MIN_PANEL_WIDTH) / 2 : 0
+        const base = kind === 'main'
+          ? { x: panelPos.x + centerOffset, y: panelPos.y }
+          : kind === 'batch' ? (batchPos || (batchCreate !== null && batchCreate.pos) || { x: 12, y: 64 }) : previewPos
         const setter = kind === 'main' ? setPanelPos : kind === 'batch' ? setBatchPos : setPreviewPos
-        const widthOf = kind === 'main' ? (collapsed ? 300 : panelWidth) : 440
+        const widthOf = kind === 'main' ? (mainCollapsed ? MIN_PANEL_WIDTH : panelWidth) : 440
+        if (kind === 'main') setDragging(true)
         const move = function (moveEvent) {
           if (Math.abs(moveEvent.clientX - startX) > 3 || Math.abs(moveEvent.clientY - startY) > 3) dragMoved.current = true
-          setter(
-            clampPos(
-              { x: base.x + moveEvent.clientX - startX, y: base.y + moveEvent.clientY - startY },
-              widthOf,
-              200,
-              kind === 'main' ? 56 : undefined,
-            ),
+          const next = clampPos(
+            { x: base.x + moveEvent.clientX - startX, y: base.y + moveEvent.clientY - startY },
+            widthOf,
+            200,
+            kind === 'main' ? 56 : undefined,
           )
+          if (mainCollapsed) next.x = next.x - centerOffset
+          setter(next)
         }
         const up = function () {
           window.removeEventListener('pointermove', move)
           window.removeEventListener('pointerup', up)
+          if (kind === 'main') setDragging(false)
           if (kind === 'main' || kind === 'preview') {
             setter(function (value) {
               writeStored(kind === 'main' ? LS_PANEL : LS_PREVIEW, value)
@@ -998,6 +1156,66 @@ window.__ModuleLoader__.load({
         })
       }
 
+      // 收展状态按组键 + 文件夹 id 存放，递归收集整棵子树。
+      function collectFolderKeys(groupKey, folder, out) {
+        if (folder === null || typeof folder !== 'object' || typeof folder.id !== 'string') return
+        out.push(groupKey + '/' + folder.id)
+        const children = Array.isArray(folder.children) ? folder.children : []
+        for (let i = 0; i < children.length; i += 1) collectFolderKeys(groupKey, children[i], out)
+      }
+
+      function setSectionOpen(kind, open) {
+        setSections(function (value) {
+          const next = Object.assign({}, value)
+          next[kind] = !open
+          writeStored(LS_SECTIONS, next)
+          return next
+        })
+      }
+
+      // entries: [{ group, withHead, root? }]；root 存在时只作用于该文件夹子树。
+      function applyTreeOpen(open, entries) {
+        const folderNext = Object.assign({}, openFolders)
+        const groupNext = Object.assign({}, openGroups)
+        for (let i = 0; i < entries.length; i += 1) {
+          const entry = entries[i]
+          if (entry.group === null || entry.group === undefined) continue
+          if (entry.withHead === true) groupNext[entry.group.key] = open
+          const roots = entry.root !== undefined
+            ? [entry.root]
+            : (Array.isArray(entry.group.folders) ? entry.group.folders : [])
+          for (let j = 0; j < roots.length; j += 1) {
+            const keys = []
+            collectFolderKeys(entry.group.key, roots[j], keys)
+            for (let k = 0; k < keys.length; k += 1) folderNext[keys[k]] = open
+          }
+        }
+        setOpenFolders(folderNext)
+        setOpenGroups(groupNext)
+      }
+
+      function openTreeMenu(event, target) {
+        if (event === null || event === undefined) return
+        event.preventDefault()
+        event.stopPropagation()
+        setTreeMenu({ x: event.clientX, y: event.clientY, target: target })
+      }
+
+      function toggleTree(target, open) {
+        if (target === null || target === undefined) return
+        if (target.kind === 'section') {
+          setSectionOpen(target.sectionKind, open)
+          applyTreeOpen(open, target.groups.map(function (group) {
+            return { group: group, withHead: target.sectionKind !== 'user' }
+          }))
+        } else if (target.kind === 'group') {
+          applyTreeOpen(open, [{ group: target.group, withHead: true }])
+        } else if (target.kind === 'folder') {
+          applyTreeOpen(open, [{ group: target.group, withHead: false, root: target.folder }])
+        }
+        setTreeMenu(null)
+      }
+
       function rectsOverlap(a, b) {
         return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
       }
@@ -1031,11 +1249,20 @@ window.__ModuleLoader__.load({
       function placePreview(rect, height, avoid) {
         const width = 440
         const margin = 8
-        const panelRight = panelPos.x + (collapsed ? 300 : panelWidth)
+        // 嵌入右侧栏时，浮层必须落到侧栏外侧（左边），不能压住侧栏本身。
+        const sideHost = embedded ? document.querySelector('.dtn-root.dtn-embedded') : null
+        const sideRect = sideHost !== null && sideHost !== undefined && typeof sideHost.getBoundingClientRect === 'function'
+          ? sideHost.getBoundingClientRect()
+          : null
+        const panelRight = sideRect !== null && sideRect !== undefined && sideRect.width > 0
+          ? sideRect.left
+          : panelPos.x + (collapsed ? 300 : panelWidth)
         const spaceRight = window.innerWidth - panelRight - margin
         const spaceLeft = panelPos.x - margin
         let x
-        if (spaceRight >= width) x = panelRight + margin
+        if (sideRect !== null && sideRect !== undefined && sideRect.width > 0) {
+          x = panelRight - width - margin
+        } else if (spaceRight >= width) x = panelRight + margin
         else if (spaceLeft >= width) x = panelPos.x - width - margin
         else x = spaceRight >= spaceLeft ? panelRight + margin : panelPos.x - width - margin
         x = Math.min(Math.max(margin, x), Math.max(margin, window.innerWidth - width - margin))
@@ -1131,30 +1358,21 @@ window.__ModuleLoader__.load({
       }
 
       function toggleCollapsed() {
-        setCollapsed(function (value) {
-          writeStored(LS_COLLAPSED, !value)
-          if (value && mode === 'sidebar') {
-            // 从收起态展开 = 回到浮动面板，同时收起右侧栏，避免两处都占着。
-            applyMode('float')
-            if (typeof props.closeSidebar === 'function') props.closeSidebar()
-          }
-          return !value
-        })
+        setHoverOpen(false)
+        const next = collapsed !== true
+        setCollapsed(next)
+        writeStored(LS_COLLAPSED, next)
       }
 
-      // 面板 → 右侧栏：收起浮动面板，并让宿主打开右侧栏里的 TODO 页签。
+      // 面板 → 右侧栏：只打开右侧栏里的 TODO 页签，浮动面板保持原状。
       function showInSidebar() {
         applyMode('sidebar')
-        setCollapsed(true)
-        writeStored(LS_COLLAPSED, true)
         if (typeof props.openSidebar === 'function') props.openSidebar(sessionId)
       }
 
-      // 右侧栏 → 浮动面板：恢复浮动面板并关掉右侧栏。
+      // 关闭右侧栏；浮动面板保持原状。
       function showFloating() {
         applyMode('float')
-        setCollapsed(false)
-        writeStored(LS_COLLAPSED, false)
         if (typeof props.closeSidebar === 'function') props.closeSidebar()
       }
 
@@ -1178,17 +1396,25 @@ window.__ModuleLoader__.load({
         })
       }
 
-      // 在鼠标上方冒出一个提示（减去光标高度，避免挡住指针），约 1s 后淡出。
+      // 在鼠标上方冒出一个提示（减去光标高度，避免挡住指针）：停留 1s，再用 2.5s 淡出。
+      // 每条提示独立存在：连续操作会并排出现多个，各自计时消失，不互相顶掉。
       function showBubble(text, event) {
         if (event === null || event === undefined) return
         const x = typeof event.clientX === 'number' ? event.clientX : 0
         const y = (typeof event.clientY === 'number' ? event.clientY : 0) - 40
-        setBubble({ text: text, x: x, y: y, nonce: Date.now() })
-        if (bubbleTimer.current !== null) clearTimeout(bubbleTimer.current)
-        bubbleTimer.current = setTimeout(function () {
-          bubbleTimer.current = null
-          setBubble(null)
-        }, 900)
+        bubbleSeq.current += 1
+        const id = bubbleSeq.current
+        setBubbles(function (list) {
+          const next = list.concat([{ id: id, text: text, x: x, y: y }])
+          return next.length > 6 ? next.slice(next.length - 6) : next
+        })
+        const timer = setTimeout(function () {
+          bubbleTimers.current = bubbleTimers.current.filter(function (entry) { return entry !== timer })
+          setBubbles(function (list) {
+            return list.filter(function (entry) { return entry.id !== id })
+          })
+        }, 3500)
+        bubbleTimers.current.push(timer)
       }
 
       function copyText(text) {
@@ -1226,6 +1452,15 @@ window.__ModuleLoader__.load({
         copyText(text).then(function () { showBubble(message, event) }).catch(function () {}) 
       }
 
+      // 双击会话组的标题：让 DSH 切到该会话。由宿主注入的 openSession 完成导航。
+      function openSessionGroup(group, event) {
+        const owner = group !== null && group !== undefined ? group.owner : null
+        const sessionId = owner !== null && owner !== undefined && typeof owner.sessionId === 'string' ? owner.sessionId : ''
+        if (sessionId === '') return
+        const opened = typeof props.openSession === 'function' ? props.openSession(sessionId) : false
+        if (!opened) showBubble('当前 DSH 不支持跳转会话', event)
+      }
+
       function dragData(event) {
         if (event === null || event === undefined || event.dataTransfer === undefined) return null
         try {
@@ -1241,27 +1476,30 @@ window.__ModuleLoader__.load({
         event.dataTransfer.effectAllowed = 'move'
       }
 
-      function onTodoDragStart(event, group, todo) {
+      function onTodoDragStart(event, group, todo, folderId) {
         dragPayloadKey.current = group.key
-        setDragData(event, { kind: 'todo', key: group.key, id: todo.id, folder: typeof todo.primaryFolder === 'string' && todo.primaryFolder !== '' ? todo.primaryFolder : PRIMARY, priority: typeof todo.priority === 'number' ? todo.priority : 1 })
+        const folder = typeof folderId === 'string' && folderId !== '' ? folderId : (typeof todo.primaryFolder === 'string' && todo.primaryFolder !== '' ? todo.primaryFolder : PRIMARY)
+        setDragData(event, { kind: 'todo', key: group.key, id: todo.id, folder: folder, priority: typeof todo.priority === 'number' ? todo.priority : 1 })
       }
 
-      function onTodoDrop(event, group, target) {
+      function onTodoDrop(event, group, target, folderId) {
         if (event !== null && event.preventDefault !== undefined) event.preventDefault()
         const payload = dragData(event)
         dragPayloadKey.current = ''
         if (payload === null || payload.kind !== 'todo' || payload.key !== group.key || payload.id === target.id) return
         const next = Math.max(0, Math.min(9, typeof target.priority === 'number' ? target.priority : 1))
-        const folder = typeof target.primaryFolder === 'string' && target.primaryFolder !== '' ? target.primaryFolder : PRIMARY
+        const folder = typeof folderId === 'string' && folderId !== '' ? folderId : (typeof target.primaryFolder === 'string' && target.primaryFolder !== '' ? target.primaryFolder : PRIMARY)
         const fromFolder = typeof payload.folder === 'string' && payload.folder !== '' ? payload.folder : PRIMARY
         // 只有同一文件夹内的移动才同化优先级；跨文件夹只移动、不改优先级。
         const changed = fromFolder === folder && (payload.priority === undefined || payload.priority !== next)
-        const flash = group.key + ':' + payload.id
-        postApi({ action: 'moveTodo', key: group.key, id: payload.id, folder: folder })
+        const flash = group.key + ':' + payload.id + ':' + folder
+        // 同一文件夹内只是重排，不改归属；跨文件夹才真正移动。
+        const move = fromFolder === folder ? Promise.resolve(null) : postApi({ action: 'moveTodo', key: group.key, id: payload.id, folder: folder })
+        move
           .then(function () { return postApi({ action: 'reorder', key: group.key, id: payload.id, folder: folder, beforeId: target.id }) })
           .then(function () { return fromFolder === folder ? postApi({ action: 'priority', key: group.key, id: payload.id, priority: next }) : null })
           .then(function () {
-            animateOrderRef.current = true
+            animatePendingRef.current = true
             setFlashKey(flash)
             setTimeout(function () { setFlashKey('') }, 400)
             if (changed) showBubble('已调整优先级为T' + next, event)
@@ -1375,6 +1613,7 @@ window.__ModuleLoader__.load({
         if (event.button !== 0) return
         event.preventDefault()
         event.stopPropagation()
+        setResizing(true)
         const root = event.currentTarget !== null ? event.currentTarget.parentElement : null
         const startX = event.clientX
         const startY = event.clientY
@@ -1404,6 +1643,7 @@ window.__ModuleLoader__.load({
         const up = function () {
           window.removeEventListener('pointermove', move)
           window.removeEventListener('pointerup', up)
+          setResizing(false)
           setPanelWidth(function (value) {
             writeStored(LS_WIDTH, value)
             return value
@@ -1453,6 +1693,26 @@ window.__ModuleLoader__.load({
           .catch(function (err) { failWith(event, err) })
       }
 
+      function createSubFolder(group, folder, event) {
+        const tree = ensurePrimary(cloneFolders(group))
+        const node = findFolder(tree, folder.id)
+        if (node === null) return
+        if (!Array.isArray(node.children)) node.children = []
+        const id = 'f-' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36)
+        node.children.push({ id: id, name: '新建文件夹', children: [] })
+        postApi({ action: 'folders', key: group.key, folders: tree })
+          .then(function () {
+            setOpenFolders(function (state) {
+              const next = Object.assign({}, state)
+              next[group.key + '/' + folder.id] = true
+              return next
+            })
+            setEditingFolder({ key: group.key, folderId: id, draft: '新建文件夹' })
+            refresh()
+          })
+          .catch(function (err) { failWith(event, err) })
+      }
+
       function startRenameFolder(group, folder) {
         setFolderMenu(null)
         setEditingFolder({ key: group.key, folderId: folder.id, draft: folder.name || folderLabel(folder.id) })
@@ -1476,6 +1736,26 @@ window.__ModuleLoader__.load({
         setEditingFolder(null)
       }
 
+      // 删除确认改为面板内浮层，在点击位置附近给出「取消 / 确认删除」。
+      // 按住 Ctrl 点击删除仍然直接通过，不弹确认。
+      function settleConfirm(value) {
+        const resolve = confirmResolveRef.current
+        confirmResolveRef.current = null
+        setConfirmDialog(null)
+        if (typeof resolve === 'function') resolve(value)
+      }
+
+      function confirmDelete(event, message) {
+        if (event !== null && event !== undefined && event.ctrlKey === true) return Promise.resolve(true)
+        const point = event !== null && event !== undefined && typeof event.clientX === 'number'
+          ? { x: event.clientX, y: event.clientY }
+          : { x: panelPos.x + 40, y: panelPos.y + 56 }
+        return new Promise(function (resolve) {
+          confirmResolveRef.current = resolve
+          setConfirmDialog({ message: message, x: point.x, y: point.y })
+        })
+      }
+
       function deleteFolder(group, folderId, event) {
         setFolderMenu(null)
         if (folderId === PRIMARY) return
@@ -1484,10 +1764,11 @@ window.__ModuleLoader__.load({
           .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
       }
 
-      function deleteFolderTree(group, folderId, event) {
+      async function deleteFolderTree(group, folderId, event) {
         setFolderMenu(null)
         if (folderId === PRIMARY) return
-        if (!window.confirm('会连同子文件夹里的全部 TODO 一起删除，且不可恢复，确认删除整个文件夹？')) return
+        const ok = await confirmDelete(event, '会连同子文件夹里的全部 TODO 一起删除，且不可恢复，确认删除整个文件夹？')
+        if (ok !== true) return
         postApi({ action: 'deleteFolderTree', key: group.key, folder: folderId })
           .then(function (result) {
             showBubble('已删除整个文件夹' + (result !== null && result !== undefined && result.count !== undefined ? '（' + result.count + ' 条）' : ''), event)
@@ -1511,7 +1792,29 @@ window.__ModuleLoader__.load({
       function openFolderMenu(event, group, folder) {
         event.preventDefault()
         event.stopPropagation()
+        setSubOpen('')
         setFolderMenu({ x: event.clientX, y: event.clientY, groupKey: group.key, group: group, folderId: folder.id })
+      }
+
+      // 二级菜单出现在右侧会超出窗口时改挂左侧，并在纵向夹进视口。
+      // 必须在子菜单已渲染后量尺寸，所以由 subOpen 的 layout effect 调用。
+      function fitSubmenuNode(host) {
+        if (host === null || host === undefined || host.querySelector === undefined) return
+        const sub = host.querySelector('.dtn-submenu')
+        if (sub === null || sub === undefined) return
+        sub.classList.remove('dtn-submenu-left')
+        sub.style.top = ''
+        const hostRect = host.getBoundingClientRect()
+        const subRect = sub.getBoundingClientRect()
+        const width = subRect.width > 0 ? subRect.width : 176
+        const height = subRect.height > 0 ? subRect.height : 0
+        if (hostRect.right + width + 8 > window.innerWidth) sub.classList.add('dtn-submenu-left')
+        if (height > 0 && hostRect.top < 8) {
+          sub.style.top = (8 - hostRect.top) + 'px'
+        } else if (height > 0 && hostRect.top + height > window.innerHeight - 8) {
+          const top = Math.max(8 - hostRect.top, window.innerHeight - 8 - height - hostRect.top)
+          sub.style.top = top + 'px'
+        }
       }
 
       // ---------------------------------------------------------- TODO 编辑
@@ -1520,6 +1823,7 @@ window.__ModuleLoader__.load({
         postApi({ action: 'createTodo', key: group.key, folder: folderId || PRIMARY })
           .then(function (result) {
             setEditingTodo({ key: group.key, id: result.id, draft: result.title || '新建待办' })
+            animatePendingRef.current = true
             refresh()
           })
           .catch(function (err) { failWith(event, err) })
@@ -1549,10 +1853,369 @@ window.__ModuleLoader__.load({
         setBatchCreate(null)
         postApi({ action: 'createTodos', key: state.key, folder: state.folderId, titles: titles })
           .then(function (result) {
+            animatePendingRef.current = true
             refresh()
             if (result !== null && typeof result === 'object' && typeof result.count === 'number') {
               setVersion(function (value) { return value + 1 })
             }
+          })
+          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+      }
+
+      // ---------------------------------------------------------- 选择、框选与批量操作
+
+      function itemOfElement(node) {
+        if (node === null || node === undefined) return null
+        const key = node.getAttribute('data-select-key')
+        if (typeof key !== 'string' || key === '') return null
+        return {
+          key: key,
+          type: node.getAttribute('data-select-type') || 'todo',
+          groupKey: node.getAttribute('data-select-group') || '',
+          id: node.getAttribute('data-select-id') || '',
+          folder: node.getAttribute('data-select-folder') || '',
+        }
+      }
+
+      function setSelectionNow(list) {
+        selectionRef.current = list
+        setSelection(list)
+      }
+
+      function isSelectedKey(key) {
+        const list = selectionRef.current
+        for (let i = 0; i < list.length; i += 1) if (list[i].key === key) return true
+        return false
+      }
+
+      function clickSelect(item, event) {
+        if (item === null) return
+        const additive = event.ctrlKey === true || event.metaKey === true
+        if (event.shiftKey === true && selectAnchorRef.current !== '') {
+          const host = event.currentTarget !== null && event.currentTarget !== undefined && event.currentTarget.closest !== undefined
+            ? event.currentTarget.closest('.dtn-root')
+            : null
+          const scope = host !== null && host !== undefined ? host : document
+          const nodes = Array.prototype.slice.call(scope.querySelectorAll('[data-select-key]'))
+          const items = nodes.map(itemOfElement).filter(function (value) { return value !== null })
+          const from = items.findIndex(function (value) { return value.key === selectAnchorRef.current })
+          const to = items.findIndex(function (value) { return value.key === item.key })
+          if (from >= 0 && to >= 0) {
+            const slice = items.slice(Math.min(from, to), Math.max(from, to) + 1)
+            const merged = additive ? selectionRef.current.slice() : []
+            slice.forEach(function (value) {
+              if (!merged.some(function (seen) { return seen.key === value.key })) merged.push(value)
+            })
+            setSelectionNow(merged)
+            return
+          }
+        }
+        if (additive) {
+          const next = isSelectedKey(item.key)
+            ? selectionRef.current.filter(function (value) { return value.key !== item.key })
+            : selectionRef.current.concat([item])
+          setSelectionNow(next)
+          selectAnchorRef.current = item.key
+          return
+        }
+        setSelectionNow([item])
+        selectAnchorRef.current = item.key
+      }
+
+      // 在空白处按住左键拖动出选择框，命中的条目实时并入选区。
+      function beginMarquee(event) {
+        if (event.button !== 0) return
+        const target = event.target
+        if (target !== null && target.closest !== undefined && target.closest('button, input, textarea, .dtn-menu, .dtn-preview, .dtn-prio-menu, .dtn-grip') !== null) return
+        marqueeMovedRef.current = false
+        const startX = event.clientX
+        const startY = event.clientY
+        const additive = event.ctrlKey === true || event.metaKey === true
+        const base = additive ? selectionRef.current.slice() : []
+        const host = event.currentTarget !== null && event.currentTarget !== undefined && event.currentTarget.closest !== undefined
+          ? event.currentTarget.closest('.dtn-root')
+          : null
+        const scope = host !== null && host !== undefined ? host : document
+        let moved = false
+        const move = function (moveEvent) {
+          const rect = {
+            x: Math.min(startX, moveEvent.clientX),
+            y: Math.min(startY, moveEvent.clientY),
+            w: Math.abs(moveEvent.clientX - startX),
+            h: Math.abs(moveEvent.clientY - startY),
+          }
+          if (!moved && rect.w < 3 && rect.h < 3) return
+          moved = true
+          marqueeMovedRef.current = true
+          setMarquee(rect)
+          const nodes = Array.prototype.slice.call(scope.querySelectorAll('[data-select-key]'))
+          const merged = base.slice()
+          nodes.forEach(function (node) {
+            const box = node.getBoundingClientRect()
+            const hit = box.left < rect.x + rect.w && box.right > rect.x && box.top < rect.y + rect.h && box.bottom > rect.y
+            if (!hit) return
+            const item = itemOfElement(node)
+            if (item === null) return
+            if (!merged.some(function (seen) { return seen.key === item.key })) merged.push(item)
+          })
+          setSelectionNow(merged)
+        }
+        const up = function () {
+          window.removeEventListener('pointermove', move)
+          window.removeEventListener('pointerup', up)
+          setMarquee(null)
+          if (!moved && !additive) setSelectionNow([])
+        }
+        window.addEventListener('pointermove', move)
+        window.addEventListener('pointerup', up)
+      }
+
+      function batchItems() {
+        return batchMenu === null ? [] : batchMenu.items
+      }
+
+      function batchTodos() {
+        const seen = {}
+        return batchItems().filter(function (item) {
+          if (item.type !== 'todo') return false
+          const key = item.groupKey + ':' + item.id
+          if (seen[key] === true) return false
+          seen[key] = true
+          return true
+        })
+      }
+
+      function batchFolders() {
+        return batchItems().filter(function (item) { return item.type === 'folder' })
+      }
+
+      function itemLabel(item) {
+        const group = findLiveGroup(item.groupKey)
+        if (group === null || group === undefined) return ''
+        if (item.type === 'todo') {
+          const todo = (Array.isArray(group.todos) ? group.todos : []).find(function (value) { return value.id === item.id })
+          return todo === undefined ? '' : String(todo.title || '')
+        }
+        const folder = findFolder(Array.isArray(group.folders) ? group.folders : [], item.id)
+        return folder === null ? '' : String(folder.name || folderLabel(folder.id))
+      }
+
+      function openBatchMenu(event, items) {
+        if (event === null || event === undefined) return
+        event.preventDefault()
+        event.stopPropagation()
+        const list = Array.isArray(items) ? items.slice() : []
+        if (list.length === 0) return
+        setFolderMenu(null)
+        setTodoMenu(null)
+        setTreeMenu(null)
+        setSubOpen('')
+        setBatchMenu({ x: event.clientX, y: event.clientY, items: list })
+      }
+
+      function closeBatchMenu() {
+        setBatchMenu(null)
+        setSubOpen('')
+      }
+
+      function batchFolderOptions() {
+        const groups = []
+        batchTodos().forEach(function (item) {
+          if (groups.some(function (group) { return group.key === item.groupKey })) return
+          const group = findLiveGroup(item.groupKey)
+          if (group !== null && group !== undefined) groups.push(group)
+        })
+        const seen = {}
+        const out = [{ id: PRIMARY, label: folderLabel(PRIMARY), depth: 0 }]
+        groups.forEach(function (group) {
+          folderOptions(group).forEach(function (option) {
+            if (seen[option.id] === true) return
+            seen[option.id] = true
+            out.push(option)
+          })
+        })
+        return out
+      }
+
+      // 「批量管理收录」只列真实文件夹：主归属是位置，不是可勾选的收录关系。
+      function batchCollectFolders() {
+        const groups = []
+        batchTodos().forEach(function (item) {
+          if (groups.some(function (group) { return group.key === item.groupKey })) return
+          const group = findLiveGroup(item.groupKey)
+          if (group !== null && group !== undefined) groups.push(group)
+        })
+        const seen = {}
+        const out = []
+        groups.forEach(function (group) {
+          folderOptions(group).forEach(function (option) {
+            if (seen[option.id] === true) return
+            seen[option.id] = true
+            out.push(option)
+          })
+        })
+        return out
+      }
+
+      function liveTodoOf(item) {
+        const group = findLiveGroup(item.groupKey)
+        if (group === null || group === undefined) return null
+        const todos = Array.isArray(group.todos) ? group.todos : []
+        for (let i = 0; i < todos.length; i += 1) if (todos[i].id === item.id) return { group: group, todo: todos[i] }
+        return null
+      }
+
+      function batchFolderCount(folderId) {
+        let count = 0
+        batchTodos().forEach(function (item) {
+          const live = liveTodoOf(item)
+          if (live === null) return
+          if (todoJoined(live.group, live.todo, folderId)) count += 1
+        })
+        return count
+      }
+
+      function applyBatchCollectToggle(folderId) {
+        const todos = batchTodos()
+        if (todos.length === 0) return
+        const total = todos.length
+        const checked = batchFolderCount(folderId) === total
+        const tasks = []
+        todos.forEach(function (item) {
+          const live = liveTodoOf(item)
+          if (live === null) return
+          const joined = todoJoined(live.group, live.todo, folderId)
+          if (checked && !joined) return
+          if (!checked && joined) return
+          const action = checked ? 'removeReference' : 'reference'
+          tasks.push(function () { return postApi({ action: action, key: item.groupKey, id: item.id, folder: folderId }) })
+        })
+        if (tasks.length === 0) return
+        runSequential(tasks)
+          .then(function () {
+            animatePendingRef.current = true
+            refresh()
+            showBubble((checked ? '已取消收录 ' : '已收录 ') + tasks.length + ' 条', { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+          })
+          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+      }
+
+      function runSequential(tasks) {
+        return tasks.reduce(function (chain, task) { return chain.then(task) }, Promise.resolve())
+      }
+
+      function applyBatchExpand(open) {
+        const entries = []
+        batchFolders().forEach(function (item) {
+          const group = findLiveGroup(item.groupKey)
+          if (group === null || group === undefined) return
+          const folder = findFolder(Array.isArray(group.folders) ? group.folders : [], item.id)
+          if (folder !== null) entries.push({ group: group, withHead: false, root: folder })
+        })
+        closeBatchMenu()
+        if (entries.length === 0) return
+        applyTreeOpen(open, entries)
+      }
+
+      function applyBatchMove(folderId) {
+        const tasks = batchTodos().map(function (item) {
+          return function () { return postApi({ action: 'moveTodo', key: item.groupKey, id: item.id, folder: folderId }) }
+        })
+        closeBatchMenu()
+        if (tasks.length === 0) return
+        runSequential(tasks)
+          .then(function () {
+            setSelectionNow([])
+            animatePendingRef.current = true
+            refresh()
+            showBubble('已移动 ' + tasks.length + ' 条', null)
+          })
+          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+      }
+
+      function applyBatchReference(folderId) {
+        const tasks = batchTodos().map(function (item) {
+          return function () { return postApi({ action: 'reference', key: item.groupKey, id: item.id, folder: folderId }) }
+        })
+        closeBatchMenu()
+        if (tasks.length === 0) return
+        runSequential(tasks)
+          .then(function () {
+            animatePendingRef.current = true
+            refresh()
+            showBubble('已收录 ' + tasks.length + ' 条', null)
+          })
+          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+      }
+
+      function applyBatchDelete(event) {
+        const todos = batchTodos()
+        const folders = batchFolders()
+        if (todos.length + folders.length === 0) return
+        closeBatchMenu()
+        confirmDelete(event, '确定删除选中的 ' + (todos.length + folders.length) + ' 项？删除后不可恢复。').then(function (ok) {
+          if (ok !== true) return
+          const tasks = todos
+            .map(function (item) {
+              return function () { return postApi({ action: 'deleteTodo', key: item.groupKey, id: item.id }) }
+            })
+            .concat(folders.map(function (item) {
+              return function () { return postApi({ action: 'deleteFolderTree', key: item.groupKey, folder: item.id }) }
+            }))
+          runSequential(tasks)
+            .then(function () {
+              setSelectionNow([])
+              animatePendingRef.current = true
+              refresh()
+              showBubble('已删除 ' + tasks.length + ' 项', null)
+            })
+            .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+        })
+      }
+
+      function openBatchRename() {
+        const items = batchItems().slice()
+        if (items.length === 0) return
+        const lines = items.map(itemLabel)
+        setBatchMenu(null)
+        setSubOpen('')
+        setBatchRename({ items: items, value: lines.join('\n'), pos: placePreview(null, 360) })
+      }
+
+      function confirmBatchRename() {
+        const state = batchRename
+        if (state === null || state === undefined) return
+        const names = String(state.value || '').split('\n')
+        setBatchRename(null)
+        const tasks = []
+        const folderRenames = {}
+        state.items.forEach(function (item, index) {
+          const name = String(names[index] === undefined ? '' : names[index]).trim()
+          if (name === '') return
+          if (item.type === 'todo') {
+            tasks.push(function () { return postApi({ action: 'renameTodo', key: item.groupKey, id: item.id, title: name }) })
+          } else {
+            if (folderRenames[item.groupKey] === undefined) folderRenames[item.groupKey] = {}
+            folderRenames[item.groupKey][item.id] = name
+          }
+        })
+        Object.keys(folderRenames).forEach(function (groupKey) {
+          const group = findLiveGroup(groupKey)
+          if (group === null || group === undefined) return
+          const tree = ensurePrimary(cloneFolders(group))
+          Object.keys(folderRenames[groupKey]).forEach(function (folderId) {
+            const folder = findFolder(tree, folderId)
+            if (folder !== null) folder.name = folderRenames[groupKey][folderId]
+          })
+          tasks.push(function () { return saveFolders(group, tree, null) })
+        })
+        if (tasks.length === 0) return
+        runSequential(tasks)
+          .then(function () {
+            setSelectionNow([])
+            animatePendingRef.current = true
+            refresh()
+            showBubble('已重命名 ' + tasks.length + ' 项', null)
           })
           .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
       }
@@ -1577,17 +2240,22 @@ window.__ModuleLoader__.load({
         setEditingTodo(null)
       }
 
-      function deleteTodo(group, todoId, event) {
+      async function deleteTodo(group, todoId, event) {
         setTodoMenu(null)
-        if (!window.confirm('删除后不可恢复，确认删除这条 TODO？')) return
+        const ok = await confirmDelete(event, '删除后不可恢复，确认删除这条 TODO？')
+        if (ok !== true) return
         postApi({ action: 'deleteTodo', key: group.key, id: todoId })
-          .then(function () { refresh() })
+          .then(function () {
+            animatePendingRef.current = true
+            refresh()
+          })
           .catch(function (err) { failWith(event, err) })
       }
 
       function openTodoMenu(event, group, todo) {
         event.preventDefault()
         event.stopPropagation()
+        setSubOpen('')
         setTodoMenu({ x: event.clientX, y: event.clientY, groupKey: group.key, group: group, todoId: todo.id })
       }
 
@@ -1614,6 +2282,7 @@ window.__ModuleLoader__.load({
         postApi({ action: 'moveTodo', key: group.key, id: todoId, folder: folderId })
           .then(function () {
             showBubble('已移动到' + folderLabel(folderId), event)
+            animatePendingRef.current = true
             refresh()
           })
           .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
@@ -1627,6 +2296,7 @@ window.__ModuleLoader__.load({
         postApi({ action: joined ? 'removeReference' : 'reference', key: group.key, id: todo.id, folder: folderId })
           .then(function () {
             showBubble(joined ? '已取消收录到' + folderLabel(folderId) : '已收录到' + folderLabel(folderId), event)
+            animatePendingRef.current = true
             refresh()
           })
           .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
@@ -1635,6 +2305,96 @@ window.__ModuleLoader__.load({
       function todoJoined(group, todo, folderId) {
         const lists = group.folderTodos !== null && typeof group.folderTodos === 'object' ? group.folderTodos : {}
         return Array.isArray(lists[folderId]) && lists[folderId].indexOf(todo.id) >= 0
+      }
+
+      // 「管理收录」的可选项与「移动到」同一份顺序：主归属（界面上就叫「无文件夹」）打头，再按文件夹层级。
+      function collectionOptions(group) {
+        const out = [{ id: PRIMARY, label: folderLabel(PRIMARY), depth: 0 }]
+        const folders = folderOptions(group)
+        for (let i = 0; i < folders.length; i += 1) out.push(folders[i])
+        return out
+      }
+
+      // 优先级面板：上排 T0~T4、下排 T5~T9，点数字直接保存。
+      function openPrioMenu(event, group, todo) {
+        event.stopPropagation()
+        const rect = event.currentTarget.getBoundingClientRect()
+        const width = 172
+        const height = 78
+        const x = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8)
+        let y = rect.bottom + 6
+        if (y + height > window.innerHeight - 8) y = rect.top - height - 6
+        if (y < 8) y = 8
+        setPrioMenu({
+          key: group.key,
+          id: todo.id,
+          priority: typeof todo.priority === 'number' ? todo.priority : 1,
+          x: x,
+          y: y,
+        })
+      }
+
+      // 统一的优先级变更：下拉面板、右键菜单、批量菜单共用这段请求与冒泡提示。
+      function changeTodoPriority(key, id, value, event) {
+        postApi({ action: 'priority', key: key, id: id, priority: value })
+          .then(function () {
+            animatePendingRef.current = true
+            showBubble('已调整优先级为T' + value, event)
+            refresh()
+          })
+          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+      }
+
+      function choosePriority(value, event) {
+        const state = prioMenu
+        if (state === null || state === undefined) return
+        setPrioMenu(null)
+        if (value === state.priority) return
+        changeTodoPriority(state.key, state.id, value, event)
+      }
+
+      function setTodoPriority(group, todo, value, event) {
+        setTodoMenu(null)
+        setSubOpen('')
+        if (todo === null || todo === undefined || todo.priority === value) return
+        changeTodoPriority(group.key, todo.id, value, event)
+      }
+
+      function applyBatchPriority(value, event) {
+        const todos = batchTodos()
+        setBatchMenu(null)
+        setSubOpen('')
+        if (todos.length === 0) return
+        const tasks = todos.map(function (item) {
+          return function () { return postApi({ action: 'priority', key: item.groupKey, id: item.id, priority: value }) }
+        })
+        runSequential(tasks)
+          .then(function () {
+            animatePendingRef.current = true
+            refresh()
+            showBubble('已调整 ' + todos.length + ' 项优先级为T' + value, event)
+          })
+          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+      }
+
+      function prioChoiceNodes(action) {
+        const rows = []
+        for (let value = 0; value <= 9; value += 1) {
+          rows.push(
+            h(
+              'button',
+              {
+                key: 'prio-' + value,
+                type: 'button',
+                className: 'dtn-menu-item dtn-prio-choice',
+                onClick: function (event) { event.stopPropagation(); action(value, event) },
+              },
+              h('span', { className: 'dtn-prio-dot', style: { background: prioColor(value) } }),
+              'T' + value,
+            ),
+          )
+        }
+        return h('div', { className: 'dtn-prio-submenu' }, rows)
       }
 
       // 文件夹拖到组名 = 归为主归属（顶层）。
@@ -1649,43 +2409,114 @@ window.__ModuleLoader__.load({
         saveFolders(group, tree, event)
       }
 
-      // 点击菜单外部或按 Esc 关闭文件夹/条目右键菜单。
+      // 点击菜单外部或按 Esc 关闭文件夹/条目/收展/批量右键菜单与优先级面板。
       React.useEffect(function () {
-        if (folderMenu === null && todoMenu === null) return undefined
-        const onDown = function () { setFolderMenu(null); setTodoMenu(null) }
-        const onKey = function (event) { if (event.key === 'Escape') { setFolderMenu(null); setTodoMenu(null) } }
+        if (folderMenu === null && todoMenu === null && prioMenu === null && treeMenu === null && batchMenu === null) return undefined
+        const onDown = function (event) {
+          // 菜单内部的点击（含真实 checkbox 切换、子菜单展开）不关闭菜单，便于连续勾选。
+          const target = event !== null && event !== undefined ? event.target : null
+          if (target !== null && target !== undefined && target.closest !== undefined && target.closest('.dtn-menu') !== null) return
+          if (target !== null && target !== undefined && target.closest !== undefined && target.closest('.dtn-prio-menu') !== null) return
+          setFolderMenu(null)
+          setTodoMenu(null)
+          setPrioMenu(null)
+          setTreeMenu(null)
+          setBatchMenu(null)
+          setSubOpen('')
+        }
+        const onKey = function (event) { if (event.key === 'Escape') { setFolderMenu(null); setTodoMenu(null); setPrioMenu(null); setTreeMenu(null); setBatchMenu(null); setSubOpen('') } }
         window.addEventListener('pointerdown', onDown)
         window.addEventListener('keydown', onKey)
         return function () {
           window.removeEventListener('pointerdown', onDown)
           window.removeEventListener('keydown', onKey)
         }
-      }, [folderMenu, todoMenu])
+      }, [folderMenu, todoMenu, prioMenu, treeMenu, batchMenu])
 
-      function renderTodoRow(group, todo) {
+      // 一级右键菜单靠窗口右/下边缘时整体回收进视口，避免被裁掉。
+      React.useLayoutEffect(function () {
+        let menu = null
+        let apply = null
+        if (folderMenu !== null) { menu = folderMenu; apply = setFolderMenu }
+        else if (todoMenu !== null) { menu = todoMenu; apply = setTodoMenu }
+        else if (treeMenu !== null) { menu = treeMenu; apply = setTreeMenu }
+        else if (batchMenu !== null) { menu = batchMenu; apply = setBatchMenu }
+        if (menu === null || menu === undefined || apply === null) return
+        const node = document.querySelector('.dtn-menu')
+        if (node === null) return
+        const rect = node.getBoundingClientRect()
+        if (rect.width === 0 || rect.height === 0) return
+        let x = menu.x
+        let y = menu.y
+        const maxRight = window.innerWidth - 8
+        const maxBottom = window.innerHeight - 8
+        if (rect.right > maxRight) x = Math.max(8, x - (rect.right - maxRight))
+        if (rect.bottom > maxBottom) y = Math.max(8, y - (rect.bottom - maxBottom))
+        if (x !== menu.x || y !== menu.y) apply(Object.assign({}, menu, { x: x, y: y }))
+      }, [folderMenu, todoMenu, treeMenu, batchMenu])
+
+      // 二级菜单渲染完成后再定位：右侧放不下翻到左侧，上/下超出时夹进视口。
+      React.useLayoutEffect(function () {
+        if (subOpen === '') return
+        const host = document.querySelector('.dtn-has-sub[data-sub="' + subOpen + '"]')
+        if (host === null) return
+        fitSubmenuNode(host)
+      }, [subOpen, folderMenu, todoMenu])
+
+      function renderTodoRow(group, todo, folderId) {
         const isDone = todo.status === 'done'
-        const rowKey = group.key + ':' + todo.id
+        const rowScope = typeof folderId === 'string' && folderId !== '' ? folderId : 'loose'
+        const rowKey = group.key + ':' + todo.id + ':' + rowScope
+        const selectItem = { key: rowKey, type: 'todo', groupKey: group.key, id: todo.id, folder: rowScope }
+        const selected = isSelectedKey(rowKey)
         const renamingTodo = editingTodo !== null && editingTodo !== undefined && editingTodo.key === group.key && editingTodo.id === todo.id
         return h(
           'div',
           {
             key: rowKey,
             'data-todo-id': todo.id,
-            className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
+            'data-select-key': rowKey,
+            'data-select-type': 'todo',
+            'data-select-group': group.key,
+            'data-select-id': todo.id,
+            'data-select-folder': rowScope,
+            className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
             title: todo.title,
             draggable: !renamingTodo,
-            onDragStart: function (event) { onTodoDragStart(event, group, todo) },
+            onDragStart: function (event) {
+              if (dragArmedRef.current !== true) { event.preventDefault(); return }
+              dragArmedRef.current = false
+              onTodoDragStart(event, group, todo, folderId)
+            },
             onDragOver: function (event) {
               if (event !== null && event.preventDefault !== undefined) event.preventDefault()
               if (dragPayloadKey.current !== group.key) return
               if (dropKey !== rowKey) setDropKey(rowKey)
             },
-            onDragLeave: function () { if (dropKey === rowKey) setDropKey('') },
-            onDragEnd: function () { dragPayloadKey.current = ''; setDropKey('') },
-            onDrop: function (event) { setDropKey(''); onTodoDrop(event, group, todo) },
-            onContextMenu: function (event) { openTodoMenu(event, group, todo) },
+            onDragLeave: function (event) {
+              if (dropKey !== rowKey) return
+              const related = event !== null && event !== undefined ? event.relatedTarget : null
+              if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
+              setDropKey('')
+            },
+            onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; setDropKey('') },
+            onDrop: function (event) { setDropKey(''); onTodoDrop(event, group, todo, folderId) },
+            onContextMenu: function (event) {
+              event.preventDefault()
+              event.stopPropagation()
+              const multi = selectionRef.current.length > 1 && selectionRef.current.some(function (value) { return value.key === rowKey })
+              if (multi) { openBatchMenu(event, selectionRef.current); return }
+              clickSelect(selectItem, event)
+              openTodoMenu(event, group, todo)
+            },
             onClick: function (event) {
+              if (marqueeMovedRef.current === true) { marqueeMovedRef.current = false; return }
               if (editingTodo !== null && editingTodo !== undefined && editingTodo.key === group.key && editingTodo.id === todo.id) return
+              if (event.ctrlKey === true || event.metaKey === true || event.shiftKey === true) {
+                clickSelect(selectItem, event)
+                return
+              }
+              clickSelect(selectItem, event)
               const rect = event !== null && event.currentTarget !== null ? event.currentTarget.getBoundingClientRect() : null
               openPreview(group, todo, rect)
             },
@@ -1697,61 +2528,30 @@ window.__ModuleLoader__.load({
             {
               type: 'button',
               className: 'dtn-check' + (isDone ? ' dtn-check-on' : ''),
-              title: isDone ? '取消完成' : '双击勾选完成',
+              title: isDone ? '取消完成' : '标记完成',
               onClick: function (event) {
                 event.stopPropagation()
-                if (isDone) {
-                  postApi({ action: 'reopen', key: group.key, id: todo.id })
-                    .then(refresh)
-                    .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
-                  return
-                }
-                if (checkClickTimer.current !== null) clearTimeout(checkClickTimer.current)
-                const x = event.clientX
-                const y = event.clientY
-                checkClickTimer.current = setTimeout(function () {
-                  checkClickTimer.current = null
-                  showBubble('双击以确认勾选完成', { clientX: x, clientY: y })
-                }, 100)
-              },
-              onDoubleClick: function (event) {
-                event.stopPropagation()
-                if (checkClickTimer.current !== null) {
-                  clearTimeout(checkClickTimer.current)
-                  checkClickTimer.current = null
-                }
-                if (!isDone) {
-                  postApi({ action: 'complete', key: group.key, id: todo.id })
-                    .then(refresh)
-                    .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
-                }
-              },
-            },
-            isDone ? '✓' : '',
-          ),
-          h(
-            'select',
-            {
-              className: 'dtn-prio',
-              style: { color: prioColor(todo.priority) },
-              title: '优先级 T0 最高',
-              value: String(typeof todo.priority === 'number' ? todo.priority : 1),
-              onClick: function (event) { event.stopPropagation() },
-              onPointerDown: function (event) { event.stopPropagation() },
-              onChange: function (event) {
-                const value = Number(event.currentTarget.value)
-                postApi({ action: 'priority', key: group.key, id: todo.id, priority: value })
+                const action = isDone ? 'reopen' : 'complete'
+                postApi({ action: action, key: group.key, id: todo.id })
                   .then(function () {
-                    animateOrderRef.current = true
-                    showBubble('已调整优先级为T' + value, event)
+                    animatePendingRef.current = true
                     refresh()
                   })
                   .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
               },
             },
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (value) {
-              return h('option', { key: value, value: String(value), style: { color: prioColor(value) } }, 'T' + value)
-            }),
+            isDone ? '✓' : '',
+          ),
+          h(
+            'button',
+            {
+              type: 'button',
+              className: 'dtn-prio',
+              style: { color: prioColor(todo.priority) },
+              title: '优先级 T0 最高，点开选择',
+              onClick: function (event) { openPrioMenu(event, group, todo) },
+            },
+            'T' + (typeof todo.priority === 'number' ? todo.priority : 1),
           ),
           editingTodo !== null && editingTodo !== undefined && editingTodo.key === group.key && editingTodo.id === todo.id
             ? h('input', {
@@ -1773,13 +2573,23 @@ window.__ModuleLoader__.load({
             : h('span', {
                 className: 'dtn-todo-title',
                 style: { color: prioColor(todo.priority) },
-                title: '双击重命名，右键更多',
+                title: '双击文字重命名，右键更多',
+              },
+              h('span', {
+                className: 'dtn-todo-text',
                 onDoubleClick: function (event) { event.stopPropagation(); startRenameTodo(group, todo) },
               }, todo.title),
+              ),
           isAiSource(todo.source)
             ? h('span', { className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13))
             : null,
-          h('span', { className: 'dtn-grip', title: '拖动调整优先级' }, icon('grip')),
+          h('span', {
+            className: 'dtn-grip',
+            title: '按住拖动排序',
+            onPointerDown: function (event) { event.stopPropagation(); dragArmedRef.current = true },
+            onPointerUp: function () { dragArmedRef.current = false },
+            onClick: function (event) { event.stopPropagation() },
+          }, icon('grip')),
         )
       }
 
@@ -1817,40 +2627,50 @@ window.__ModuleLoader__.load({
         const folderOpen = openFolders[folderKey] === true || (openFolders[folderKey] === undefined && depth === 0)
         const children = Array.isArray(folder.children) ? folder.children : []
         const renaming = editingFolder !== null && editingFolder !== undefined && editingFolder.key === group.key && editingFolder.folderId === folder.id
+        const selectItem = { key: folderKey, type: 'folder', groupKey: group.key, id: folder.id }
+        const selected = isSelectedKey(folderKey)
         return h(
           'div',
           { key: folderKey, className: 'dtn-folder', style: depth > 0 ? { marginLeft: '10px' } : undefined },
           h(
             'div',
             {
-              className: 'dtn-folder-head' + (dropKey === folderKey ? ' dtn-drop-target' : ''),
+              'data-select-key': folderKey,
+              'data-select-type': 'folder',
+              'data-select-group': group.key,
+              'data-select-id': folder.id,
+              className: 'dtn-folder-head' + (selected ? ' dtn-selected' : '') + (dropKey === folderKey ? ' dtn-drop-target' : ''),
               onClick: function (event) {
+                if (marqueeMovedRef.current === true) { marqueeMovedRef.current = false; return }
                 if (renaming) return
-                if (event.detail > 1) return
-                if (folderClickTimer.current !== null) clearTimeout(folderClickTimer.current)
-                folderClickTimer.current = setTimeout(function () {
-                  folderClickTimer.current = null
-                  toggleFolder(folderKey)
-                }, 100)
+                clickSelect(selectItem, event)
               },
-              onDoubleClick: function (event) {
+              onContextMenu: function (event) {
+                event.preventDefault()
                 event.stopPropagation()
-                if (folderClickTimer.current !== null) {
-                  clearTimeout(folderClickTimer.current)
-                  folderClickTimer.current = null
-                }
-                startRenameFolder(group, folder)
+                const multi = selectionRef.current.length > 1 && selectionRef.current.some(function (value) { return value.key === folderKey })
+                if (multi) { openBatchMenu(event, selectionRef.current); return }
+                clickSelect(selectItem, event)
+                openFolderMenu(event, group, folder)
               },
-              onContextMenu: function (event) { openFolderMenu(event, group, folder) },
               draggable: true,
-              onDragStart: function (event) { onFolderDragStart(event, group, folder) },
+              onDragStart: function (event) {
+                if (dragArmedRef.current !== true) { event.preventDefault(); return }
+                dragArmedRef.current = false
+                onFolderDragStart(event, group, folder)
+              },
               onDragOver: function (event) {
                 if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                 if (dragPayloadKey.current !== group.key) return
                 if (dropKey !== folderKey) setDropKey(folderKey)
               },
-              onDragLeave: function () { if (dropKey === folderKey) setDropKey('') },
-              onDragEnd: function () { dragPayloadKey.current = ''; setDropKey('') },
+              onDragLeave: function (event) {
+                if (dropKey !== folderKey) return
+                const related = event !== null && event !== undefined ? event.relatedTarget : null
+                if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
+                setDropKey('')
+              },
+              onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; setDropKey('') },
               onDrop: function (event) {
                 setDropKey('')
                 const payload = dragData(event)
@@ -1864,7 +2684,10 @@ window.__ModuleLoader__.load({
                 onFolderDrop(event, group, folder, intoChild)
               },
             },
-            h('span', { className: 'dtn-folder-caret' }, folderOpen ? icon('chevronDown') : icon('chevronRight')),
+            h('span', {
+              className: 'dtn-folder-caret',
+              onClick: function (event) { event.stopPropagation(); toggleFolder(folderKey) },
+            }, folderOpen ? icon('chevronDown') : icon('chevronRight')),
             renaming
               ? h('input', {
                   className: 'dtn-rename',
@@ -1886,11 +2709,24 @@ window.__ModuleLoader__.load({
                   'span',
                   {
                     className: 'dtn-folder-name',
-                    title: '双击重命名，右键更多',
+                    title: '双击文字重命名，右键更多',
                   },
                   h('span', { className: 'dtn-folder-icon' }, icon('folder')),
-                  folder.name || folderLabel(folder.id),
+                  h('span', {
+                    className: 'dtn-folder-text',
+                    onDoubleClick: function (event) { event.stopPropagation(); startRenameFolder(group, folder) },
+                  }, folder.name || folderLabel(folder.id)),
                 ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-copy',
+                title: '在此文件夹新建子文件夹',
+                onClick: function (event) { event.stopPropagation(); createSubFolder(group, folder, event) },
+              },
+              icon('folderAdd'),
+            ),
             h(
               'button',
               {
@@ -1912,13 +2748,19 @@ window.__ModuleLoader__.load({
               icon('addBatch'),
             ),
             h('span', { className: 'dtn-folder-count' }, String(todos.length)),
-            h('span', { className: 'dtn-grip' }, icon('grip')),
+            h('span', {
+              className: 'dtn-grip',
+              title: '按住拖动文件夹',
+              onPointerDown: function (event) { event.stopPropagation(); dragArmedRef.current = true },
+              onPointerUp: function () { dragArmedRef.current = false },
+              onClick: function (event) { event.stopPropagation() },
+            }, icon('grip')),
           ),
           h(
             'div',
             { className: 'dtn-fold' + (folderOpen ? '' : ' dtn-fold-off') },
             children.map(function (child) { return renderFolder(group, child, depth + 1) }),
-            todos.map(function (todo) { return renderTodoRow(group, todo) }),
+            todos.map(function (todo) { return renderTodoRow(group, todo, folder.id) }),
           ),
         )
       }
@@ -1964,7 +2806,12 @@ window.__ModuleLoader__.load({
                     if (dragPayloadKey.current !== group.key) return
                     if (dropKey !== 'group:' + group.key) setDropKey('group:' + group.key)
                   },
-                  onDragLeave: function () { if (dropKey === 'group:' + group.key) setDropKey('') },
+                  onDragLeave: function (event) {
+                    if (dropKey !== 'group:' + group.key) return
+                    const related = event !== null && event !== undefined ? event.relatedTarget : null
+                    if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
+                    setDropKey('')
+                  },
                   onDrop: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     setDropKey('')
@@ -1989,13 +2836,22 @@ window.__ModuleLoader__.load({
                 {
                   className: 'dtn-group-head' + (current ? ' dtn-current' : '') + (dropKey === 'group:' + group.key ? ' dtn-drop-target' : ''),
                   onClick: function () { toggleGroup(group.key) },
-                  title: group.subtitle || group.title,
+                  onContextMenu: function (event) { openTreeMenu(event, { kind: 'group', group: group }) },
+                  onDoubleClick: group.kind === 'session'
+                    ? function (event) { event.stopPropagation(); openSessionGroup(group, event) }
+                    : undefined,
+                  title: group.kind === 'session' ? '双击切换到该会话' : (group.subtitle || group.title),
                   onDragOver: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     if (dragPayloadKey.current !== group.key) return
                     if (dropKey !== 'group:' + group.key) setDropKey('group:' + group.key)
                   },
-                  onDragLeave: function () { if (dropKey === 'group:' + group.key) setDropKey('') },
+                  onDragLeave: function (event) {
+                    if (dropKey !== 'group:' + group.key) return
+                    const related = event !== null && event !== undefined ? event.relatedTarget : null
+                    if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
+                    setDropKey('')
+                  },
                   onDrop: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     setDropKey('')
@@ -2079,7 +2935,7 @@ window.__ModuleLoader__.load({
             'div',
             { className: 'dtn-group-body dtn-fold' + (groupOpen ? '' : ' dtn-fold-off') },
             // 主归属是默认容器，不单独显示成文件夹；它的条目直接列在组里。
-            todosForFolder(group, PRIMARY).map(function (todo) { return renderTodoRow(group, todo) }),
+            todosForFolder(group, PRIMARY).map(function (todo) { return renderTodoRow(group, todo, PRIMARY) }),
             renderPrimaryChildren(group),
             renderTopFolders(group),
             renderLooseTodos(group),
@@ -2106,7 +2962,7 @@ window.__ModuleLoader__.load({
             h('span', { className: 'dtn-folder-caret' }),
             h('span', { className: 'dtn-folder-name' }, h('span', { className: 'dtn-folder-icon' }, icon('folder')), '未归类'),
           ),
-          loose.map(function (todo) { return renderTodoRow(group, todo) }),
+          loose.map(function (todo) { return renderTodoRow(group, todo, '') }),
         )
       }
 
@@ -2117,7 +2973,7 @@ window.__ModuleLoader__.load({
           { key: kind, className: 'dtn-sec' },
           h(
             'div',
-            { className: 'dtn-sec-head', onClick: function () { toggleSection(kind) } },
+            { className: 'dtn-sec-head', onClick: function () { toggleSection(kind) }, onContextMenu: function (event) { openTreeMenu(event, { kind: 'section', sectionKind: kind, groups: groups }) } },
             h('span', { className: 'dtn-sec-caret' }, sectionCollapsed ? icon('chevronRight') : icon('chevronDown')),
             h('span', { className: 'dtn-sec-name' }, label),
             kind === 'user' && groups.length > 0
@@ -2184,22 +3040,47 @@ window.__ModuleLoader__.load({
           return sum + (typeof group.count === 'number' ? group.count : 0)
         }, 0)
 
+      React.useEffect(function () {
+        if (hoverOpen !== true) return undefined
+        const margin = 48
+        const onMove = function (event) {
+          const node = panelRef.current
+          if (node === null || node === undefined) return
+          const rect = node.getBoundingClientRect()
+          const inside =
+            event.clientX >= rect.left - margin &&
+            event.clientX <= rect.right + margin &&
+            event.clientY >= rect.top - margin &&
+            event.clientY <= rect.bottom + margin
+          if (!inside) setHoverOpen(false)
+        }
+        window.addEventListener('pointermove', onMove)
+        return function () { window.removeEventListener('pointermove', onMove) }
+      }, [hoverOpen])
+
+      const panelCollapsed = collapsed && !(hoverOpen && !embedded)
       const panel = h(
         'div',
         {
+          ref: panelRef,
           className:
             'dtn-root' +
-            (collapsed ? ' dtn-collapsed' : '') +
+            (panelCollapsed && !embedded ? ' dtn-collapsed' : '') +
+            (resizing ? ' dtn-resizing' : '') +
+            (dragging ? ' dtn-dragging' : '') +
             (embedded ? ' dtn-embedded' : '') +
             (embedded && mode !== 'sidebar' ? ' dtn-hidden' : ''),
           style: embedded
             ? {}
             : {
-                left: panelPos.x + 'px',
+                left: panelLeftOf(panelPos, panelWidth, panelCollapsed) + 'px',
                 top: panelPos.y + 'px',
-                width: collapsed ? undefined : panelWidth + 'px',
-                height: collapsed || panelHeight === null ? undefined : panelHeight + 'px',
+                width: panelCollapsed ? undefined : panelWidth + 'px',
+                height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
               },
+          onMouseEnter: embedded
+            ? undefined
+            : function () { if (collapsed) setHoverOpen(true) },
         },
         h(
           'div',
@@ -2221,23 +3102,17 @@ window.__ModuleLoader__.load({
           h('span', { className: 'dtn-logo' }, '▤'),
           h('span', { className: 'dtn-title' }, 'TODO 便签'),
           h('span', { className: 'dtn-count' }, data === null ? '加载中…' : totalOpen + ' 条未完成'),
-          h(
-            'div',
-            { className: 'dtn-actions' },
-            embedded
-              ? h(
-                  'button',
-                  { type: 'button', className: 'dtn-btn', title: '切回浮动面板', onClick: function (event) { event.stopPropagation(); showFloating() } },
-                  icon('panelFloat'),
-                )
-              : h(
+          embedded
+            ? null
+            : h(
+                'div',
+                { className: 'dtn-actions' },
+                h(
                   'button',
                   { type: 'button', className: 'dtn-btn', title: '显示到右侧栏', onClick: function (event) { event.stopPropagation(); showInSidebar() } },
                   icon('panelRight'),
                 ),
-            embedded
-              ? null
-              : h(
+                h(
                   'button',
                   {
                     type: 'button',
@@ -2247,19 +3122,21 @@ window.__ModuleLoader__.load({
                   },
                   collapsed ? icon('chevronDown') : icon('chevronUp'),
                 ),
+              ),
+        ),
+        h(
+          'div',
+          { className: 'dtn-body-wrap' },
+          h(
+            'div',
+            { className: 'dtn-body', onPointerDown: beginMarquee },
+            error !== '' ? h('div', { className: 'dtn-error' }, '读取失败：' + error) : null,
+            renderSection('user', '用户级TODO', userGroups),
+            renderSection('workspace', '工作区级TODO', workspaceGroups),
+            renderSection('session', '会话级TODO', sessionGroups),
           ),
         ),
-        collapsed && !embedded
-          ? null
-          : h(
-              'div',
-              { className: 'dtn-body' },
-              error !== '' ? h('div', { className: 'dtn-error' }, '读取失败：' + error) : null,
-              renderSection('user', '用户级TODO', userGroups),
-              renderSection('workspace', '工作区级TODO', workspaceGroups),
-              renderSection('session', '会话级TODO', sessionGroups),
-            ),
-        collapsed || embedded
+        panelCollapsed || embedded
           ? null
           : [
               h('div', { key: 'r-r', className: 'dtn-resize dtn-resize-r', title: '拖动调整宽度', onPointerDown: function (event) { beginResize(event, 'r') } }),
@@ -2312,7 +3189,7 @@ window.__ModuleLoader__.load({
                         : null,
                       h('span', { key: 'folder' }, '无文件夹：' + folderLabel(previewData.primaryFolder)),
                       h('span', { key: 'priority', style: { color: prioColor(previewData.priority) } }, '优先级 T' + (typeof previewData.priority === 'number' ? previewData.priority : 1)),
-                      previewData.created !== '' ? h('span', { key: 'created' }, '创建 ' + previewData.created) : null,
+                      previewData.created !== '' ? h('span', { key: 'created' }, '创建 ' + formatStamp(previewData.created)) : null,
                     ]
                   : [h('span', { key: 'loading' }, '加载中…')],
               ),
@@ -2328,19 +3205,28 @@ window.__ModuleLoader__.load({
             ],
       )
 
-      const bubbleNode = bubble === null
-        ? null
-        : h(
-            'div',
-            {
-              key: 'bubble-' + bubble.nonce,
-              className: 'dtn-bubble',
-              style: { left: bubble.x + 'px', top: bubble.y + 'px' },
-            },
-            bubble.text,
-          )
+      const bubbleNodes = bubbles.map(function (entry) {
+        return h(
+          'div',
+          {
+            key: 'bubble-' + entry.id,
+            className: 'dtn-bubble',
+            style: { left: entry.x + 'px', top: entry.y + 'px' },
+          },
+          entry.text,
+        )
+      })
 
-      const menuFolder = folderMenu === null ? null : findFolder(folderMenu.group.folders, folderMenu.folderId)
+      function findLiveGroup(key) {
+        if (data === null) return null
+        const lists = [data.user].concat(data.workspaces || [], data.sessions || [])
+        for (let i = 0; i < lists.length; i += 1) {
+          if (lists[i] !== null && lists[i] !== undefined && lists[i].key === key) return lists[i]
+        }
+        return null
+      }
+
+      const menuFolder = folderMenu === null ? null : findFolder((findLiveGroup(folderMenu.group.key) || folderMenu.group).folders, folderMenu.folderId)
       const folderMenuNode = folderMenu === null || menuFolder === null
         ? null
         : h(
@@ -2356,6 +3242,35 @@ window.__ModuleLoader__.load({
               {
                 type: 'button',
                 className: 'dtn-menu-item',
+                onClick: function (event) {
+                  event.stopPropagation()
+                  applyTreeOpen(false, [{ group: (findLiveGroup(folderMenu.group.key) || folderMenu.group), withHead: false, root: menuFolder }])
+                  setFolderMenu(null)
+                },
+              },
+              icon('chevronUp'),
+              '全部收起',
+            ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
+                onClick: function (event) {
+                  event.stopPropagation()
+                  applyTreeOpen(true, [{ group: (findLiveGroup(folderMenu.group.key) || folderMenu.group), withHead: false, root: menuFolder }])
+                  setFolderMenu(null)
+                },
+              },
+              icon('chevronDown'),
+              '全部展开',
+            ),
+            h('div', { className: 'dtn-menu-sep' }),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
                 onClick: function (event) { event.stopPropagation(); startRenameFolder(folderMenu.group, menuFolder) },
               },
               icon('edit'),
@@ -2364,13 +3279,19 @@ window.__ModuleLoader__.load({
             h('div', { className: 'dtn-menu-sep' }),
             h(
               'div',
-              { className: 'dtn-menu-item dtn-has-sub' },
+              {
+                className: 'dtn-menu-item dtn-has-sub',
+                'data-sub': 'folder-move',
+                onPointerEnter: function () { setSubOpen('folder-move') },
+                onPointerLeave: function () { setSubOpen('') },
+                onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'folder-move' ? '' : 'folder-move') },
+              },
               icon('folder'),
               '移动到',
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
-                { className: 'dtn-submenu' },
+                { className: 'dtn-submenu' + (subOpen === 'folder-move' ? ' dtn-submenu-open' : '') },
                 h(
                   'button',
                   {
@@ -2427,7 +3348,40 @@ window.__ModuleLoader__.load({
             ),
           )
 
-      const menuTodo = todoMenu === null ? null : (Array.isArray(todoMenu.group.todos) ? todoMenu.group.todos : []).find(function (todo) { return todo.id === todoMenu.todoId })
+      const treeMenuNode = treeMenu === null
+        ? null
+        : h(
+            'div',
+            {
+              key: 'tree-menu',
+              className: 'dtn-menu',
+              style: { left: treeMenu.x + 'px', top: treeMenu.y + 'px' },
+              onPointerDown: function (event) { event.stopPropagation() },
+            },
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
+                onClick: function (event) { event.stopPropagation(); toggleTree(treeMenu.target, false) },
+              },
+              icon('chevronUp'),
+              '全部收起',
+            ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
+                onClick: function (event) { event.stopPropagation(); toggleTree(treeMenu.target, true) },
+              },
+              icon('chevronDown'),
+              '全部展开',
+            ),
+          )
+
+      const todoMenuGroup = todoMenu === null ? null : (findLiveGroup(todoMenu.group.key) || todoMenu.group)
+      const menuTodo = todoMenuGroup === null ? null : (Array.isArray(todoMenuGroup.todos) ? todoMenuGroup.todos : []).find(function (todo) { return todo.id === todoMenu.todoId })
       const todoMenuNode = todoMenu === null || menuTodo === null
         ? null
         : h(
@@ -2439,11 +3393,29 @@ window.__ModuleLoader__.load({
               onPointerDown: function (event) { event.stopPropagation() },
             },
             h(
+              'div',
+              {
+                className: 'dtn-menu-item dtn-has-sub',
+                'data-sub': 'todo-prio',
+                onPointerEnter: function () { setSubOpen('todo-prio') },
+                onPointerLeave: function () { setSubOpen('') },
+                onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'todo-prio' ? '' : 'todo-prio') },
+              },
+              icon('flag'),
+              '设置优先级',
+              h('span', { className: 'dtn-menu-arrow' }, '›'),
+              h(
+                'div',
+                { className: 'dtn-submenu' + (subOpen === 'todo-prio' ? ' dtn-submenu-open' : '') },
+                prioChoiceNodes(function (value, event) { setTodoPriority(todoMenuGroup, menuTodo, value, event) }),
+              ),
+            ),
+            h(
               'button',
               {
                 type: 'button',
                 className: 'dtn-menu-item',
-                onClick: function (event) { event.stopPropagation(); startRenameTodo(todoMenu.group, menuTodo) },
+                onClick: function (event) { event.stopPropagation(); startRenameTodo(todoMenuGroup, menuTodo) },
               },
               icon('edit'),
               '重命名',
@@ -2451,32 +3423,39 @@ window.__ModuleLoader__.load({
             h('div', { className: 'dtn-menu-sep' }),
             h(
               'div',
-              { className: 'dtn-menu-item dtn-has-sub' },
+              {
+                className: 'dtn-menu-item dtn-has-sub',
+                'data-sub': 'todo-move',
+                onPointerEnter: function () { setSubOpen('todo-move') },
+                onPointerLeave: function () { setSubOpen('') },
+                onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'todo-move' ? '' : 'todo-move') },
+              },
               icon('folder'),
               '移动到',
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
-                { className: 'dtn-submenu' },
+                { className: 'dtn-submenu' + (subOpen === 'todo-move' ? ' dtn-submenu-open' : '') },
                 h(
                   'button',
                   {
                     type: 'button',
                     className: 'dtn-menu-item',
-                    onClick: function (event) { event.stopPropagation(); moveTodoToFolder(todoMenu.group, menuTodo.id, PRIMARY, event) },
+                    style: { paddingLeft: '10px' },
+                    onClick: function (event) { event.stopPropagation(); moveTodoToFolder(todoMenuGroup, menuTodo.id, PRIMARY, event) },
                   },
                   icon('folder'),
                   folderLabel(PRIMARY),
                 ),
-                folderOptions(todoMenu.group).map(function (opt) {
+                folderOptions(todoMenuGroup).map(function (opt) {
                   return h(
                     'button',
                     {
                       key: opt.id,
                       type: 'button',
                       className: 'dtn-menu-item',
-                      style: { paddingLeft: (10 + (opt.depth + 1) * 14) + 'px' },
-                      onClick: function (event) { event.stopPropagation(); moveTodoToFolder(todoMenu.group, menuTodo.id, opt.id, event) },
+                      style: { paddingLeft: (10 + opt.depth * 14) + 'px' },
+                      onClick: function (event) { event.stopPropagation(); moveTodoToFolder(todoMenuGroup, menuTodo.id, opt.id, event) },
                     },
                     icon('folder'),
                     opt.label,
@@ -2487,26 +3466,48 @@ window.__ModuleLoader__.load({
             h('div', { className: 'dtn-menu-sep' }),
             h(
               'div',
-              { className: 'dtn-menu-item dtn-has-sub' },
+              {
+                className: 'dtn-menu-item dtn-has-sub',
+                'data-sub': 'todo-collect',
+                onPointerEnter: function () { setSubOpen('todo-collect') },
+                onPointerLeave: function () { setSubOpen('') },
+                onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'todo-collect' ? '' : 'todo-collect') },
+              },
               icon('folder'),
               '管理收录',
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
-                { className: 'dtn-submenu' },
-                folderOptions(todoMenu.group).map(function (opt) {
-                  const joined = todoJoined(todoMenu.group, menuTodo, opt.id)
+                { className: 'dtn-submenu' + (subOpen === 'todo-collect' ? ' dtn-submenu-open' : '') },
+                collectionOptions(todoMenuGroup).map(function (opt) {
+                  const joined = todoJoined(todoMenuGroup, menuTodo, opt.id)
                   return h(
-                    'button',
+                    'div',
                     {
                       key: opt.id,
-                      type: 'button',
-                      className: 'dtn-menu-item',
-                      style: { paddingLeft: (10 + (opt.depth + 1) * 14) + 'px' },
-                      onClick: function (event) { event.stopPropagation(); toggleTodoReference(todoMenu.group, menuTodo, opt.id, event) },
+                      className: 'dtn-menu-item dtn-menu-check-row',
+                      style: { paddingLeft: (10 + opt.depth * 14) + 'px' },
+                      onClick: function (event) {
+                        event.stopPropagation()
+                        if (event.target !== null && event.target !== undefined && event.target.tagName === 'INPUT') return
+                        toggleTodoReference(todoMenuGroup, menuTodo, opt.id, event)
+                      },
                     },
-                    h('span', { className: 'dtn-menu-check' }, joined ? '☑' : '☐'),
-                    opt.label,
+                    h('input', {
+                      type: 'checkbox',
+                      className: 'dtn-menu-check',
+                      checked: joined,
+                      onPointerDown: function (event) { event.stopPropagation() },
+                      onClick: function (event) { event.stopPropagation() },
+                      onChange: function (event) {
+                        event.stopPropagation()
+                        const target = event.currentTarget
+                        const rect = target !== null && target !== undefined && target.getBoundingClientRect !== undefined ? target.getBoundingClientRect() : null
+                        const point = rect === null ? event : { clientX: rect.right, clientY: rect.top }
+                        toggleTodoReference(todoMenuGroup, menuTodo, opt.id, point)
+                      },
+                    }),
+                    h('span', { className: 'dtn-menu-label' }, opt.label),
                   )
                 }),
               ),
@@ -2517,7 +3518,7 @@ window.__ModuleLoader__.load({
               {
                 type: 'button',
                 className: 'dtn-menu-item dtn-danger',
-                onClick: function (event) { event.stopPropagation(); deleteTodo(todoMenu.group, menuTodo.id, event) },
+                onClick: function (event) { event.stopPropagation(); deleteTodo(todoMenuGroup, menuTodo.id, event) },
               },
               icon('trash'),
               '删除',
@@ -2585,7 +3586,289 @@ window.__ModuleLoader__.load({
             ],
       )
 
-      return h(React.Fragment, null, panel, previewPanel, bubbleNode, folderMenuNode, todoMenuNode, batchNode)
+      const prioRow = function (values) {
+        return h(
+          'div',
+          { className: 'dtn-prio-row' },
+          values.map(function (value) {
+            const on = prioMenu !== null && prioMenu !== undefined && prioMenu.priority === value
+            return h(
+              'button',
+              {
+                key: value,
+                type: 'button',
+                className: 'dtn-prio-item' + (on ? ' dtn-prio-on' : ''),
+                style: { color: prioColor(value) },
+                title: '优先级 T' + value,
+                onClick: function (event) { choosePriority(value, event) },
+              },
+              'T' + value,
+            )
+          }),
+        )
+      }
+      const prioMenuNode = prioMenu === null
+        ? null
+        : h(
+            'div',
+            {
+              key: 'prio-menu',
+              className: 'dtn-prio-menu',
+              style: { left: prioMenu.x + 'px', top: prioMenu.y + 'px' },
+              onPointerDown: function (event) { event.stopPropagation() },
+            },
+            prioRow([0, 1, 2, 3, 4]),
+            prioRow([5, 6, 7, 8, 9]),
+          )
+
+      const batchTodoTotal = batchTodos().length
+      const batchFolderTotal = batchFolders().length
+      const batchMenuNode = batchMenu === null
+        ? null
+        : h(
+            'div',
+            {
+              key: 'batch-menu',
+              className: 'dtn-menu',
+              style: { left: batchMenu.x + 'px', top: batchMenu.y + 'px' },
+              onPointerDown: function (event) { event.stopPropagation() },
+            },
+            h(
+              'div',
+              {
+                className: 'dtn-menu-item dtn-has-sub' + (batchTodoTotal === 0 ? ' dtn-menu-hide' : ''),
+                'data-sub': 'batch-prio',
+                onPointerEnter: function () { setSubOpen('batch-prio') },
+                onPointerLeave: function () { setSubOpen('') },
+                onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'batch-prio' ? '' : 'batch-prio') },
+              },
+              icon('flag'),
+              '批量设置优先级',
+              h('span', { className: 'dtn-menu-arrow' }, '›'),
+              h(
+                'div',
+                { className: 'dtn-submenu' + (subOpen === 'batch-prio' ? ' dtn-submenu-open' : '') },
+                prioChoiceNodes(function (value, event) { applyBatchPriority(value, event) }),
+              ),
+            ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
+                onClick: function (event) { event.stopPropagation(); openBatchRename() },
+              },
+              icon('edit'),
+              '批量重命名',
+            ),
+            h('div', { className: 'dtn-menu-sep' + (batchTodoTotal === 0 ? ' dtn-menu-hide' : '') }),
+            h(
+              'div',
+              {
+                className: 'dtn-menu-item dtn-has-sub' + (batchTodoTotal === 0 ? ' dtn-menu-hide' : ''),
+                'data-sub': 'batch-move',
+                onPointerEnter: function () { setSubOpen('batch-move') },
+                onPointerLeave: function () { setSubOpen('') },
+                onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'batch-move' ? '' : 'batch-move') },
+              },
+              icon('folder'),
+              '批量移动到',
+              h('span', { className: 'dtn-menu-arrow' }, '›'),
+              h(
+                'div',
+                { className: 'dtn-submenu' + (subOpen === 'batch-move' ? ' dtn-submenu-open' : '') },
+                batchFolderOptions().map(function (opt) {
+                  return h(
+                    'button',
+                    {
+                      key: opt.id,
+                      type: 'button',
+                      className: 'dtn-menu-item',
+                      style: { paddingLeft: (10 + opt.depth * 14) + 'px' },
+                      onClick: function (event) { event.stopPropagation(); applyBatchMove(opt.id) },
+                    },
+                    icon('folder'),
+                    opt.label,
+                  )
+                }),
+              ),
+            ),
+            h(
+              'div',
+              {
+                className: 'dtn-menu-item dtn-has-sub' + (batchTodoTotal === 0 ? ' dtn-menu-hide' : ''),
+                'data-sub': 'batch-collect',
+                onPointerEnter: function () { setSubOpen('batch-collect') },
+                onPointerLeave: function () { setSubOpen('') },
+                onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'batch-collect' ? '' : 'batch-collect') },
+              },
+              icon('folder'),
+              '批量管理收录',
+              h('span', { className: 'dtn-menu-arrow' }, '›'),
+              h(
+                'div',
+                { className: 'dtn-submenu' + (subOpen === 'batch-collect' ? ' dtn-submenu-open' : '') },
+                (function () {
+                  const total = batchTodos().length
+                  return batchCollectFolders().map(function (opt) {
+                    const count = batchFolderCount(opt.id)
+                    return h(
+                      'div',
+                      {
+                        key: opt.id,
+                        className: 'dtn-menu-item dtn-menu-check-row',
+                        style: { paddingLeft: (10 + opt.depth * 14) + 'px' },
+                        onClick: function (event) {
+                          event.stopPropagation()
+                          if (event.target !== null && event.target !== undefined && event.target.tagName === 'INPUT') return
+                          applyBatchCollectToggle(opt.id)
+                        },
+                      },
+                      h('input', {
+                        type: 'checkbox',
+                        className: 'dtn-menu-check',
+                        checked: total > 0 && count === total,
+                        ref: function (node) {
+                          if (node !== null && node !== undefined) node.indeterminate = count > 0 && count < total
+                        },
+                        onPointerDown: function (event) { event.stopPropagation() },
+                        onClick: function (event) { event.stopPropagation() },
+                        onChange: function (event) { event.stopPropagation(); applyBatchCollectToggle(opt.id) },
+                      }),
+                      h('span', { className: 'dtn-menu-label' }, opt.label),
+                    )
+                  })
+                })(),
+              ),
+            ),
+            h('div', { className: 'dtn-menu-sep' + (batchFolderTotal === 0 ? ' dtn-menu-hide' : '') }),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item' + (batchFolderTotal === 0 ? ' dtn-menu-hide' : ''),
+                onClick: function (event) { event.stopPropagation(); applyBatchExpand(false) },
+              },
+              icon('chevronUp'),
+              '批量全部收起',
+            ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item' + (batchFolderTotal === 0 ? ' dtn-menu-hide' : ''),
+                onClick: function (event) { event.stopPropagation(); applyBatchExpand(true) },
+              },
+              icon('chevronDown'),
+              '批量全部展开',
+            ),
+            h('div', { className: 'dtn-menu-sep' }),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item dtn-danger',
+                onClick: function (event) { event.stopPropagation(); applyBatchDelete(event) },
+              },
+              icon('trash'),
+              '批量删除',
+            ),
+          )
+
+      const batchRenameNode = batchRename === null
+        ? null
+        : h(
+            'div',
+            {
+              key: 'batch-rename',
+              className: 'dtn-preview dtn-batch',
+              style: { left: batchRename.pos.x + 'px', top: batchRename.pos.y + 'px' },
+              onPointerDown: function (event) { event.stopPropagation() },
+            },
+            h(
+              'div',
+              { className: 'dtn-preview-head' },
+              h('span', { className: 'dtn-preview-title' }, '批量重命名'),
+              h(
+                'div',
+                { className: 'dtn-actions' },
+                h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { setBatchRename(null) } }, icon('close')),
+              ),
+            ),
+            h(
+              'div',
+              { className: 'dtn-preview-body' },
+              h('div', { className: 'dtn-batch-hint' }, '行数固定为选中条目数，不能增加或删除换行；清空的行会被跳过'),
+              h(
+                'div',
+                { className: 'dtn-batch-field' },
+                h(
+                  'div',
+                  { className: 'dtn-batch-gutter', ref: renameGutterRef },
+                  batchRename.items.map(function (item, index) {
+                    return h('div', { key: 'line-' + index, className: 'dtn-batch-line' }, String(index + 1))
+                  }),
+                ),
+                h('textarea', {
+                  className: 'dtn-batch-input',
+                  value: batchRename.value,
+                  autoFocus: true,
+                  wrap: 'off',
+                  rows: Math.min(12, Math.max(3, batchRename.items.length)),
+                  onKeyDown: function (event) {
+                    if (event.key === 'Enter') event.preventDefault()
+                  },
+                  onScroll: function (event) {
+                    if (renameGutterRef.current !== null) renameGutterRef.current.scrollTop = event.currentTarget.scrollTop
+                  },
+                  onChange: function (event) {
+                    const value = event.currentTarget.value
+                    // 行数固定：换行既不能新增也不能删掉，否则该次输入整体丢弃。
+                    if (String(value).split('\n').length !== batchRename.items.length) return
+                    setBatchRename(function (state) { return state === null ? null : { items: state.items, value: value, pos: state.pos } })
+                  },
+                }),
+              ),
+              h(
+                'div',
+                { className: 'dtn-batch-actions' },
+                h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { setBatchRename(null) } }, '取消'),
+                h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: confirmBatchRename }, '确认'),
+              ),
+            ),
+          )
+
+      const marqueeNode = marquee === null
+        ? null
+        : h('div', {
+            key: 'marquee',
+            className: 'dtn-marquee',
+            style: { left: marquee.x + 'px', top: marquee.y + 'px', width: marquee.w + 'px', height: marquee.h + 'px' },
+          })
+
+      const confirmNode = confirmDialog === null
+        ? null
+        : h(
+            'div',
+            {
+              key: 'confirm',
+              className: 'dtn-menu dtn-confirm',
+              style: {
+                left: Math.max(8, Math.min(confirmDialog.x, window.innerWidth - 268)) + 'px',
+                top: Math.max(8, Math.min(confirmDialog.y, window.innerHeight - 136)) + 'px',
+              },
+              onPointerDown: function (event) { event.stopPropagation() },
+            },
+            h('div', { className: 'dtn-confirm-text' }, confirmDialog.message),
+            h(
+              'div',
+              { className: 'dtn-confirm-actions' },
+              h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { settleConfirm(false) } }, '取消'),
+              h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-danger', onClick: function () { settleConfirm(true) } }, '确认删除'),
+            ),
+          )
+
+      return h(React.Fragment, null, panel, previewPanel, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode)
     }
 
     // ------------------------------------------------------------ 插件入口
@@ -2621,6 +3904,17 @@ window.__ModuleLoader__.load({
           try {
             if (ctx.layout !== undefined && ctx.layout !== null && typeof ctx.layout.closeRightbar === 'function') ctx.layout.closeRightbar()
           } catch (error) { /* 忽略 */ }
+        },
+        openSession: function (sessionId) {
+          if (typeof sessionId !== 'string' || sessionId === '') return false
+          try {
+            const service = typeof ctx.get === 'function' ? ctx.get('uiWorkspace') : ctx.uiWorkspace
+            if (service !== undefined && service !== null && typeof service.openSession === 'function') {
+              service.openSession(sessionId)
+              return true
+            }
+          } catch (error) { /* 导航失败时退回提示 */ }
+          return false
         },
       }
       function wrap(extra) {
