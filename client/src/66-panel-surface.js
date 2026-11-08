@@ -116,7 +116,7 @@
       const panelCollapsed = collapsed && !(hoverOpen && !embedded)
       const uiSettings = data !== null && data !== undefined && data.ui !== null && data.ui !== undefined ? data.ui : {}
       const donePercent = typeof uiSettings.doneOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.doneOpacity)) : 35
-      const partialPercent = typeof uiSettings.partialOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.partialOpacity)) : 75
+      const partialPercent = typeof uiSettings.partialOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.partialOpacity)) : 67
       const panel = h(
         'div',
         {

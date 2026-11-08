@@ -166,7 +166,7 @@
   color: var(--dsw-alias-state-warn-primary, #d6a63c);
   background: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d6a63c) 18%, transparent);
 }
-.dtn-todo.dtn-partial { opacity: var(--dtn-partial-opacity, .75); }
+.dtn-todo.dtn-partial { opacity: var(--dtn-partial-opacity, .67); }
 .dtn-todo-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .dtn-grip {
   flex: none; width: 28px; height: 18px; display: inline-flex; align-items: center; justify-content: center;

@@ -196,7 +196,7 @@ window.__ModuleLoader__.load({
   color: var(--dsw-alias-state-warn-primary, #d6a63c);
   background: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d6a63c) 18%, transparent);
 }
-.dtn-todo.dtn-partial { opacity: var(--dtn-partial-opacity, .75); }
+.dtn-todo.dtn-partial { opacity: var(--dtn-partial-opacity, .67); }
 .dtn-todo-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .dtn-grip {
   flex: none; width: 28px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
@@ -3348,7 +3348,7 @@ window.__ModuleLoader__.load({
       const panelCollapsed = collapsed && !(hoverOpen && !embedded)
       const uiSettings = data !== null && data !== undefined && data.ui !== null && data.ui !== undefined ? data.ui : {}
       const donePercent = typeof uiSettings.doneOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.doneOpacity)) : 35
-      const partialPercent = typeof uiSettings.partialOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.partialOpacity)) : 75
+      const partialPercent = typeof uiSettings.partialOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.partialOpacity)) : 67
       const panel = h(
         'div',
         {
@@ -4927,14 +4927,14 @@ window.__ModuleLoader__.load({
       const [status, setStatus] = React.useState('')
       const [busy, setBusy] = React.useState(false)
       const [doneOpacity, setDoneOpacity] = React.useState(35)
-      const [partialOpacity, setPartialOpacity] = React.useState(75)
+      const [partialOpacity, setPartialOpacity] = React.useState(67)
       const [palette, setPalette] = React.useState(UI_DEFAULT_PALETTE.slice())
       const [autosaveSec, setAutosaveSec] = React.useState('5')
 
       function applyUi(ui, config) {
         if (ui === null || ui === undefined) return
         setDoneOpacity(typeof ui.doneOpacity === 'number' ? ui.doneOpacity : 35)
-        setPartialOpacity(typeof ui.partialOpacity === 'number' ? ui.partialOpacity : 75)
+        setPartialOpacity(typeof ui.partialOpacity === 'number' ? ui.partialOpacity : 67)
         setPalette(splitPalette(ui.priorityPalette))
         const delay = ui.bodyAutosaveMs !== null && ui.bodyAutosaveMs !== undefined
           ? ui.bodyAutosaveMs
@@ -5091,30 +5091,6 @@ window.__ModuleLoader__.load({
               h(
                 'section',
                 { className: 'tns-section' },
-                h('h3', { className: 'tns-section-title' }, '编辑与保存'),
-                h(
-                  'div',
-                  { className: 'tns-row' },
-                  h(
-                    'div',
-                    { className: 'tns-row-text' },
-                    h('div', { className: 'tns-label' }, '正文自动保存'),
-                    h('div', { className: 'tns-hint' }, '停止输入后等待多久保存；标题使用同一个间隔'),
-                  ),
-                  h(
-                    'div',
-                    { className: 'tns-opacity' },
-                    h('input', {
-                      type: 'number', min: 1, max: 60, value: autosaveSec, className: 'tns-number',
-                      onChange: function (event) { setAutosaveSec(event.target.value) },
-                    }),
-                    h('span', { className: 'tns-unit' }, '秒'),
-                  ),
-                ),
-              ),
-              h(
-                'section',
-                { className: 'tns-section' },
                 h('h3', { className: 'tns-section-title' }, '优先级颜色'),
                 h('p', { className: 'tns-hint' }, 'T0 最高，T9 最低。点色块用取色器改，也可以直接填十六进制值。'),
                 h(
@@ -5149,6 +5125,30 @@ window.__ModuleLoader__.load({
                       }),
                     )
                   }),
+                ),
+              ),
+              h(
+                'section',
+                { className: 'tns-section' },
+                h('h3', { className: 'tns-section-title' }, '编辑与保存'),
+                h(
+                  'div',
+                  { className: 'tns-row' },
+                  h(
+                    'div',
+                    { className: 'tns-row-text' },
+                    h('div', { className: 'tns-label' }, '正文自动保存'),
+                    h('div', { className: 'tns-hint' }, '停止输入后等待多久保存；标题使用同一个间隔'),
+                  ),
+                  h(
+                    'div',
+                    { className: 'tns-opacity' },
+                    h('input', {
+                      type: 'number', min: 1, max: 60, value: autosaveSec, className: 'tns-number',
+                      onChange: function (event) { setAutosaveSec(event.target.value) },
+                    }),
+                    h('span', { className: 'tns-unit' }, '秒'),
+                  ),
                 ),
               ),
             ),
