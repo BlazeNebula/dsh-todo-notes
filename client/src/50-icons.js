@@ -5,6 +5,7 @@
       chevronUp: { box: 512, paths: [{ d: 'M112 328l144-144 144 144', width: 48 }] },
       // 优先级：旗杆 + 旗面，线性。
       flag: { box: 24, paths: [{ d: 'M6 3v18M6 4h11l-2 4 2 4H6', width: 2 }] },
+      check: { box: 512, paths: [{ d: 'M416 128L192 384l-96-96', width: 48 }] },
       folder: {
         box: 512,
         paths: [{

@@ -22,6 +22,7 @@ window.__ModuleLoader__.load({
     const LS_WIDTH = 'dsh.todo-notes.panel.width.v1'
     const LS_HEIGHT = 'dsh.todo-notes.panel.height.v1'
     const LS_MODE = 'dsh.todo-notes.mode.v1'
+    const LS_WINDOWS = 'dsh.todo-notes.windows.v1'
     // 浮动面板与右侧栏两个实例之间的同步信号：任一侧写入成功后广播一次。
     const SYNC_BUS = typeof EventTarget === 'function' ? new EventTarget() : null
     // 面板最窄与 DSH 侧边栏一致（264），收起时也用这个宽度。
@@ -415,6 +416,20 @@ window.__ModuleLoader__.load({
 }
 .dtn-preview-body { overflow: auto; padding: 10px 14px 16px; }
 .dtn-preview.dtn-batch { width: 440px; height: 320px; }
+.dtn-preview.dtn-pin { z-index: 2147482400; }
+.dtn-edit-body { display: flex; flex-direction: column; gap: 8px; }
+.dtn-edit-body .dtn-batch-field { flex: 1 1 auto; min-height: 160px; overflow: visible; }
+.dtn-edit-input {
+  min-height: 140px; max-height: 62vh; resize: vertical;
+  field-sizing: content;
+}
+.dtn-pin-title-input {
+  flex: 1 1 auto; min-width: 0; height: 24px; padding: 0 6px;
+  color: var(--dsw-alias-label-primary, #e8e8ea);
+  background: var(--dsw-alias-bg-layer-2, #2b2b31);
+  border: 1px solid var(--dsw-alias-brand-primary, #4d9cff); border-radius: 5px;
+  font-weight: 600; font-size: 13px; line-height: 1.4; font-family: inherit;
+}
 .dtn-batch .dtn-preview-body { display: flex; flex-direction: column; gap: 8px; }
 .dtn-md h1, .dtn-md h2, .dtn-md h3, .dtn-md h4 { margin: 12px 0 6px; line-height: 1.3; }
 .dtn-md h1 { font-size: 18px; } .dtn-md h2 { font-size: 16px; } .dtn-md h3 { font-size: 14px; }
@@ -682,6 +697,7 @@ window.__ModuleLoader__.load({
       chevronUp: { box: 512, paths: [{ d: 'M112 328l144-144 144 144', width: 48 }] },
       // 优先级：旗杆 + 旗面，线性。
       flag: { box: 24, paths: [{ d: 'M6 3v18M6 4h11l-2 4 2 4H6', width: 2 }] },
+      check: { box: 512, paths: [{ d: 'M416 128L192 384l-96-96', width: 48 }] },
       folder: {
         box: 512,
         paths: [{
@@ -887,6 +903,118 @@ window.__ModuleLoader__.load({
       const [previewPos, setPreviewPos] = React.useState(function () {
         return clampPos(readStored(LS_PREVIEW, defaultPreviewPos(storedPanel)), 440, 200)
       })
+      // 被拖动后保留下来的浮窗（预览 / 批量新建 / 批量重命名），窗口互相独立并持久化。
+      const [pinned, setPinned] = React.useState(function () {
+        return sanitizePinnedWindows(readStored(LS_WINDOWS, []))
+      })
+      const pinnedRef = React.useRef(pinned)
+      const pinSeq = React.useRef(0)
+      const pinSaveTimers = React.useRef({})
+      const pinTitleTimers = React.useRef({})
+      const pinGutterRefs = React.useRef({})
+      const pinFetchStarted = React.useRef({})
+      const windowsLoadedRef = React.useRef(false)
+      React.useEffect(function () {
+        pinnedRef.current = pinned
+        writeStored(LS_WINDOWS, pinned)
+      }, [pinned])
+      React.useEffect(function () {
+        return function () {
+          const keys = Object.keys(pinSaveTimers.current)
+          for (let i = 0; i < keys.length; i += 1) window.clearTimeout(pinSaveTimers.current[keys[i]])
+          pinSaveTimers.current = {}
+        }
+      }, [])
+      // 浏览器 localStorage 按端口隔离，DSH 重启端口可能变化；窗口数据落到插件数据目录。
+      React.useEffect(function () {
+        if (typeof fetch !== 'function') {
+          windowsLoadedRef.current = true
+          return undefined
+        }
+        let alive = true
+        fetch(ROUTE + '?what=windows', { headers: { accept: 'application/json' } })
+          .then(function (response) {
+            if (!response.ok) throw new Error('HTTP ' + response.status)
+            return response.json()
+          })
+          .then(function (payload) {
+            if (!alive) return
+            const server = payload !== null && payload !== undefined && Array.isArray(payload.windows)
+              ? sanitizePinnedWindows(payload.windows)
+              : []
+            windowsLoadedRef.current = true
+            if (server.length > 0) {
+              setPinned(server)
+              return
+            }
+            // 服务端还没有记录时，用本机 localStorage 的记录做一次迁移。
+            if (pinnedRef.current.length > 0) {
+              fetch(ROUTE, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ action: 'saveWindows', windows: pinnedRef.current }),
+              }).catch(function () {})
+            }
+          })
+          .catch(function () {
+            windowsLoadedRef.current = true
+          })
+        return function () { alive = false }
+      }, [])
+      React.useEffect(function () {
+        if (windowsLoadedRef.current !== true) return undefined
+        const timer = window.setTimeout(function () {
+          fetch(ROUTE, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'saveWindows', windows: pinned }),
+          }).catch(function () {})
+        }, 500)
+        return function () { window.clearTimeout(timer) }
+      }, [pinned])
+      React.useEffect(function () {
+        if (typeof fetch !== 'function') return
+        const pending = pinned.filter(function (item) { return item.kind === 'preview' && item.loaded !== true })
+        pending.forEach(function (item) {
+          if (pinFetchStarted.current[item.id] === true) return
+          pinFetchStarted.current[item.id] = true
+          fetch(ROUTE + '?what=todo&id=' + encodeURIComponent(item.todoId) + '&cwd=' + encodeURIComponent(cwd) + '&session=' + encodeURIComponent(sessionId), {
+            headers: { accept: 'application/json' },
+          })
+            .then(function (response) {
+              if (!response.ok) throw new Error('HTTP ' + response.status)
+              return response.json()
+            })
+            .then(function (payload) {
+              setPinned(function (list) {
+                return list.map(function (win) {
+                  if (win.id !== item.id) return win
+                  return Object.assign({}, win, {
+                    loaded: true,
+                    loading: false,
+                    title: typeof payload.title === 'string' ? payload.title : win.title,
+                    markdown: typeof payload.markdown === 'string' ? payload.markdown : '',
+                    draft: win.draft !== '' ? win.draft : (typeof payload.markdown === 'string' ? payload.markdown : ''),
+                    meta: {
+                      status: payload.status,
+                      priority: payload.priority,
+                      source: payload.source,
+                      primaryFolder: payload.primaryFolder,
+                      created: payload.created,
+                    },
+                  })
+                })
+              })
+            })
+            .catch(function (failure) {
+              setPinned(function (list) {
+                return list.map(function (win) {
+                  return win.id === item.id ? Object.assign({}, win, { loaded: true, loading: false, error: String(failure && failure.message ? failure.message : failure) }) : win
+                })
+              })
+            })
+        })
+      }, [pinned])
       const dragMoved = React.useRef(false)
       const [bubbles, setBubbles] = React.useState([])
       const bubbleSeq = React.useRef(0)
@@ -3175,11 +3303,21 @@ window.__ModuleLoader__.load({
           : [
               h(
                 'div',
-                { key: 'head', className: 'dtn-preview-head', onPointerDown: function (event) { startDrag(event, 'preview') } },
+                { key: 'head', className: 'dtn-preview-head', onPointerDown: function (event) { startWindowMove(event, 'preview') } },
                 h('span', { className: 'dtn-preview-title' }, previewData !== null && typeof previewData.title === 'string' ? previewData.title : preview.title),
                 h(
                   'div',
                   { className: 'dtn-actions' },
+                  h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'dtn-btn',
+                      title: '编辑正文',
+                      onClick: function (event) { event.stopPropagation(); pinFromPreview(true) },
+                    },
+                    icon('edit'),
+                  ),
                   h(
                     'button',
                     {
@@ -3553,7 +3691,7 @@ window.__ModuleLoader__.load({
           : [
               h(
                 'div',
-                { key: 'head', className: 'dtn-preview-head', onPointerDown: function (event) { startDrag(event, 'batch') } },
+                { key: 'head', className: 'dtn-preview-head', onPointerDown: function (event) { startWindowMove(event, 'batchCreate') } },
                 h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
                 h(
                   'div',
@@ -3599,6 +3737,599 @@ window.__ModuleLoader__.load({
               ),
             ],
       )
+
+    // ------------------------------------------------------------ 可保留浮窗
+    // 预览、批量新建、批量重命名都在被拖动后变成独立窗口：各自保存位置与内容，
+    // 新窗口不会覆盖旧窗口；刷新 DSH 后按持久化数据恢复。
+
+    function sanitizePinnedWindows(raw) {
+      if (!Array.isArray(raw)) return []
+      const kinds = { preview: true, batchCreate: true, batchRename: true }
+      const list = []
+      for (let i = 0; i < raw.length; i += 1) {
+        const item = raw[i]
+        if (item === null || typeof item !== 'object') continue
+        if (kinds[item.kind] !== true) continue
+        if (typeof item.id !== 'string' || item.id === '') continue
+        const pos = item.pos !== null && typeof item.pos === 'object' ? item.pos : { x: 12, y: 64 }
+        const base = {
+          id: item.id,
+          kind: item.kind,
+          pos: clampPos({ x: Number(pos.x) || 12, y: Number(pos.y) || 64 }, 440, 200),
+        }
+        if (item.kind === 'preview') {
+          list.push(Object.assign(base, {
+            todoId: typeof item.todoId === 'string' ? item.todoId : '',
+            groupKey: typeof item.groupKey === 'string' ? item.groupKey : '',
+            title: typeof item.title === 'string' ? item.title : 'TODO',
+            markdown: typeof item.markdown === 'string' ? item.markdown : '',
+            draft: typeof item.draft === 'string' ? item.draft : (typeof item.markdown === 'string' ? item.markdown : ''),
+            meta: item.meta !== null && typeof item.meta === 'object' ? item.meta : null,
+            editing: item.editing === true,
+            editHeight: Number(item.editHeight) > 0 ? Number(item.editHeight) : undefined,
+            loading: false,
+            loaded: true,
+            error: typeof item.error === 'string' ? item.error : '',
+          }))
+          continue
+        }
+        if (item.kind === 'batchCreate') {
+          list.push(Object.assign(base, {
+            groupKey: typeof item.groupKey === 'string' ? item.groupKey : '',
+            folderId: typeof item.folderId === 'string' && item.folderId !== '' ? item.folderId : PRIMARY,
+            value: typeof item.value === 'string' ? item.value : '',
+          }))
+          continue
+        }
+        list.push(Object.assign(base, {
+          items: Array.isArray(item.items) ? item.items : [],
+          value: typeof item.value === 'string' ? item.value : '',
+        }))
+      }
+      return list
+    }
+
+    function nextPinId() {
+      return 'w' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1296).toString(36)
+    }
+
+    function updatePin(id, patch) {
+      setPinned(function (list) {
+        return list.map(function (item) { return item.id === id ? Object.assign({}, item, patch) : item })
+      })
+    }
+
+    function removePin(id) {
+      if (pinSaveTimers.current[id] !== undefined) {
+        window.clearTimeout(pinSaveTimers.current[id])
+        delete pinSaveTimers.current[id]
+      }
+      setPinned(function (list) { return list.filter(function (item) { return item.id !== id }) })
+    }
+
+    function pinFromPreview(startEditing) {
+      if (preview === null) return ''
+      const data = previewData
+      const id = nextPinId()
+      setPinned(function (list) {
+        return list.concat([{
+          id: id,
+          kind: 'preview',
+          pos: { x: previewPos.x, y: previewPos.y },
+          todoId: preview.id,
+          groupKey: preview.groupKey,
+          title: data !== null && typeof data.title === 'string' ? data.title : preview.title,
+          markdown: data !== null && typeof data.markdown === 'string' ? data.markdown : '',
+          draft: data !== null && typeof data.markdown === 'string' ? data.markdown : '',
+          meta: data === null ? null : {
+            status: data.status,
+            priority: data.priority,
+            source: data.source,
+            primaryFolder: data.primaryFolder,
+            created: data.created,
+          },
+          editing: startEditing === true,
+          loading: data === null,
+          loaded: data !== null,
+          error: '',
+        }])
+      })
+      closePreview()
+      return id
+    }
+
+    function pinFromBatchCreate() {
+      if (batchCreate === null) return ''
+      const pos = batchPos || batchCreate.pos
+      const id = nextPinId()
+      setPinned(function (list) {
+        return list.concat([{
+          id: id,
+          kind: 'batchCreate',
+          pos: { x: pos.x, y: pos.y },
+          groupKey: batchCreate.key,
+          folderId: batchCreate.folderId,
+          value: batchCreate.value,
+        }])
+      })
+      setBatchCreate(null)
+      return id
+    }
+
+    function pinFromBatchRename() {
+      if (batchRename === null) return ''
+      const pos = batchRename.pos
+      const id = nextPinId()
+      setPinned(function (list) {
+        return list.concat([{
+          id: id,
+          kind: 'batchRename',
+          pos: { x: pos.x, y: pos.y },
+          items: batchRename.items.map(function (item) {
+            return { groupKey: item.groupKey, id: item.id, type: item.type, title: item.title }
+          }),
+          value: batchRename.value,
+        }])
+      })
+      setBatchRename(null)
+      return id
+    }
+
+    // 拖动后转换成一个保留窗口；没有真正移动时保持原来的临时窗口行为。
+    function startWindowMove(event, sourceKind) {
+      if (event.button !== 0) return
+      if (event.target !== null && event.target !== undefined && event.target.closest !== undefined && event.target.closest('button') !== null) return
+      const startX = event.clientX
+      const startY = event.clientY
+      let origin = { x: previewPos.x, y: previewPos.y }
+      if (sourceKind === 'batchCreate') origin = batchPos || (batchCreate !== null ? batchCreate.pos : { x: 12, y: 64 })
+      if (sourceKind === 'batchRename' && batchRename !== null) origin = batchRename.pos
+      let pinId = ''
+      const move = function (next) {
+        if (pinId === '') {
+          if (Math.abs(next.clientX - startX) < 4 && Math.abs(next.clientY - startY) < 4) return
+          pinId = sourceKind === 'preview' ? pinFromPreview() : sourceKind === 'batchCreate' ? pinFromBatchCreate() : pinFromBatchRename()
+          if (pinId === '') return
+        }
+        const pos = clampPos({
+          x: origin.x + (next.clientX - startX),
+          y: origin.y + (next.clientY - startY),
+        }, 440, 200)
+        updatePin(pinId, { pos: pos })
+      }
+      const up = function () {
+        window.removeEventListener('pointermove', move)
+        window.removeEventListener('pointerup', up)
+        window.removeEventListener('pointercancel', up)
+      }
+      window.addEventListener('pointermove', move)
+      window.addEventListener('pointerup', up)
+      window.addEventListener('pointercancel', up)
+      event.preventDefault()
+    }
+
+    function dragPinWindow(event, id) {
+      if (event.button !== 0) return
+      if (event.target !== null && event.target !== undefined && event.target.closest !== undefined && event.target.closest('button') !== null) return
+      const win = pinnedRef.current.find(function (item) { return item.id === id })
+      if (win === undefined) return
+      const startX = event.clientX
+      const startY = event.clientY
+      const origin = win.pos
+      const move = function (next) {
+        const pos = clampPos({
+          x: origin.x + (next.clientX - startX),
+          y: origin.y + (next.clientY - startY),
+        }, 440, 200)
+        updatePin(id, { pos: pos })
+      }
+      const up = function () {
+        window.removeEventListener('pointermove', move)
+        window.removeEventListener('pointerup', up)
+        window.removeEventListener('pointercancel', up)
+      }
+      window.addEventListener('pointermove', move)
+      window.addEventListener('pointerup', up)
+      window.addEventListener('pointercancel', up)
+      event.preventDefault()
+    }
+
+    function bodyAutosaveDelay() {
+      const value = data !== null && data.config !== null && data.config !== undefined ? Number(data.config.bodyAutosaveMs) : NaN
+      return Number.isFinite(value) && value >= 1000 ? Math.min(60000, Math.round(value)) : 5000
+    }
+
+    function savePinBody(id) {
+      const win = pinnedRef.current.find(function (item) { return item.id === id })
+      if (win === undefined || win.kind !== 'preview' || win.editing !== true) return
+      postApi({ action: 'saveTodoBody', key: win.groupKey, id: win.todoId, body: win.draft })
+        .then(function () {
+          updatePin(id, { markdown: win.draft })
+          showBubble('正文已保存', { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
+        })
+        .catch(function (failure) {
+          showBubble('保存失败：' + String(failure && failure.message ? failure.message : failure), {
+            clientX: win.pos.x + 160,
+            clientY: win.pos.y + 14,
+          })
+        })
+    }
+
+    function savePinTitle(id) {
+      const win = pinnedRef.current.find(function (item) { return item.id === id })
+      if (win === undefined || win.kind !== 'preview') return
+      const title = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
+      if (title === '' || title === win.title) {
+        updatePin(id, { renameDraft: undefined })
+        return
+      }
+      postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: title })
+        .then(function () {
+          updatePin(id, { title: title, renameDraft: undefined })
+          refresh()
+          showBubble('标题已保存', { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
+        })
+        .catch(function (failure) {
+          showBubble('标题保存失败：' + String(failure && failure.message ? failure.message : failure), {
+            clientX: win.pos.x + 160,
+            clientY: win.pos.y + 14,
+          })
+        })
+    }
+
+    function schedulePinTitleSave(id) {
+      if (pinTitleTimers.current[id] !== undefined) window.clearTimeout(pinTitleTimers.current[id])
+      pinTitleTimers.current[id] = window.setTimeout(function () {
+        delete pinTitleTimers.current[id]
+        savePinTitle(id)
+      }, bodyAutosaveDelay())
+    }
+
+    function schedulePinSave(id) {
+      if (pinSaveTimers.current[id] !== undefined) window.clearTimeout(pinSaveTimers.current[id])
+      pinSaveTimers.current[id] = window.setTimeout(function () {
+        delete pinSaveTimers.current[id]
+        savePinBody(id)
+      }, bodyAutosaveDelay())
+    }
+
+    function editAutoHeight(draft) {
+      const lines = String(draft || '').split('\n').length
+      return Math.min(560, Math.max(120, lines * 20 + 18))
+    }
+
+    function togglePinEditing(id) {
+      const win = pinnedRef.current.find(function (item) { return item.id === id })
+      if (win === undefined) return
+      if (win.editing === true) {
+        if (pinSaveTimers.current[id] !== undefined) {
+          window.clearTimeout(pinSaveTimers.current[id])
+          delete pinSaveTimers.current[id]
+        }
+        if (pinTitleTimers.current[id] !== undefined) {
+          window.clearTimeout(pinTitleTimers.current[id])
+          delete pinTitleTimers.current[id]
+        }
+        savePinTitle(id)
+        savePinBody(id)
+        updatePin(id, { editing: false })
+        return
+      }
+      updatePin(id, { editing: true, draft: win.markdown, renameDraft: win.title })
+    }
+
+    function confirmPinBatchCreate(id) {
+      const win = pinnedRef.current.find(function (item) { return item.id === id })
+      if (win === undefined) return
+      const titles = String(win.value || '').split(/\r?\n/).map(function (line) { return line.trim() }).filter(function (line) { return line !== '' })
+      if (titles.length === 0) {
+        showBubble('没有可创建的内容', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+        return
+      }
+      postApi({ action: 'createTodos', key: win.groupKey, folder: win.folderId, titles: titles })
+        .then(function () {
+          removePin(id)
+          animatePendingRef.current = true
+          refresh()
+          showBubble('已创建 ' + titles.length + ' 条 TODO', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+        })
+        .catch(function (failure) {
+          showBubble('创建失败：' + String(failure && failure.message ? failure.message : failure), {
+            clientX: win.pos.x + 120,
+            clientY: win.pos.y + 14,
+          })
+        })
+    }
+
+    function confirmPinBatchRename(id) {
+      const win = pinnedRef.current.find(function (item) { return item.id === id })
+      if (win === undefined) return
+      const names = String(win.value || '').split('\n')
+      const tasks = []
+      const folderRenames = {}
+      win.items.forEach(function (item, index) {
+        const name = String(names[index] === undefined ? '' : names[index]).trim()
+        if (name === '') return
+        if (item.type === 'todo') {
+          tasks.push(function () { return postApi({ action: 'renameTodo', key: item.groupKey, id: item.id, title: name }) })
+        } else {
+          if (folderRenames[item.groupKey] === undefined) folderRenames[item.groupKey] = {}
+          folderRenames[item.groupKey][item.id] = name
+        }
+      })
+      Object.keys(folderRenames).forEach(function (groupKey) {
+        const group = findLiveGroup(groupKey)
+        if (group === null || group === undefined) return
+        const tree = ensurePrimary(cloneFolders(group))
+        Object.keys(folderRenames[groupKey]).forEach(function (folderId) {
+          const folder = findFolder(tree, folderId)
+          if (folder !== null) folder.name = folderRenames[groupKey][folderId]
+        })
+        tasks.push(function () { return saveFolders(group, tree, null) })
+      })
+      if (tasks.length === 0) {
+        removePin(id)
+        return
+      }
+      runSequential(tasks)
+        .then(function () {
+          removePin(id)
+          setSelectionNow([])
+          animatePendingRef.current = true
+          refresh()
+          showBubble('批量重命名已完成', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+        })
+        .catch(function (failure) {
+          showBubble('重命名失败：' + String(failure && failure.message ? failure.message : failure), {
+            clientX: win.pos.x + 120,
+            clientY: win.pos.y + 14,
+          })
+        })
+    }
+
+    function pinGutter(draft) {
+      return String(draft || '').split('\n').map(function (line, index) {
+        return h('div', { key: 'pin-line-' + index, className: 'dtn-batch-line' }, String(index + 1))
+      })
+    }
+
+    function closePin(win) {
+      if (win.kind === 'preview' && win.editing === true && win.draft !== win.markdown) {
+        // 关窗前把还没等到自动保存的正文补写一次，避免编辑内容丢失。
+        postApi({ action: 'saveTodoBody', key: win.groupKey, id: win.todoId, body: win.draft }).catch(function () {})
+      }
+      if (win.kind === 'preview' && win.editing === true) {
+        const title = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
+        if (title !== '' && title !== win.title) {
+          postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: title }).catch(function () {})
+        }
+      }
+      removePin(win.id)
+    }
+
+    function renderPinPreview(win) {
+      const meta = win.meta
+      return h(
+        'div',
+        {
+          key: win.id,
+          className: 'dtn-preview dtn-pin',
+          style: { left: win.pos.x + 'px', top: win.pos.y + 'px' },
+          onPointerDown: function (event) { event.stopPropagation() },
+        },
+        h(
+          'div',
+          { className: 'dtn-preview-head', onPointerDown: function (event) { dragPinWindow(event, win.id) } },
+          win.editing
+            ? h('input', {
+                className: 'dtn-pin-title-input',
+                value: win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title,
+                spellCheck: false,
+                onChange: function (event) {
+                  updatePin(win.id, { renameDraft: event.currentTarget.value })
+                  schedulePinTitleSave(win.id)
+                },
+                onPointerDown: function (event) { event.stopPropagation() },
+                onKeyDown: function (event) {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    event.currentTarget.blur()
+                    if (pinTitleTimers.current[win.id] !== undefined) {
+                      window.clearTimeout(pinTitleTimers.current[win.id])
+                      delete pinTitleTimers.current[win.id]
+                    }
+                    savePinTitle(win.id)
+                  }
+                },
+              })
+            : h('span', { className: 'dtn-preview-title' }, win.title),
+          h(
+            'div',
+            { className: 'dtn-actions' },
+            h('button', {
+              type: 'button',
+              className: 'dtn-btn',
+              title: win.editing ? '保存并完成编辑' : '编辑正文',
+              onClick: function (event) { event.stopPropagation(); togglePinEditing(win.id) },
+            }, icon(win.editing ? 'check' : 'edit')),
+            h('button', {
+              type: 'button',
+              className: 'dtn-btn',
+              title: '关闭',
+              onClick: function (event) { event.stopPropagation(); closePin(win) },
+            }, icon('close')),
+          ),
+        ),
+        h(
+          'div',
+          { className: 'dtn-preview-meta' },
+          meta === null || meta === undefined
+            ? [h('span', { key: 'loading' }, win.loading ? '加载中…' : '')]
+            : [
+                h('span', { key: 'status' }, meta.status === 'done' ? '已完成' : meta.status === 'partial' ? '中间态（待人工确认）' : '未完成'),
+                isAiSource(meta.source) ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13)) : null,
+                h('span', { key: 'folder' }, '无文件夹：' + folderLabel(meta.primaryFolder)),
+                h('span', { key: 'priority', style: { color: prioColor(meta.priority) } }, '优先级 T' + (typeof meta.priority === 'number' ? meta.priority : 1)),
+                meta.created !== '' ? h('span', { key: 'created' }, '创建 ' + formatStamp(meta.created)) : null,
+              ],
+        ),
+        win.editing
+          ? h(
+              'div',
+              { className: 'dtn-preview-body dtn-edit-body' },
+              h(
+                'div',
+                { className: 'dtn-batch-field' },
+                h('div', {
+                  className: 'dtn-batch-gutter',
+                  ref: function (node) { if (node !== null) pinGutterRefs.current[win.id] = node },
+                }, pinGutter(win.draft)),
+                h('textarea', {
+                  className: 'dtn-batch-input dtn-edit-input',
+                  value: win.draft,
+                  autoFocus: true,
+                  wrap: 'off',
+                  spellCheck: false,
+                  rows: Math.min(24, Math.max(6, String(win.draft || '').split('\n').length)),
+                  style: win.editHeight ? { height: win.editHeight + 'px' } : undefined,
+                  onPointerDown: function (event) { event.stopPropagation() },
+                  onPointerUp: function (event) {
+                    // 用户拖动右下角改变过高度后记住它；自动增高仍以内容行数为下限。
+                    const height = event.currentTarget.offsetHeight
+                    if (Math.abs(height - editAutoHeight(win.draft)) > 8) updatePin(win.id, { editHeight: height })
+                  },
+                  onScroll: function (event) {
+                    const gutter = pinGutterRefs.current[win.id]
+                    if (gutter !== undefined && gutter !== null) gutter.scrollTop = event.currentTarget.scrollTop
+                  },
+                  onChange: function (event) {
+                    const value = event.currentTarget.value
+                    const minHeight = editAutoHeight(value)
+                    const patch = { draft: value }
+                    if (win.editHeight && minHeight > win.editHeight) patch.editHeight = minHeight
+                    updatePin(win.id, patch)
+                    schedulePinSave(win.id)
+                  },
+                }),
+              ),
+              win.error !== '' ? h('div', { className: 'dtn-error' }, win.error) : null,
+            )
+          : h(
+              'div',
+              { className: 'dtn-preview-body dtn-md' },
+              win.error !== ''
+                ? h('div', { className: 'dtn-error' }, '读取失败：' + win.error)
+                : renderMarkdown(win.markdown),
+            ),
+      )
+    }
+
+    function renderPinBatchCreate(win) {
+      const lines = String(win.value || '').split(/\r?\n/)
+      return h(
+        'div',
+        {
+          key: win.id,
+          className: 'dtn-preview dtn-batch dtn-pin',
+          style: { left: win.pos.x + 'px', top: win.pos.y + 'px' },
+          onPointerDown: function (event) { event.stopPropagation() },
+        },
+        h(
+          'div',
+          { className: 'dtn-preview-head', onPointerDown: function (event) { dragPinWindow(event, win.id) } },
+          h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
+          h(
+            'div',
+            { className: 'dtn-actions' },
+            h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
+          ),
+        ),
+        h(
+          'div',
+          { className: 'dtn-preview-body' },
+          h('div', { className: 'dtn-batch-hint' }, '每行一条，空行忽略'),
+          h(
+            'div',
+            { className: 'dtn-batch-field' },
+            h('div', { className: 'dtn-batch-gutter' }, lines.map(function (line, index) {
+              return h('div', { key: 'pin-bc-line-' + index, className: 'dtn-batch-line' }, String(index + 1))
+            })),
+            h('textarea', {
+              className: 'dtn-batch-input',
+              value: win.value,
+              wrap: 'off',
+              onChange: function (event) { updatePin(win.id, { value: event.currentTarget.value }) },
+            }),
+          ),
+          h(
+            'div',
+            { className: 'dtn-batch-actions' },
+            h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { removePin(win.id) } }, '取消'),
+            h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchCreate(win.id) } }, '确认'),
+          ),
+        ),
+      )
+    }
+
+    function renderPinBatchRename(win) {
+      return h(
+        'div',
+        {
+          key: win.id,
+          className: 'dtn-preview dtn-batch dtn-pin',
+          style: { left: win.pos.x + 'px', top: win.pos.y + 'px' },
+          onPointerDown: function (event) { event.stopPropagation() },
+        },
+        h(
+          'div',
+          { className: 'dtn-preview-head', onPointerDown: function (event) { dragPinWindow(event, win.id) } },
+          h('span', { className: 'dtn-preview-title' }, '批量重命名'),
+          h(
+            'div',
+            { className: 'dtn-actions' },
+            h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
+          ),
+        ),
+        h(
+          'div',
+          { className: 'dtn-preview-body' },
+          h('div', { className: 'dtn-batch-hint' }, '行数固定为选中条目数，不能增加或删除换行；清空的行会被跳过'),
+          h(
+            'div',
+            { className: 'dtn-batch-field' },
+            h('div', { className: 'dtn-batch-gutter' }, win.items.map(function (item, index) {
+              return h('div', { key: 'pin-br-line-' + index, className: 'dtn-batch-line' }, String(index + 1))
+            })),
+            h('textarea', {
+              className: 'dtn-batch-input',
+              value: win.value,
+              wrap: 'off',
+              rows: Math.min(12, Math.max(3, win.items.length)),
+              onKeyDown: function (event) { if (event.key === 'Enter') event.preventDefault() },
+              onChange: function (event) {
+                const value = event.currentTarget.value
+                if (String(value).split('\n').length !== win.items.length) return
+                updatePin(win.id, { value: value })
+              },
+            }),
+          ),
+          h(
+            'div',
+            { className: 'dtn-batch-actions' },
+            h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { removePin(win.id) } }, '取消'),
+            h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchRename(win.id) } }, '确认'),
+          ),
+        ),
+      )
+    }
+
+    function renderPinnedWindows() {
+      return pinned.map(function (win) {
+        if (win.kind === 'preview') return renderPinPreview(win)
+        if (win.kind === 'batchCreate') return renderPinBatchCreate(win)
+        return renderPinBatchRename(win)
+      })
+    }
 
       const prioRow = function (values) {
         return h(
@@ -3801,7 +4532,7 @@ window.__ModuleLoader__.load({
             },
             h(
               'div',
-              { className: 'dtn-preview-head' },
+              { className: 'dtn-preview-head', onPointerDown: function (event) { startWindowMove(event, 'batchRename') } },
               h('span', { className: 'dtn-preview-title' }, '批量重命名'),
               h(
                 'div',
@@ -3882,7 +4613,8 @@ window.__ModuleLoader__.load({
             ),
           )
 
-      return h(React.Fragment, null, panel, previewPanel, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode)
+      const pinnedNodes = renderPinnedWindows()
+      return h(React.Fragment, null, panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode)
     }
 
     // ------------------------------------------------------------ 插件入口

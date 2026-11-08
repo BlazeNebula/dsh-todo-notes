@@ -199,7 +199,7 @@
             },
             h(
               'div',
-              { className: 'dtn-preview-head' },
+              { className: 'dtn-preview-head', onPointerDown: function (event) { startWindowMove(event, 'batchRename') } },
               h('span', { className: 'dtn-preview-title' }, '批量重命名'),
               h(
                 'div',
@@ -280,5 +280,6 @@
             ),
           )
 
-      return h(React.Fragment, null, panel, previewPanel, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode)
+      const pinnedNodes = renderPinnedWindows()
+      return h(React.Fragment, null, panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode)
     }

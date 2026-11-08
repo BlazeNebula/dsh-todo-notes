@@ -114,6 +114,118 @@
       const [previewPos, setPreviewPos] = React.useState(function () {
         return clampPos(readStored(LS_PREVIEW, defaultPreviewPos(storedPanel)), 440, 200)
       })
+      // 被拖动后保留下来的浮窗（预览 / 批量新建 / 批量重命名），窗口互相独立并持久化。
+      const [pinned, setPinned] = React.useState(function () {
+        return sanitizePinnedWindows(readStored(LS_WINDOWS, []))
+      })
+      const pinnedRef = React.useRef(pinned)
+      const pinSeq = React.useRef(0)
+      const pinSaveTimers = React.useRef({})
+      const pinTitleTimers = React.useRef({})
+      const pinGutterRefs = React.useRef({})
+      const pinFetchStarted = React.useRef({})
+      const windowsLoadedRef = React.useRef(false)
+      React.useEffect(function () {
+        pinnedRef.current = pinned
+        writeStored(LS_WINDOWS, pinned)
+      }, [pinned])
+      React.useEffect(function () {
+        return function () {
+          const keys = Object.keys(pinSaveTimers.current)
+          for (let i = 0; i < keys.length; i += 1) window.clearTimeout(pinSaveTimers.current[keys[i]])
+          pinSaveTimers.current = {}
+        }
+      }, [])
+      // 浏览器 localStorage 按端口隔离，DSH 重启端口可能变化；窗口数据落到插件数据目录。
+      React.useEffect(function () {
+        if (typeof fetch !== 'function') {
+          windowsLoadedRef.current = true
+          return undefined
+        }
+        let alive = true
+        fetch(ROUTE + '?what=windows', { headers: { accept: 'application/json' } })
+          .then(function (response) {
+            if (!response.ok) throw new Error('HTTP ' + response.status)
+            return response.json()
+          })
+          .then(function (payload) {
+            if (!alive) return
+            const server = payload !== null && payload !== undefined && Array.isArray(payload.windows)
+              ? sanitizePinnedWindows(payload.windows)
+              : []
+            windowsLoadedRef.current = true
+            if (server.length > 0) {
+              setPinned(server)
+              return
+            }
+            // 服务端还没有记录时，用本机 localStorage 的记录做一次迁移。
+            if (pinnedRef.current.length > 0) {
+              fetch(ROUTE, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ action: 'saveWindows', windows: pinnedRef.current }),
+              }).catch(function () {})
+            }
+          })
+          .catch(function () {
+            windowsLoadedRef.current = true
+          })
+        return function () { alive = false }
+      }, [])
+      React.useEffect(function () {
+        if (windowsLoadedRef.current !== true) return undefined
+        const timer = window.setTimeout(function () {
+          fetch(ROUTE, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'saveWindows', windows: pinned }),
+          }).catch(function () {})
+        }, 500)
+        return function () { window.clearTimeout(timer) }
+      }, [pinned])
+      React.useEffect(function () {
+        if (typeof fetch !== 'function') return
+        const pending = pinned.filter(function (item) { return item.kind === 'preview' && item.loaded !== true })
+        pending.forEach(function (item) {
+          if (pinFetchStarted.current[item.id] === true) return
+          pinFetchStarted.current[item.id] = true
+          fetch(ROUTE + '?what=todo&id=' + encodeURIComponent(item.todoId) + '&cwd=' + encodeURIComponent(cwd) + '&session=' + encodeURIComponent(sessionId), {
+            headers: { accept: 'application/json' },
+          })
+            .then(function (response) {
+              if (!response.ok) throw new Error('HTTP ' + response.status)
+              return response.json()
+            })
+            .then(function (payload) {
+              setPinned(function (list) {
+                return list.map(function (win) {
+                  if (win.id !== item.id) return win
+                  return Object.assign({}, win, {
+                    loaded: true,
+                    loading: false,
+                    title: typeof payload.title === 'string' ? payload.title : win.title,
+                    markdown: typeof payload.markdown === 'string' ? payload.markdown : '',
+                    draft: win.draft !== '' ? win.draft : (typeof payload.markdown === 'string' ? payload.markdown : ''),
+                    meta: {
+                      status: payload.status,
+                      priority: payload.priority,
+                      source: payload.source,
+                      primaryFolder: payload.primaryFolder,
+                      created: payload.created,
+                    },
+                  })
+                })
+              })
+            })
+            .catch(function (failure) {
+              setPinned(function (list) {
+                return list.map(function (win) {
+                  return win.id === item.id ? Object.assign({}, win, { loaded: true, loading: false, error: String(failure && failure.message ? failure.message : failure) }) : win
+                })
+              })
+            })
+        })
+      }, [pinned])
       const dragMoved = React.useRef(false)
       const [bubbles, setBubbles] = React.useState([])
       const bubbleSeq = React.useRef(0)

@@ -6,6 +6,11 @@
   "license": "MIT",
   "author": "heshujiang",
   "description": "TODO 便签：用户级 / 工作区级 / 会话级三区待办面板，支持文件夹多引用、优先级、批量整理与 DSH 审批下的 Agent 读写工具。",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BlazeNebula/dsh-todo-notes"
+  },
+  "homepage": "https://github.com/BlazeNebula/dsh-todo-notes#readme",
   "keywords": [
     "deepseek",
     "deepseek-harness",
@@ -53,6 +58,7 @@
     "locale",
     "cordis.patch.yml",
     "README.md",
+    "LICENSE",
     "icon.svg",
     "scripts"
   ]

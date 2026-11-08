@@ -22,6 +22,7 @@ window.__ModuleLoader__.load({
     const LS_WIDTH = 'dsh.todo-notes.panel.width.v1'
     const LS_HEIGHT = 'dsh.todo-notes.panel.height.v1'
     const LS_MODE = 'dsh.todo-notes.mode.v1'
+    const LS_WINDOWS = 'dsh.todo-notes.windows.v1'
     // 浮动面板与右侧栏两个实例之间的同步信号：任一侧写入成功后广播一次。
     const SYNC_BUS = typeof EventTarget === 'function' ? new EventTarget() : null
     // 面板最窄与 DSH 侧边栏一致（264），收起时也用这个宽度。

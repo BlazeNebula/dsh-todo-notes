@@ -24,6 +24,8 @@ const sources = [
   '65-panel-rows.js',
   '66-panel-surface.js',
   '67-panel-menus.js',
+  '69-pins.js',
+  '69b-pins-render.js',
   '68-panel-tail.js',
   '90-entry.js',
 ]

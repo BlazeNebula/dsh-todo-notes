@@ -311,7 +311,7 @@
           : [
               h(
                 'div',
-                { key: 'head', className: 'dtn-preview-head', onPointerDown: function (event) { startDrag(event, 'batch') } },
+                { key: 'head', className: 'dtn-preview-head', onPointerDown: function (event) { startWindowMove(event, 'batchCreate') } },
                 h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
                 h(
                   'div',

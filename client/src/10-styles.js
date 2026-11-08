@@ -386,6 +386,20 @@
 }
 .dtn-preview-body { overflow: auto; padding: 10px 14px 16px; }
 .dtn-preview.dtn-batch { width: 440px; height: 320px; }
+.dtn-preview.dtn-pin { z-index: 2147482400; }
+.dtn-edit-body { display: flex; flex-direction: column; gap: 8px; }
+.dtn-edit-body .dtn-batch-field { flex: 1 1 auto; min-height: 160px; overflow: visible; }
+.dtn-edit-input {
+  min-height: 140px; max-height: 62vh; resize: vertical;
+  field-sizing: content;
+}
+.dtn-pin-title-input {
+  flex: 1 1 auto; min-width: 0; height: 24px; padding: 0 6px;
+  color: var(--dsw-alias-label-primary, #e8e8ea);
+  background: var(--dsw-alias-bg-layer-2, #2b2b31);
+  border: 1px solid var(--dsw-alias-brand-primary, #4d9cff); border-radius: 5px;
+  font-weight: 600; font-size: 13px; line-height: 1.4; font-family: inherit;
+}
 .dtn-batch .dtn-preview-body { display: flex; flex-direction: column; gap: 8px; }
 .dtn-md h1, .dtn-md h2, .dtn-md h3, .dtn-md h4 { margin: 12px 0 6px; line-height: 1.3; }
 .dtn-md h1 { font-size: 18px; } .dtn-md h2 { font-size: 16px; } .dtn-md h3 { font-size: 14px; }

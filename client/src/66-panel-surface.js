@@ -216,11 +216,21 @@
           : [
               h(
                 'div',
-                { key: 'head', className: 'dtn-preview-head', onPointerDown: function (event) { startDrag(event, 'preview') } },
+                { key: 'head', className: 'dtn-preview-head', onPointerDown: function (event) { startWindowMove(event, 'preview') } },
                 h('span', { className: 'dtn-preview-title' }, previewData !== null && typeof previewData.title === 'string' ? previewData.title : preview.title),
                 h(
                   'div',
                   { className: 'dtn-actions' },
+                  h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'dtn-btn',
+                      title: '编辑正文',
+                      onClick: function (event) { event.stopPropagation(); pinFromPreview(true) },
+                    },
+                    icon('edit'),
+                  ),
                   h(
                     'button',
                     {
