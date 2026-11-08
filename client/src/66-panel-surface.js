@@ -204,12 +204,7 @@
 
       function previewFolderLabel(data) {
         if (data === null || data === undefined) return ''
-        const folderId = typeof data.primaryFolder === 'string' && data.primaryFolder !== '' ? data.primaryFolder : PRIMARY
-        if (folderId === PRIMARY) return '无文件夹'
-        const group = preview !== null && preview !== undefined ? findLiveGroup(preview.groupKey) : null
-        const folder = group === null || group === undefined ? null : findFolder(group.folders || [], folderId)
-        if (folder === null || folder === undefined) return folderId
-        return typeof folder.name === 'string' && folder.name !== '' ? folder.name : folderId
+        return folderDisplayName(preview !== null && preview !== undefined ? preview.groupKey : '', data.primaryFolder)
       }
 
       const previewPanel = h(
@@ -299,4 +294,14 @@
           if (lists[i] !== null && lists[i] !== undefined && lists[i].key === key) return lists[i]
         }
         return null
+      }
+
+      // 预览类窗口统一用这一处解析文件夹显示名，避免临时预览与保留窗口各写一套。
+      function folderDisplayName(groupKey, folderId) {
+        const id = typeof folderId === 'string' && folderId !== '' ? folderId : PRIMARY
+        if (id === PRIMARY) return '无文件夹'
+        const group = findLiveGroup(groupKey)
+        const folder = group === null || group === undefined ? null : findFolder(group.folders || [], id)
+        if (folder === null || folder === undefined) return id
+        return typeof folder.name === 'string' && folder.name !== '' ? folder.name : id
       }

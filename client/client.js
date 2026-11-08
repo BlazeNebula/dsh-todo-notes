@@ -3361,12 +3361,7 @@ window.__ModuleLoader__.load({
 
       function previewFolderLabel(data) {
         if (data === null || data === undefined) return ''
-        const folderId = typeof data.primaryFolder === 'string' && data.primaryFolder !== '' ? data.primaryFolder : PRIMARY
-        if (folderId === PRIMARY) return '无文件夹'
-        const group = preview !== null && preview !== undefined ? findLiveGroup(preview.groupKey) : null
-        const folder = group === null || group === undefined ? null : findFolder(group.folders || [], folderId)
-        if (folder === null || folder === undefined) return folderId
-        return typeof folder.name === 'string' && folder.name !== '' ? folder.name : folderId
+        return folderDisplayName(preview !== null && preview !== undefined ? preview.groupKey : '', data.primaryFolder)
       }
 
       const previewPanel = h(
@@ -3456,6 +3451,16 @@ window.__ModuleLoader__.load({
           if (lists[i] !== null && lists[i] !== undefined && lists[i].key === key) return lists[i]
         }
         return null
+      }
+
+      // 预览类窗口统一用这一处解析文件夹显示名，避免临时预览与保留窗口各写一套。
+      function folderDisplayName(groupKey, folderId) {
+        const id = typeof folderId === 'string' && folderId !== '' ? folderId : PRIMARY
+        if (id === PRIMARY) return '无文件夹'
+        const group = findLiveGroup(groupKey)
+        const folder = group === null || group === undefined ? null : findFolder(group.folders || [], id)
+        if (folder === null || folder === undefined) return id
+        return typeof folder.name === 'string' && folder.name !== '' ? folder.name : id
       }
 
       const menuFolder = folderMenu === null ? null : findFolder((findLiveGroup(folderMenu.group.key) || folderMenu.group).folders, folderMenu.folderId)
@@ -4296,17 +4301,10 @@ window.__ModuleLoader__.load({
       removePin(win.id)
     }
 
-    // 预览信息里的文件夹名：主归属显示“无文件夹”，其余按当前组结构解析名称。
+    // 预览信息里的文件夹名与临时预览共用同一处解析。
     function pinFolderLabel(win) {
       const meta = win.meta
-      const folderId = meta !== null && meta !== undefined && typeof meta.primaryFolder === 'string' && meta.primaryFolder !== ''
-        ? meta.primaryFolder
-        : PRIMARY
-      if (folderId === PRIMARY) return '无文件夹'
-      const group = findLiveGroup(win.groupKey)
-      const folder = group === null || group === undefined ? null : findFolder(group.folders || [], folderId)
-      if (folder === null || folder === undefined) return folderId
-      return typeof folder.name === 'string' && folder.name !== '' ? folder.name : folderId
+      return folderDisplayName(win.groupKey, meta !== null && meta !== undefined ? meta.primaryFolder : PRIMARY)
     }
 
     function renderPinPreview(win) {

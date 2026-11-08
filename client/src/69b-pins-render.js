@@ -20,17 +20,10 @@
       removePin(win.id)
     }
 
-    // 预览信息里的文件夹名：主归属显示“无文件夹”，其余按当前组结构解析名称。
+    // 预览信息里的文件夹名与临时预览共用同一处解析。
     function pinFolderLabel(win) {
       const meta = win.meta
-      const folderId = meta !== null && meta !== undefined && typeof meta.primaryFolder === 'string' && meta.primaryFolder !== ''
-        ? meta.primaryFolder
-        : PRIMARY
-      if (folderId === PRIMARY) return '无文件夹'
-      const group = findLiveGroup(win.groupKey)
-      const folder = group === null || group === undefined ? null : findFolder(group.folders || [], folderId)
-      if (folder === null || folder === undefined) return folderId
-      return typeof folder.name === 'string' && folder.name !== '' ? folder.name : folderId
+      return folderDisplayName(win.groupKey, meta !== null && meta !== undefined ? meta.primaryFolder : PRIMARY)
     }
 
     function renderPinPreview(win) {
