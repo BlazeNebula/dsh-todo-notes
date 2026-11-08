@@ -69,14 +69,6 @@ DeepSeek Harness 的三层 TODO 便签：用户级、工作区级、当前会话
 - `agentWriteUserTodos`（默认关闭）：允许智能体改写、勾选或删除用户手写的 TODO。关闭时智能体只能修改自己创建的条目；打开后每次写入仍会逐次请求 DSH 审批。
 - `bodyAutosaveMs`（默认 5000）：正文编辑停止输入后等待多久自动保存，单位毫秒，范围 1000~60000。
 
-面板头部齿轮打开「外观设置」浮层，可以调：
-
-- 完成态透明度（默认 35%）与半完成态透明度（默认 75%），作用在整行。
-- T0~T9 共 10 个优先级颜色，用分号分隔；留空使用内置色板。
-- 「恢复默认」把这三项重置回初始值。
-
-外观设置存在数据目录的 `ui-settings.json`，与 DSH 设置页分开：需要审批语义的开关留在 DSH 设置页，纯展示偏好放在面板里，改动即时生效。
-
 ## Agent 工具
 
 | 工具 | 作用 |
@@ -127,7 +119,6 @@ lib/
   core/groups.js      组结构、条目摘要、三区负载、按 id 查条目
   core/write.js       文件夹树、条目字段与写接口
   core/runtime.js     运行时设置
-  core/ui-settings.js 外观设置（透明度与色板）
   core/windows.js     保留窗口的读写
   core/http.js        /dsh-todo-notes/api
   core/tools.js       Agent 工具与 DSH 审批

@@ -173,7 +173,7 @@ window.__ModuleLoader__.load({
   transition: opacity 180ms ease, background 180ms ease;
 }
 .dtn-todo:hover { background: var(--dsw-alias-bg-layer-1, #232328); }
-.dtn-todo.dtn-done { opacity: var(--dtn-done-opacity, .35); }
+.dtn-todo.dtn-done { opacity: .35; }
 .dtn-todo.dtn-drop { background: var(--dsw-alias-bg-layer-2, #2b2b31); }
 .dtn-todo.dtn-drop-target,
 .dtn-folder-head.dtn-drop-target,
@@ -196,7 +196,7 @@ window.__ModuleLoader__.load({
   color: var(--dsw-alias-state-warn-primary, #d6a63c);
   background: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d6a63c) 18%, transparent);
 }
-.dtn-todo.dtn-partial { opacity: var(--dtn-partial-opacity, .75); }
+.dtn-todo.dtn-partial .dtn-todo-title { opacity: .78; }
 .dtn-todo-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .dtn-grip {
   flex: none; width: 28px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
@@ -288,25 +288,6 @@ window.__ModuleLoader__.load({
 .dtn-menu-item.dtn-warn .dtn-icon { color: inherit; }
 .dtn-menu-sep { height: 1px; margin: 4px 2px; background: var(--dsw-alias-border-l1, #2c2c31); }
 .dtn-menu-arrow { margin-left: auto; color: var(--dsw-alias-label-secondary, #a3a3ab); }
-.dtn-ui-settings { width: 264px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-.dtn-ui-title { font-size: 12px; font-weight: 600; color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 88%, transparent); }
-.dtn-ui-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
-.dtn-ui-row > span:first-child { flex: 1; }
-.dtn-ui-number {
-  width: 56px; height: 24px; padding: 0 6px; text-align: right;
-  background: var(--dsw-alias-bg-layer-2, #2b2b31); color: var(--dsw-alias-label-primary, #e8e8ea);
-  border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 6px; font: inherit; font-size: 12px;
-}
-.dtn-ui-unit { width: 12px; }
-.dtn-ui-label { font-size: 11px; line-height: 1.5; color: var(--dsw-alias-label-secondary, #a3a3ab); }
-.dtn-ui-palette {
-  width: 100%; box-sizing: border-box; resize: vertical; min-height: 58px;
-  padding: 6px 8px; font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
-  background: var(--dsw-alias-bg-layer-2, #2b2b31); color: var(--dsw-alias-label-primary, #e8e8ea);
-  border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 6px;
-}
-.dtn-ui-palette:focus { outline: none; border-color: var(--dsw-alias-brand-primary, #4d9cff); }
-.dtn-ui-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .dtn-submenu {
   display: none; position: absolute; left: 100%; top: -5px;
   min-width: 160px; max-height: 60vh; overflow: auto; padding: 5px;
@@ -663,23 +644,10 @@ window.__ModuleLoader__.load({
       '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8',
       '#238fba', '#205eaa', '#1e30a2', '#1e41a2',
     ]
-    let prioOverride = null
-
-    // 设置里的色板用分号分隔，必须是 10 个值；不合法时回退内置色板。
-    function applyPriorityPalette(raw) {
-      const text = typeof raw === 'string' ? raw.trim() : ''
-      if (text === '') {
-        prioOverride = null
-        return
-      }
-      const parts = text.split(';').map(function (item) { return item.trim() }).filter(function (item) { return item !== '' })
-      prioOverride = parts.length === 10 ? parts : null
-    }
 
     function prioColor(priority) {
       const value = typeof priority === 'number' && priority >= 0 ? Math.min(9, Math.floor(priority)) : 1
-      const palette = prioOverride === null ? PRIO_PALETTE : prioOverride
-      return palette[value]
+      return PRIO_PALETTE[value]
     }
 
     // 排序口径：未勾选 > 中间态（智能体勾选等人工确认）> 已勾选。
@@ -755,12 +723,6 @@ window.__ModuleLoader__.load({
       // 切回浮动面板：从右列浮出的小窗图形。
       panelFloat: { box: 24, filled: true, paths: [{ d: 'M3 3H21V21H3V3M5 5V7H19V5H5M5 9V19H19V9H5M7 11H17V17H7V11Z' }] },
       close: { box: 512, paths: [{ d: 'M368 368L144 144M368 144L144 368', width: 32 }] },
-      // 设置：齿轮（MDI cog），用于恢复默认设置入口。
-      settings: {
-        box: 24,
-        filled: true,
-        paths: [{ d: 'M12 15.5A3.5 3.5 0 018.5 12 3.5 3.5 0 0112 8.5 3.5 3.5 0 0115.5 12 3.5 3.5 0 0112 15.5M19.43 12.97c.04-.32.07-.64.07-.97s-.03-.65-.07-.97l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65c-.04-.24-.25-.42-.5-.42h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.63c-.04.32-.07.65-.07.97s.03.65.07.97l-2.11 1.66c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.25 1.17-.59 1.69-.99l2.49 1c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66Z' }],
-      },
       addBatch: {
         box: 512,
         paths: [
@@ -915,9 +877,6 @@ window.__ModuleLoader__.load({
       })
       const [data, setData] = React.useState(null)
       const [error, setError] = React.useState('')
-      const [uiOpen, setUiOpen] = React.useState(false)
-      const [uiAnchor, setUiAnchor] = React.useState({ x: 0, y: 0 })
-      const [uiDraft, setUiDraft] = React.useState(null)
       const [openGroups, setOpenGroups] = React.useState({})
       const [openFolders, setOpenFolders] = React.useState({})
       const [treeMenu, setTreeMenu] = React.useState(null)
@@ -980,11 +939,6 @@ window.__ModuleLoader__.load({
         pinnedRef.current = pinned
         writeStored(LS_WINDOWS, pinned)
       }, [pinned])
-      // 外观设置（插件自己的设置浮层）变化后立即生效。
-      React.useEffect(function () {
-        const ui = data !== null && data !== undefined && data.ui !== null && data.ui !== undefined ? data.ui : {}
-        applyPriorityPalette(ui.priorityPalette)
-      }, [data])
       // 面板里的勾选、优先级、文件夹变更刷新数据后，同步更新已保留预览窗的信息区。
       React.useEffect(function () {
         if (data === null || data === undefined) return
@@ -1648,74 +1602,6 @@ window.__ModuleLoader__.load({
             return payload
           })
         })
-      }
-
-      // 外观设置浮层：完成态/半完成态透明度与 T0~T9 共 10 个优先级颜色。
-      function openUiSettings(event) {
-        if (event !== null && event !== undefined && typeof event.stopPropagation === 'function') event.stopPropagation()
-        const ui = data !== null && data !== undefined && data.ui !== null && data.ui !== undefined ? data.ui : {}
-        const x = event !== null && event !== undefined && typeof event.clientX === 'number' ? event.clientX : panelPos.x + 40
-        const y = event !== null && event !== undefined && typeof event.clientY === 'number' ? event.clientY : panelPos.y + 56
-        setUiAnchor({ x: x, y: y })
-        setUiDraft({
-          doneOpacity: String(typeof ui.doneOpacity === 'number' ? ui.doneOpacity : 35),
-          partialOpacity: String(typeof ui.partialOpacity === 'number' ? ui.partialOpacity : 75),
-          priorityPalette: typeof ui.priorityPalette === 'string' ? ui.priorityPalette : '',
-        })
-        setUiOpen(true)
-      }
-
-      function closeUiSettings() {
-        setUiOpen(false)
-        setUiDraft(null)
-      }
-
-      function saveUiSettings(event) {
-        if (event !== null && event !== undefined && typeof event.stopPropagation === 'function') event.stopPropagation()
-        const draft = uiDraft !== null && uiDraft !== undefined ? uiDraft : {}
-        postApi({
-          action: 'saveUiSettings',
-          ui: {
-            doneOpacity: Number(draft.doneOpacity),
-            partialOpacity: Number(draft.partialOpacity),
-            priorityPalette: typeof draft.priorityPalette === 'string' ? draft.priorityPalette : '',
-          },
-        })
-          .then(function (payload) {
-            closeUiSettings()
-            if (payload !== null && payload !== undefined && payload.ui !== null && payload.ui !== undefined) {
-              setData(function (prev) {
-                return prev === null || prev === undefined ? prev : Object.assign({}, prev, { ui: payload.ui })
-              })
-            }
-            showBubble('外观设置已保存', event)
-            refresh()
-          })
-          .catch(function (err) {
-            showBubble('保存失败：' + (err !== null && err !== undefined && err.message ? err.message : err), event)
-          })
-      }
-
-      function resetUiSettings(event) {
-        if (event !== null && event !== undefined && typeof event.stopPropagation === 'function') event.stopPropagation()
-        postApi({ action: 'resetUiSettings' })
-          .then(function (payload) {
-            if (payload !== null && payload !== undefined && payload.ui !== null && payload.ui !== undefined) {
-              setData(function (prev) {
-                return prev === null || prev === undefined ? prev : Object.assign({}, prev, { ui: payload.ui })
-              })
-              setUiDraft({
-                doneOpacity: String(payload.ui.doneOpacity),
-                partialOpacity: String(payload.ui.partialOpacity),
-                priorityPalette: typeof payload.ui.priorityPalette === 'string' ? payload.ui.priorityPalette : '',
-              })
-            }
-            showBubble('已恢复默认外观', event)
-            refresh()
-          })
-          .catch(function (err) {
-            showBubble('恢复失败：' + (err !== null && err !== undefined && err.message ? err.message : err), event)
-          })
       }
 
       // 在鼠标上方冒出一个提示（减去光标高度，避免挡住指针）：停留 1s，再用 2.5s 淡出。
@@ -3385,9 +3271,6 @@ window.__ModuleLoader__.load({
       }, [hoverOpen])
 
       const panelCollapsed = collapsed && !(hoverOpen && !embedded)
-      const uiSettings = data !== null && data !== undefined && data.ui !== null && data.ui !== undefined ? data.ui : {}
-      const donePercent = typeof uiSettings.doneOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.doneOpacity)) : 35
-      const partialPercent = typeof uiSettings.partialOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.partialOpacity)) : 75
       const panel = h(
         'div',
         {
@@ -3399,20 +3282,14 @@ window.__ModuleLoader__.load({
             (dragging ? ' dtn-dragging' : '') +
             (embedded ? ' dtn-embedded' : '') +
             (embedded && mode !== 'sidebar' ? ' dtn-hidden' : ''),
-          style: Object.assign(
-            {
-              '--dtn-done-opacity': String(donePercent / 100),
-              '--dtn-partial-opacity': String(partialPercent / 100),
-            },
-            embedded
-              ? {}
-              : {
-                  left: panelLeftOf(panelPos, panelWidth, panelCollapsed) + 'px',
-                  top: panelPos.y + 'px',
-                  width: panelCollapsed ? undefined : panelWidth + 'px',
-                  height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
-                },
-          ),
+          style: embedded
+            ? {}
+            : {
+                left: panelLeftOf(panelPos, panelWidth, panelCollapsed) + 'px',
+                top: panelPos.y + 'px',
+                width: panelCollapsed ? undefined : panelWidth + 'px',
+                height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
+              },
           onMouseEnter: embedded
             ? undefined
             : function () { if (collapsed) setHoverOpen(true) },
@@ -3442,11 +3319,6 @@ window.__ModuleLoader__.load({
             : h(
                 'div',
                 { className: 'dtn-actions' },
-                h(
-                  'button',
-                  { type: 'button', className: 'dtn-btn', title: '外观设置', onClick: function (event) { openUiSettings(event) } },
-                  icon('settings'),
-                ),
                 h(
                   'button',
                   { type: 'button', className: 'dtn-btn', title: '显示到右侧栏', onClick: function (event) { event.stopPropagation(); showInSidebar() } },
@@ -3590,54 +3462,6 @@ window.__ModuleLoader__.load({
         if (folder === null || folder === undefined) return id
         return typeof folder.name === 'string' && folder.name !== '' ? folder.name : id
       }
-
-      const uiLeft = Math.max(8, Math.min((typeof window !== 'undefined' ? window.innerWidth : 1200) - 292, uiAnchor.x - 220))
-      const uiTop = Math.max(8, Math.min((typeof window !== 'undefined' ? window.innerHeight : 800) - 300, uiAnchor.y + 10))
-      const uiSettingsNode = uiOpen && uiDraft !== null
-        ? h(
-            'div',
-            {
-              className: 'dtn-menu dtn-ui-settings',
-              style: { left: uiLeft + 'px', top: uiTop + 'px' },
-              onPointerDown: function (event) { event.stopPropagation() },
-            },
-            h('div', { className: 'dtn-ui-title' }, '外观设置'),
-            h(
-              'label',
-              { className: 'dtn-ui-row' },
-              h('span', null, '完成态透明度'),
-              h('input', {
-                type: 'number', min: 0, max: 100, className: 'dtn-ui-number', value: uiDraft.doneOpacity,
-                onChange: function (event) { setUiDraft(Object.assign({}, uiDraft, { doneOpacity: event.target.value })) },
-              }),
-              h('span', { className: 'dtn-ui-unit' }, '%'),
-            ),
-            h(
-              'label',
-              { className: 'dtn-ui-row' },
-              h('span', null, '半完成态透明度'),
-              h('input', {
-                type: 'number', min: 0, max: 100, className: 'dtn-ui-number', value: uiDraft.partialOpacity,
-                onChange: function (event) { setUiDraft(Object.assign({}, uiDraft, { partialOpacity: event.target.value })) },
-              }),
-              h('span', { className: 'dtn-ui-unit' }, '%'),
-            ),
-            h('div', { className: 'dtn-ui-label' }, '优先级颜色（T0~T9，共 10 个，用分号分隔；留空用内置）'),
-            h('textarea', {
-              className: 'dtn-ui-palette', rows: 3, value: uiDraft.priorityPalette,
-              placeholder: '例如：#d9a441;#ffffd9;#edf8b1;#c7e9b4;#7fcdbb;#2dc6d8;#238fba;#205eaa;#1e30a2;#1e41a2',
-              onChange: function (event) { setUiDraft(Object.assign({}, uiDraft, { priorityPalette: event.target.value })) },
-            }),
-            h(
-              'div',
-              { className: 'dtn-ui-actions' },
-              h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function (event) { resetUiSettings(event) } }, '恢复默认'),
-              h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { closeUiSettings() } }, '取消'),
-              h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function (event) { saveUiSettings(event) } }, '保存'),
-            ),
-          )
-        : null
-
 
       const menuFolder = folderMenu === null ? null : findFolder((findLiveGroup(folderMenu.group.key) || folderMenu.group).folders, folderMenu.folderId)
       const folderMenuNode = folderMenu === null || menuFolder === null
@@ -4994,7 +4818,7 @@ window.__ModuleLoader__.load({
           )
 
       const pinnedNodes = embedded ? null : renderPinnedWindows()
-      return h(React.Fragment, null, panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode, uiSettingsNode)
+      return h(React.Fragment, null, panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode)
     }
 
     // ------------------------------------------------------------ 插件入口

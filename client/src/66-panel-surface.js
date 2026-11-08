@@ -114,9 +114,6 @@
       }, [hoverOpen])
 
       const panelCollapsed = collapsed && !(hoverOpen && !embedded)
-      const uiSettings = data !== null && data !== undefined && data.ui !== null && data.ui !== undefined ? data.ui : {}
-      const donePercent = typeof uiSettings.doneOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.doneOpacity)) : 35
-      const partialPercent = typeof uiSettings.partialOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.partialOpacity)) : 75
       const panel = h(
         'div',
         {
@@ -128,20 +125,14 @@
             (dragging ? ' dtn-dragging' : '') +
             (embedded ? ' dtn-embedded' : '') +
             (embedded && mode !== 'sidebar' ? ' dtn-hidden' : ''),
-          style: Object.assign(
-            {
-              '--dtn-done-opacity': String(donePercent / 100),
-              '--dtn-partial-opacity': String(partialPercent / 100),
-            },
-            embedded
-              ? {}
-              : {
-                  left: panelLeftOf(panelPos, panelWidth, panelCollapsed) + 'px',
-                  top: panelPos.y + 'px',
-                  width: panelCollapsed ? undefined : panelWidth + 'px',
-                  height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
-                },
-          ),
+          style: embedded
+            ? {}
+            : {
+                left: panelLeftOf(panelPos, panelWidth, panelCollapsed) + 'px',
+                top: panelPos.y + 'px',
+                width: panelCollapsed ? undefined : panelWidth + 'px',
+                height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
+              },
           onMouseEnter: embedded
             ? undefined
             : function () { if (collapsed) setHoverOpen(true) },
@@ -171,11 +162,6 @@
             : h(
                 'div',
                 { className: 'dtn-actions' },
-                h(
-                  'button',
-                  { type: 'button', className: 'dtn-btn', title: '外观设置', onClick: function (event) { openUiSettings(event) } },
-                  icon('settings'),
-                ),
                 h(
                   'button',
                   { type: 'button', className: 'dtn-btn', title: '显示到右侧栏', onClick: function (event) { event.stopPropagation(); showInSidebar() } },
@@ -319,51 +305,3 @@
         if (folder === null || folder === undefined) return id
         return typeof folder.name === 'string' && folder.name !== '' ? folder.name : id
       }
-
-      const uiLeft = Math.max(8, Math.min((typeof window !== 'undefined' ? window.innerWidth : 1200) - 292, uiAnchor.x - 220))
-      const uiTop = Math.max(8, Math.min((typeof window !== 'undefined' ? window.innerHeight : 800) - 300, uiAnchor.y + 10))
-      const uiSettingsNode = uiOpen && uiDraft !== null
-        ? h(
-            'div',
-            {
-              className: 'dtn-menu dtn-ui-settings',
-              style: { left: uiLeft + 'px', top: uiTop + 'px' },
-              onPointerDown: function (event) { event.stopPropagation() },
-            },
-            h('div', { className: 'dtn-ui-title' }, '外观设置'),
-            h(
-              'label',
-              { className: 'dtn-ui-row' },
-              h('span', null, '完成态透明度'),
-              h('input', {
-                type: 'number', min: 0, max: 100, className: 'dtn-ui-number', value: uiDraft.doneOpacity,
-                onChange: function (event) { setUiDraft(Object.assign({}, uiDraft, { doneOpacity: event.target.value })) },
-              }),
-              h('span', { className: 'dtn-ui-unit' }, '%'),
-            ),
-            h(
-              'label',
-              { className: 'dtn-ui-row' },
-              h('span', null, '半完成态透明度'),
-              h('input', {
-                type: 'number', min: 0, max: 100, className: 'dtn-ui-number', value: uiDraft.partialOpacity,
-                onChange: function (event) { setUiDraft(Object.assign({}, uiDraft, { partialOpacity: event.target.value })) },
-              }),
-              h('span', { className: 'dtn-ui-unit' }, '%'),
-            ),
-            h('div', { className: 'dtn-ui-label' }, '优先级颜色（T0~T9，共 10 个，用分号分隔；留空用内置）'),
-            h('textarea', {
-              className: 'dtn-ui-palette', rows: 3, value: uiDraft.priorityPalette,
-              placeholder: '例如：#d9a441;#ffffd9;#edf8b1;#c7e9b4;#7fcdbb;#2dc6d8;#238fba;#205eaa;#1e30a2;#1e41a2',
-              onChange: function (event) { setUiDraft(Object.assign({}, uiDraft, { priorityPalette: event.target.value })) },
-            }),
-            h(
-              'div',
-              { className: 'dtn-ui-actions' },
-              h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function (event) { resetUiSettings(event) } }, '恢复默认'),
-              h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { closeUiSettings() } }, '取消'),
-              h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function (event) { saveUiSettings(event) } }, '保存'),
-            ),
-          )
-        : null
-
