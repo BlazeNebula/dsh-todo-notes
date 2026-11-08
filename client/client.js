@@ -5148,9 +5148,16 @@ window.__ModuleLoader__.load({
           wrap(host),
         )
       })
-      ctx.slots.inject('settings.plugins.tab', function () {
+      // 与 billion-context 相同的注册方式：设置左侧导航的独立页面 + 插件详情页的配置区。
+      ctx.slots.inject('settings.section', function () {
         return ctx.slots.register(
-          { name: 'settings.plugins.tab', id: 'todo-notes-settings', order: 30, label: 'TODO 便签' },
+          { name: 'settings.section', id: 'todo-notes', order: 60, label: 'TODO 便签' },
+          TodoNotesSettings,
+        )
+      })
+      ctx.slots.inject('plugins.bundle.config', function () {
+        return ctx.slots.register(
+          { name: 'plugins.bundle.config', key: 'dsh-todo-notes' },
           TodoNotesSettings,
         )
       })
