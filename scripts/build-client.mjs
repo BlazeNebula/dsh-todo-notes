@@ -27,6 +27,7 @@ const sources = [
   '69-pins.js',
   '69b-pins-render.js',
   '68-panel-tail.js',
+  '70-settings-page.js',
   '90-entry.js',
 ]
 

@@ -173,7 +173,7 @@ window.__ModuleLoader__.load({
   transition: opacity 180ms ease, background 180ms ease;
 }
 .dtn-todo:hover { background: var(--dsw-alias-bg-layer-1, #232328); }
-.dtn-todo.dtn-done { opacity: .35; }
+.dtn-todo.dtn-done { opacity: var(--dtn-done-opacity, .35); }
 .dtn-todo.dtn-drop { background: var(--dsw-alias-bg-layer-2, #2b2b31); }
 .dtn-todo.dtn-drop-target,
 .dtn-folder-head.dtn-drop-target,
@@ -196,7 +196,7 @@ window.__ModuleLoader__.load({
   color: var(--dsw-alias-state-warn-primary, #d6a63c);
   background: color-mix(in srgb, var(--dsw-alias-state-warn-primary, #d6a63c) 18%, transparent);
 }
-.dtn-todo.dtn-partial .dtn-todo-title { opacity: .78; }
+.dtn-todo.dtn-partial { opacity: var(--dtn-partial-opacity, .75); }
 .dtn-todo-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .dtn-grip {
   flex: none; width: 28px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
@@ -460,6 +460,63 @@ window.__ModuleLoader__.load({
 .dtn-md a { color: var(--dsw-alias-brand-primary, #4d9cff); text-decoration: none; }
 .dtn-md a:hover { text-decoration: underline; }
 .dtn-md hr { border: none; border-top: 1px solid var(--dsw-alias-border-l1, #2e2e34); margin: 12px 0; }
+
+/* ---------------------------------------------------------------- DSH 设置页 */
+.tns-page {
+  max-width: 680px; padding: 4px 2px 24px;
+  color: var(--dsw-alias-label-primary, #e8e8ea);
+  font: 13px/1.6 var(--dsw-font-family, system-ui, -apple-system, "Segoe UI", sans-serif);
+}
+.tns-title { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+.tns-desc { margin: 0 0 18px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
+.tns-loading { color: var(--dsw-alias-label-secondary, #a3a3ab); padding: 12px 0; }
+.tns-error { margin: 0 0 12px; padding: 8px 10px; border-radius: 6px; color: var(--dsw-alias-state-error-primary, #e55353); background: color-mix(in srgb, var(--dsw-alias-state-error-primary, #e55353) 12%, transparent); }
+.tns-section { margin: 0 0 22px; }
+.tns-section-title { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
+.tns-row { display: flex; align-items: center; gap: 16px; padding: 10px 0; border-top: 1px solid var(--dsw-alias-border-l1, #2e2e34); }
+.tns-row:last-of-type { border-bottom: 1px solid var(--dsw-alias-border-l1, #2e2e34); }
+.tns-row-text { flex: 1; min-width: 0; }
+.tns-label { font-size: 13px; }
+.tns-hint { margin: 2px 0 0; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px; }
+.tns-opacity { display: flex; align-items: center; gap: 8px; }
+.tns-range { width: 180px; accent-color: var(--dsw-alias-brand-primary, #4d9cff); }
+.tns-number {
+  width: 62px; height: 26px; padding: 0 6px; text-align: right; font: inherit; font-size: 12px;
+  color: var(--dsw-alias-label-primary, #e8e8ea); background: var(--dsw-alias-bg-layer-2, #2b2b31);
+  border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 6px;
+}
+.tns-unit { color: var(--dsw-alias-label-secondary, #a3a3ab); }
+.tns-preview { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--dsw-alias-bg-layer-1, #232327); }
+.tns-preview-label { margin-bottom: 6px; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 11px; }
+.tns-preview-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.tns-preview-check { width: 14px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
+.tns-preview-prio { font-weight: 600; font-size: 11px; }
+.tns-colors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 18px; margin-top: 10px; }
+.tns-color-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.tns-color-label { width: 26px; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px; }
+.tns-color-input {
+  width: 28px; height: 26px; padding: 0; border: 1px solid var(--dsw-alias-border-l2, #3a3a41);
+  border-radius: 6px; background: transparent; cursor: pointer;
+}
+.tns-color-input::-webkit-color-swatch-wrapper { padding: 2px; }
+.tns-color-input::-webkit-color-swatch { border: none; border-radius: 4px; }
+.tns-hex {
+  width: 86px; height: 26px; padding: 0 6px; font: 12px/1 ui-monospace, Consolas, monospace;
+  color: var(--dsw-alias-label-primary, #e8e8ea); background: var(--dsw-alias-bg-layer-2, #2b2b31);
+  border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 6px;
+}
+.tns-color-chip { width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--dsw-alias-border-l2, #3a3a41); }
+.tns-actions { display: flex; align-items: center; gap: 10px; padding-top: 4px; }
+.tns-btn {
+  height: 28px; padding: 0 14px; font: inherit; font-size: 12px; cursor: pointer;
+  color: var(--dsw-alias-label-primary, #e8e8ea); background: var(--dsw-alias-bg-layer-2, #2b2b31);
+  border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 7px;
+}
+.tns-btn:hover { background: var(--dsw-alias-bg-layer-3, #333339); }
+.tns-btn:disabled { opacity: .6; cursor: default; }
+.tns-btn-primary { color: #fff; background: #4d9cff; border-color: #4d9cff; }
+.tns-btn-primary:hover { background: #66aaff; }
+.tns-status { color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px; }
 `
 
     // ------------------------------------------------------------ 工具函数
@@ -644,10 +701,23 @@ window.__ModuleLoader__.load({
       '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8',
       '#238fba', '#205eaa', '#1e30a2', '#1e41a2',
     ]
+    let prioOverride = null
+
+    // 设置页里的色板用分号分隔，必须是 10 个值；不合法时回退内置色板。
+    function applyPriorityPalette(raw) {
+      const text = typeof raw === 'string' ? raw.trim() : ''
+      if (text === '') {
+        prioOverride = null
+        return
+      }
+      const parts = text.split(';').map(function (item) { return item.trim() }).filter(function (item) { return item !== '' })
+      prioOverride = parts.length === 10 ? parts : null
+    }
 
     function prioColor(priority) {
       const value = typeof priority === 'number' && priority >= 0 ? Math.min(9, Math.floor(priority)) : 1
-      return PRIO_PALETTE[value]
+      const palette = prioOverride === null ? PRIO_PALETTE : prioOverride
+      return palette[value]
     }
 
     // 排序口径：未勾选 > 中间态（智能体勾选等人工确认）> 已勾选。
@@ -939,6 +1009,11 @@ window.__ModuleLoader__.load({
         pinnedRef.current = pinned
         writeStored(LS_WINDOWS, pinned)
       }, [pinned])
+      // 设置页里的外观（色板、透明度）变化后立即生效。
+      React.useEffect(function () {
+        const ui = data !== null && data !== undefined && data.ui !== null && data.ui !== undefined ? data.ui : {}
+        applyPriorityPalette(ui.priorityPalette)
+      }, [data])
       // 面板里的勾选、优先级、文件夹变更刷新数据后，同步更新已保留预览窗的信息区。
       React.useEffect(function () {
         if (data === null || data === undefined) return
@@ -3271,6 +3346,9 @@ window.__ModuleLoader__.load({
       }, [hoverOpen])
 
       const panelCollapsed = collapsed && !(hoverOpen && !embedded)
+      const uiSettings = data !== null && data !== undefined && data.ui !== null && data.ui !== undefined ? data.ui : {}
+      const donePercent = typeof uiSettings.doneOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.doneOpacity)) : 35
+      const partialPercent = typeof uiSettings.partialOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.partialOpacity)) : 75
       const panel = h(
         'div',
         {
@@ -3282,14 +3360,20 @@ window.__ModuleLoader__.load({
             (dragging ? ' dtn-dragging' : '') +
             (embedded ? ' dtn-embedded' : '') +
             (embedded && mode !== 'sidebar' ? ' dtn-hidden' : ''),
-          style: embedded
-            ? {}
-            : {
-                left: panelLeftOf(panelPos, panelWidth, panelCollapsed) + 'px',
-                top: panelPos.y + 'px',
-                width: panelCollapsed ? undefined : panelWidth + 'px',
-                height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
-              },
+          style: Object.assign(
+            {
+              '--dtn-done-opacity': String(donePercent / 100),
+              '--dtn-partial-opacity': String(partialPercent / 100),
+            },
+            embedded
+              ? {}
+              : {
+                  left: panelLeftOf(panelPos, panelWidth, panelCollapsed) + 'px',
+                  top: panelPos.y + 'px',
+                  width: panelCollapsed ? undefined : panelWidth + 'px',
+                  height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
+                },
+          ),
           onMouseEnter: embedded
             ? undefined
             : function () { if (collapsed) setHoverOpen(true) },
@@ -4821,6 +4905,202 @@ window.__ModuleLoader__.load({
       return h(React.Fragment, null, panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode)
     }
 
+    // ------------------------------------------------------------ 设置页（DSH 设置 → 插件 → TODO 便签）
+
+    const UI_DEFAULT_PALETTE = ['#d9a441', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8', '#238fba', '#205eaa', '#1e30a2', '#1e41a2']
+
+    function splitPalette(raw) {
+      const text = typeof raw === 'string' ? raw.trim() : ''
+      if (text === '') return UI_DEFAULT_PALETTE.slice()
+      const parts = text.split(';').map(function (item) { return item.trim() }).filter(function (item) { return item !== '' })
+      if (parts.length !== 10) return UI_DEFAULT_PALETTE.slice()
+      return parts
+    }
+
+    function isHexColor(value) {
+      return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)
+    }
+
+    function TodoNotesSettings() {
+      const [loading, setLoading] = React.useState(true)
+      const [error, setError] = React.useState('')
+      const [status, setStatus] = React.useState('')
+      const [busy, setBusy] = React.useState(false)
+      const [doneOpacity, setDoneOpacity] = React.useState(35)
+      const [partialOpacity, setPartialOpacity] = React.useState(75)
+      const [palette, setPalette] = React.useState(UI_DEFAULT_PALETTE.slice())
+
+      function applyUi(ui) {
+        if (ui === null || ui === undefined) return
+        setDoneOpacity(typeof ui.doneOpacity === 'number' ? ui.doneOpacity : 35)
+        setPartialOpacity(typeof ui.partialOpacity === 'number' ? ui.partialOpacity : 75)
+        setPalette(splitPalette(ui.priorityPalette))
+      }
+
+      React.useEffect(function () {
+        let alive = true
+        fetch(ROUTE + '?what=uiSettings&ts=' + Date.now(), { cache: 'no-store' })
+          .then(function (response) { return response.json() })
+          .then(function (payload) {
+            if (!alive) return
+            if (payload !== null && payload !== undefined && payload.ok === true) applyUi(payload.ui)
+            else setError('读取设置失败')
+            setLoading(false)
+          })
+          .catch(function (err) {
+            if (!alive) return
+            setError('读取设置失败：' + (err !== null && err !== undefined && err.message ? err.message : err))
+            setLoading(false)
+          })
+        return function () { alive = false }
+      }, [])
+
+      function patchUi(body) {
+        setBusy(true)
+        setStatus('')
+        return fetch(ROUTE, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+          .then(function (response) { return response.json() })
+          .then(function (payload) {
+            if (payload !== null && payload !== undefined && payload.ok === true) {
+              applyUi(payload.ui)
+              setStatus('已保存')
+            } else {
+              setStatus('保存失败：' + (payload !== null && payload !== undefined && payload.error ? payload.error : '未知错误'))
+            }
+            setBusy(false)
+          })
+          .catch(function (err) {
+            setStatus('保存失败：' + (err !== null && err !== undefined && err.message ? err.message : err))
+            setBusy(false)
+          })
+      }
+
+      function save() {
+        patchUi({ action: 'saveUiSettings', ui: { doneOpacity: doneOpacity, partialOpacity: partialOpacity, priorityPalette: palette.join(';') } })
+      }
+
+      function reset() {
+        patchUi({ action: 'resetUiSettings' })
+      }
+
+      function setColor(index, value) {
+        setPalette(function (list) {
+          const next = list.slice()
+          next[index] = value
+          return next
+        })
+      }
+
+      function opacityRow(label, hint, value, onChange) {
+        return h(
+          'div',
+          { className: 'tns-row' },
+          h(
+            'div',
+            { className: 'tns-row-text' },
+            h('div', { className: 'tns-label' }, label),
+            h('div', { className: 'tns-hint' }, hint),
+          ),
+          h(
+            'div',
+            { className: 'tns-opacity' },
+            h('input', {
+              type: 'range', min: 0, max: 100, step: 1, value: value, className: 'tns-range',
+              onChange: function (event) { onChange(Number(event.target.value)) },
+            }),
+            h('input', {
+              type: 'number', min: 0, max: 100, value: value, className: 'tns-number',
+              onChange: function (event) {
+                const next = Number(event.target.value)
+                if (Number.isFinite(next)) onChange(Math.max(0, Math.min(100, Math.round(next))))
+              },
+            }),
+            h('span', { className: 'tns-unit' }, '%'),
+          ),
+        )
+      }
+
+      return h(
+        'div',
+        { className: 'tns-page' },
+        h('p', { className: 'tns-desc' }, '调整完成状态的外观与优先级颜色。改完点“保存”，设置会立即应用到所有面板。'),
+        loading
+          ? h('div', { className: 'tns-loading' }, '读取设置…')
+          : h(
+              React.Fragment,
+              null,
+              error !== '' ? h('div', { className: 'tns-error' }, error) : null,
+              h(
+                'section',
+                { className: 'tns-section' },
+                h('h3', { className: 'tns-section-title' }, '状态外观'),
+                opacityRow('已完成', '整行变淡，便于把注意力留在未完成项上', doneOpacity, setDoneOpacity),
+                opacityRow('半完成', '智能体已勾选、等待你确认的条目', partialOpacity, setPartialOpacity),
+                h(
+                  'div',
+                  { className: 'tns-preview' },
+                  h('div', { className: 'tns-preview-label' }, '预览'),
+                  h(
+                    'div',
+                    { className: 'tns-preview-row', style: { opacity: doneOpacity / 100 } },
+                    h('span', { className: 'tns-preview-check' }, '☑'),
+                    h('span', { className: 'tns-preview-prio', style: { color: palette[1] } }, 'T1'),
+                    h('span', null, '已完成的条目'),
+                  ),
+                  h(
+                    'div',
+                    { className: 'tns-preview-row', style: { opacity: partialOpacity / 100 } },
+                    h('span', { className: 'tns-preview-check' }, '◐'),
+                    h('span', { className: 'tns-preview-prio', style: { color: palette[2] } }, 'T2'),
+                    h('span', null, '半完成、等待确认的条目'),
+                  ),
+                ),
+              ),
+              h(
+                'section',
+                { className: 'tns-section' },
+                h('h3', { className: 'tns-section-title' }, '优先级颜色'),
+                h('p', { className: 'tns-hint' }, 'T0 最高，T9 最低。点色块用取色器改，也可以直接填十六进制值。'),
+                h(
+                  'div',
+                  { className: 'tns-colors' },
+                  palette.map(function (color, index) {
+                    return h(
+                      'div',
+                      { key: index, className: 'tns-color-row' },
+                      h('span', { className: 'tns-color-label' }, 'T' + index),
+                      h('input', {
+                        type: 'color', className: 'tns-color-input', value: isHexColor(color) ? color : '#888888',
+                        onChange: function (event) { setColor(index, event.target.value) },
+                      }),
+                      h('input', {
+                        type: 'text', className: 'tns-hex', value: color, spellCheck: false,
+                        onChange: function (event) {
+                          const next = String(event.target.value).trim()
+                          if (next === '' || /^#[0-9a-fA-F]{0,6}$/.test(next)) setColor(index, next)
+                        },
+                        onBlur: function () { if (!isHexColor(color)) setColor(index, UI_DEFAULT_PALETTE[index]) },
+                      }),
+                      h('span', { className: 'tns-color-chip', style: { background: color } }),
+                    )
+                  }),
+                ),
+              ),
+              h(
+                'div',
+                { className: 'tns-actions' },
+                h('button', { type: 'button', className: 'tns-btn', disabled: busy, onClick: reset }, '恢复默认'),
+                h('button', { type: 'button', className: 'tns-btn tns-btn-primary', disabled: busy, onClick: save }, busy ? '保存中…' : '保存'),
+                status !== '' ? h('span', { className: 'tns-status' }, status) : null,
+              ),
+            ),
+      )
+    }
+
     // ------------------------------------------------------------ 插件入口
 
     function injectStyles() {
@@ -4866,6 +5146,12 @@ window.__ModuleLoader__.load({
         return ctx.slots.register(
           { name: 'shell.overlay', id: 'todo-notes', order: 45, label: 'TODO 便签' },
           wrap(host),
+        )
+      })
+      ctx.slots.inject('settings.plugins.tab', function () {
+        return ctx.slots.register(
+          { name: 'settings.plugins.tab', id: 'todo-notes-settings', order: 30, label: 'TODO 便签' },
+          TodoNotesSettings,
         )
       })
       ctx.slots.inject('sidebar.right.pane.tab', function () {

@@ -45,6 +45,12 @@
           wrap(host),
         )
       })
+      ctx.slots.inject('settings.plugins.tab', function () {
+        return ctx.slots.register(
+          { name: 'settings.plugins.tab', id: 'todo-notes-settings', order: 30, label: 'TODO 便签' },
+          TodoNotesSettings,
+        )
+      })
       ctx.slots.inject('sidebar.right.pane.tab', function () {
         return ctx.slots.register(
           { name: 'sidebar.right.pane.tab', key: 'todo-notes' },

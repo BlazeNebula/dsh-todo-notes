@@ -114,6 +114,9 @@
       }, [hoverOpen])
 
       const panelCollapsed = collapsed && !(hoverOpen && !embedded)
+      const uiSettings = data !== null && data !== undefined && data.ui !== null && data.ui !== undefined ? data.ui : {}
+      const donePercent = typeof uiSettings.doneOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.doneOpacity)) : 35
+      const partialPercent = typeof uiSettings.partialOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.partialOpacity)) : 75
       const panel = h(
         'div',
         {
@@ -125,14 +128,20 @@
             (dragging ? ' dtn-dragging' : '') +
             (embedded ? ' dtn-embedded' : '') +
             (embedded && mode !== 'sidebar' ? ' dtn-hidden' : ''),
-          style: embedded
-            ? {}
-            : {
-                left: panelLeftOf(panelPos, panelWidth, panelCollapsed) + 'px',
-                top: panelPos.y + 'px',
-                width: panelCollapsed ? undefined : panelWidth + 'px',
-                height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
-              },
+          style: Object.assign(
+            {
+              '--dtn-done-opacity': String(donePercent / 100),
+              '--dtn-partial-opacity': String(partialPercent / 100),
+            },
+            embedded
+              ? {}
+              : {
+                  left: panelLeftOf(panelPos, panelWidth, panelCollapsed) + 'px',
+                  top: panelPos.y + 'px',
+                  width: panelCollapsed ? undefined : panelWidth + 'px',
+                  height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
+                },
+          ),
           onMouseEnter: embedded
             ? undefined
             : function () { if (collapsed) setHoverOpen(true) },

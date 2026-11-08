@@ -5,10 +5,23 @@
       '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8',
       '#238fba', '#205eaa', '#1e30a2', '#1e41a2',
     ]
+    let prioOverride = null
+
+    // 设置页里的色板用分号分隔，必须是 10 个值；不合法时回退内置色板。
+    function applyPriorityPalette(raw) {
+      const text = typeof raw === 'string' ? raw.trim() : ''
+      if (text === '') {
+        prioOverride = null
+        return
+      }
+      const parts = text.split(';').map(function (item) { return item.trim() }).filter(function (item) { return item !== '' })
+      prioOverride = parts.length === 10 ? parts : null
+    }
 
     function prioColor(priority) {
       const value = typeof priority === 'number' && priority >= 0 ? Math.min(9, Math.floor(priority)) : 1
-      return PRIO_PALETTE[value]
+      const palette = prioOverride === null ? PRIO_PALETTE : prioOverride
+      return palette[value]
     }
 
     // 排序口径：未勾选 > 中间态（智能体勾选等人工确认）> 已勾选。
