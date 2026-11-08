@@ -44,7 +44,7 @@
 .dtn-resize-t { left: 12px; right: 12px; top: -3px; height: 6px; cursor: ns-resize; }
 .dtn-resize-b { left: 12px; right: 12px; bottom: -3px; height: 6px; cursor: ns-resize; }
 .dtn-icon { flex: none; display: block; color: inherit; }
-.dtn-folder-icon { display: inline-flex; color: var(--dsw-alias-label-secondary, #a3a3ab); }
+.dtn-folder-toggle { display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 4px; margin-left: -4px; flex: none; border-radius: 4px; color: var(--dsw-alias-label-secondary, #a3a3ab); cursor: pointer; }
 .dtn-head {
   display: flex;
   align-items: center;
@@ -132,7 +132,6 @@
   color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px;
 }
 .dtn-folder-head:hover { background: var(--dsw-alias-bg-layer-1, #232328); }
-.dtn-folder-caret { display: inline-flex; align-items: center; width: 14px; flex: none; }
 .dtn-folder-name { display: flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 65%, transparent); }
 .dtn-folder-count { margin-left: auto; font-size: 10.5px; }
 .dtn-todo {
@@ -175,7 +174,6 @@
 }
 .dtn-todo:hover .dtn-grip, .dtn-folder-head:hover .dtn-grip { opacity: .8; }
 .dtn-grip:active { cursor: grabbing; }
-.dtn-folder-caret { cursor: pointer; }
 .dtn-selected,
 .dtn-selected:hover {
   background: color-mix(in srgb, var(--dsw-alias-brand-primary, #4d9cff) 16%, transparent);

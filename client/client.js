@@ -74,7 +74,7 @@ window.__ModuleLoader__.load({
 .dtn-resize-t { left: 12px; right: 12px; top: -3px; height: 6px; cursor: ns-resize; }
 .dtn-resize-b { left: 12px; right: 12px; bottom: -3px; height: 6px; cursor: ns-resize; }
 .dtn-icon { flex: none; display: block; color: inherit; }
-.dtn-folder-icon { display: inline-flex; color: var(--dsw-alias-label-secondary, #a3a3ab); }
+.dtn-folder-toggle { display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 4px; margin-left: -4px; flex: none; border-radius: 4px; color: var(--dsw-alias-label-secondary, #a3a3ab); cursor: pointer; }
 .dtn-head {
   display: flex;
   align-items: center;
@@ -162,7 +162,6 @@ window.__ModuleLoader__.load({
   color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px;
 }
 .dtn-folder-head:hover { background: var(--dsw-alias-bg-layer-1, #232328); }
-.dtn-folder-caret { display: inline-flex; align-items: center; width: 14px; flex: none; }
 .dtn-folder-name { display: flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 65%, transparent); }
 .dtn-folder-count { margin-left: auto; font-size: 10.5px; }
 .dtn-todo {
@@ -205,7 +204,6 @@ window.__ModuleLoader__.load({
 }
 .dtn-todo:hover .dtn-grip, .dtn-folder-head:hover .dtn-grip { opacity: .8; }
 .dtn-grip:active { cursor: grabbing; }
-.dtn-folder-caret { cursor: pointer; }
 .dtn-selected,
 .dtn-selected:hover {
   background: color-mix(in srgb, var(--dsw-alias-brand-primary, #4d9cff) 16%, transparent);
@@ -2664,11 +2662,12 @@ window.__ModuleLoader__.load({
         fitSubmenuNode(host)
       }, [subOpen, folderMenu, todoMenu])
 
-      function renderTodoRow(group, todo, folderId) {
+      function renderTodoRow(group, todo, folderId, indent) {
         const isDone = todo.status === 'done'
         const isPartial = todo.status === 'partial'
         const rowScope = typeof folderId === 'string' && folderId !== '' ? folderId : 'loose'
         const rowKey = group.key + ':' + todo.id + ':' + rowScope
+        const rowIndent = typeof indent === 'number' && indent > 0 ? indent : 0
         const selectItem = { key: rowKey, type: 'todo', groupKey: group.key, id: todo.id, folder: rowScope }
         const selected = isSelectedKey(rowKey)
         const renamingTodo = editingTodo !== null && editingTodo !== undefined && editingTodo.key === group.key && editingTodo.id === todo.id
@@ -2683,6 +2682,7 @@ window.__ModuleLoader__.load({
             'data-select-id': todo.id,
             'data-select-folder': rowScope,
             className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
+            style: rowIndent > 0 ? { marginLeft: rowIndent + 'px' } : undefined,
             title: todo.title,
             draggable: !renamingTodo,
             onDragStart: function (event) {
@@ -2887,9 +2887,12 @@ window.__ModuleLoader__.load({
               },
             },
             h('span', {
-              className: 'dtn-folder-caret',
+              className: 'dtn-folder-toggle',
+              title: folderOpen ? '收起文件夹' : '展开文件夹',
               onClick: function (event) { event.stopPropagation(); toggleFolder(folderKey) },
-            }, folderOpen ? icon('chevronDown') : icon('chevronRight')),
+            },
+            folderOpen ? icon('chevronDown') : icon('chevronRight'),
+            icon('folder')),
             renaming
               ? h('input', {
                   className: 'dtn-rename',
@@ -2913,7 +2916,6 @@ window.__ModuleLoader__.load({
                     className: 'dtn-folder-name',
                     title: '双击文字重命名，右键更多',
                   },
-                  h('span', { className: 'dtn-folder-icon' }, icon('folder')),
                   h('span', {
                     className: 'dtn-folder-text',
                     onDoubleClick: function (event) { event.stopPropagation(); startRenameFolder(group, folder) },
@@ -2962,7 +2964,7 @@ window.__ModuleLoader__.load({
             'div',
             { className: 'dtn-fold' + (folderOpen ? '' : ' dtn-fold-off') },
             children.map(function (child) { return renderFolder(group, child, depth + 1) }),
-            todos.map(function (todo) { return renderTodoRow(group, todo, folder.id) }),
+            todos.map(function (todo) { return renderTodoRow(group, todo, folder.id, 24) }),
           ),
         )
       }
@@ -3070,7 +3072,12 @@ window.__ModuleLoader__.load({
                   },
                 },
                 h('span', { className: 'dtn-group-caret' }, groupOpen ? icon('chevronDown') : icon('chevronRight')),
-                h('span', { className: 'dtn-group-name' }, group.title || '未命名组'),
+                h('span', {
+                  className: 'dtn-group-name',
+                  style: group.current === true && (group.kind === 'workspace' || group.kind === 'session') ? { fontStyle: 'italic' } : undefined,
+                  title: (group.kind === 'session' ? '双击切换到该会话' : (group.subtitle || group.title || '')) +
+                    (group.current === true && group.kind === 'workspace' ? '（当前工作区）' : group.current === true && group.kind === 'session' ? '（当前会话）' : ''),
+                }, group.title || '未命名组'),
                 group.kind === 'workspace' || group.kind === 'session'
                   ? h(
                       'button',
