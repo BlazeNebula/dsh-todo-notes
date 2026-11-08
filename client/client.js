@@ -486,12 +486,13 @@ window.__ModuleLoader__.load({
   border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 6px;
 }
 .tns-unit { color: var(--dsw-alias-label-secondary, #a3a3ab); }
-.tns-preview { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--dsw-alias-bg-layer-1, #232327); }
+.tns-preview { margin: 0 0 20px; padding: 10px 12px; border-radius: 8px; background: var(--dsw-alias-bg-layer-1, #232327); }
 .tns-preview-label { margin-bottom: 6px; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 11px; }
 .tns-preview-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
 .tns-preview-check { width: 14px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
 .tns-preview-prio { font-weight: 600; font-size: 11px; }
-.tns-colors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 18px; margin-top: 10px; }
+.tns-colors { display: flex; gap: 6px 22px; margin-top: 10px; align-items: flex-start; }
+.tns-color-column { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .tns-color-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
 .tns-color-label { width: 26px; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px; }
 .tns-color-input {
@@ -505,8 +506,7 @@ window.__ModuleLoader__.load({
   color: var(--dsw-alias-label-primary, #e8e8ea); background: var(--dsw-alias-bg-layer-2, #2b2b31);
   border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 6px;
 }
-.tns-color-chip { width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--dsw-alias-border-l2, #3a3a41); }
-.tns-actions { display: flex; align-items: center; gap: 10px; padding-top: 4px; }
+.tns-actions { display: flex; align-items: center; gap: 10px; padding: 2px 0 12px; }
 .tns-btn {
   height: 28px; padding: 0 14px; font: inherit; font-size: 12px; cursor: pointer;
   color: var(--dsw-alias-label-primary, #e8e8ea); background: var(--dsw-alias-bg-layer-2, #2b2b31);
@@ -5035,30 +5035,37 @@ window.__ModuleLoader__.load({
               null,
               error !== '' ? h('div', { className: 'tns-error' }, error) : null,
               h(
+                'div',
+                { className: 'tns-actions' },
+                h('button', { type: 'button', className: 'tns-btn', disabled: busy, onClick: reset }, '恢复默认'),
+                h('button', { type: 'button', className: 'tns-btn tns-btn-primary', disabled: busy, onClick: save }, busy ? '保存中…' : '保存'),
+                status !== '' ? h('span', { className: 'tns-status' }, status) : null,
+              ),
+              h(
+                'div',
+                { className: 'tns-preview' },
+                h('div', { className: 'tns-preview-label' }, '预览'),
+                h(
+                  'div',
+                  { className: 'tns-preview-row', style: { opacity: doneOpacity / 100 } },
+                  h('span', { className: 'tns-preview-check' }, '☑'),
+                  h('span', { className: 'tns-preview-prio', style: { color: palette[1] } }, 'T1'),
+                  h('span', null, '已完成的条目'),
+                ),
+                h(
+                  'div',
+                  { className: 'tns-preview-row', style: { opacity: partialOpacity / 100 } },
+                  h('span', { className: 'tns-preview-check' }, '◐'),
+                  h('span', { className: 'tns-preview-prio', style: { color: palette[2] } }, 'T2'),
+                  h('span', null, '半完成、等待确认的条目'),
+                ),
+              ),
+              h(
                 'section',
                 { className: 'tns-section' },
                 h('h3', { className: 'tns-section-title' }, '状态外观'),
                 opacityRow('已完成', '整行变淡，便于把注意力留在未完成项上', doneOpacity, setDoneOpacity),
                 opacityRow('半完成', '智能体已勾选、等待你确认的条目', partialOpacity, setPartialOpacity),
-                h(
-                  'div',
-                  { className: 'tns-preview' },
-                  h('div', { className: 'tns-preview-label' }, '预览'),
-                  h(
-                    'div',
-                    { className: 'tns-preview-row', style: { opacity: doneOpacity / 100 } },
-                    h('span', { className: 'tns-preview-check' }, '☑'),
-                    h('span', { className: 'tns-preview-prio', style: { color: palette[1] } }, 'T1'),
-                    h('span', null, '已完成的条目'),
-                  ),
-                  h(
-                    'div',
-                    { className: 'tns-preview-row', style: { opacity: partialOpacity / 100 } },
-                    h('span', { className: 'tns-preview-check' }, '◐'),
-                    h('span', { className: 'tns-preview-prio', style: { color: palette[2] } }, 'T2'),
-                    h('span', null, '半完成、等待确认的条目'),
-                  ),
-                ),
               ),
               h(
                 'section',
@@ -5068,34 +5075,36 @@ window.__ModuleLoader__.load({
                 h(
                   'div',
                   { className: 'tns-colors' },
-                  palette.map(function (color, index) {
+                  [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]].map(function (column, columnIndex) {
                     return h(
                       'div',
-                      { key: index, className: 'tns-color-row' },
-                      h('span', { className: 'tns-color-label' }, 'T' + index),
-                      h('input', {
-                        type: 'color', className: 'tns-color-input', value: isHexColor(color) ? color : '#888888',
-                        onChange: function (event) { setColor(index, event.target.value) },
+                      { key: columnIndex, className: 'tns-color-column' },
+                      column.map(function (index) {
+                        const color = palette[index]
+                        return h(
+                          'div',
+                          { key: index, className: 'tns-color-row' },
+                          h('span', { className: 'tns-color-label' }, 'T' + index),
+                          h('input', {
+                            type: 'color', className: 'tns-color-input', value: isHexColor(color) ? color : '#888888',
+                            onChange: function (event) { setColor(index, event.target.value) },
+                          }),
+                          h('input', {
+                            type: 'text', className: 'tns-hex', value: color, spellCheck: false,
+                            onChange: function (event) {
+                              const next = String(event.target.value).trim()
+                              if (next === '' || /^#[0-9a-fA-F]{0,6}$/.test(next)) setColor(index, next)
+                            },
+                            onBlur: function () {
+                              const current = palette[index]
+                              if (!isHexColor(current)) setColor(index, UI_DEFAULT_PALETTE[index])
+                            },
+                          }),
+                        )
                       }),
-                      h('input', {
-                        type: 'text', className: 'tns-hex', value: color, spellCheck: false,
-                        onChange: function (event) {
-                          const next = String(event.target.value).trim()
-                          if (next === '' || /^#[0-9a-fA-F]{0,6}$/.test(next)) setColor(index, next)
-                        },
-                        onBlur: function () { if (!isHexColor(color)) setColor(index, UI_DEFAULT_PALETTE[index]) },
-                      }),
-                      h('span', { className: 'tns-color-chip', style: { background: color } }),
                     )
                   }),
                 ),
-              ),
-              h(
-                'div',
-                { className: 'tns-actions' },
-                h('button', { type: 'button', className: 'tns-btn', disabled: busy, onClick: reset }, '恢复默认'),
-                h('button', { type: 'button', className: 'tns-btn tns-btn-primary', disabled: busy, onClick: save }, busy ? '保存中…' : '保存'),
-                status !== '' ? h('span', { className: 'tns-status' }, status) : null,
               ),
             ),
       )

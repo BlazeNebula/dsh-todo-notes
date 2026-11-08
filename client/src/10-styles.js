@@ -456,12 +456,13 @@
   border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 6px;
 }
 .tns-unit { color: var(--dsw-alias-label-secondary, #a3a3ab); }
-.tns-preview { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--dsw-alias-bg-layer-1, #232327); }
+.tns-preview { margin: 0 0 20px; padding: 10px 12px; border-radius: 8px; background: var(--dsw-alias-bg-layer-1, #232327); }
 .tns-preview-label { margin-bottom: 6px; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 11px; }
 .tns-preview-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
 .tns-preview-check { width: 14px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
 .tns-preview-prio { font-weight: 600; font-size: 11px; }
-.tns-colors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 18px; margin-top: 10px; }
+.tns-colors { display: flex; gap: 6px 22px; margin-top: 10px; align-items: flex-start; }
+.tns-color-column { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .tns-color-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
 .tns-color-label { width: 26px; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px; }
 .tns-color-input {
@@ -475,8 +476,7 @@
   color: var(--dsw-alias-label-primary, #e8e8ea); background: var(--dsw-alias-bg-layer-2, #2b2b31);
   border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 6px;
 }
-.tns-color-chip { width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--dsw-alias-border-l2, #3a3a41); }
-.tns-actions { display: flex; align-items: center; gap: 10px; padding-top: 4px; }
+.tns-actions { display: flex; align-items: center; gap: 10px; padding: 2px 0 12px; }
 .tns-btn {
   height: 28px; padding: 0 14px; font: inherit; font-size: 12px; cursor: pointer;
   color: var(--dsw-alias-label-primary, #e8e8ea); background: var(--dsw-alias-bg-layer-2, #2b2b31);
