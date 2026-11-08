@@ -14,8 +14,8 @@
           h(
             'div',
             { className: 'dtn-folder-head' },
-            h('span', { className: 'dtn-folder-caret' }),
-            h('span', { className: 'dtn-folder-name' }, h('span', { className: 'dtn-folder-icon' }, icon('folder')), '未归类'),
+            h('span', { className: 'dtn-folder-toggle', style: { cursor: 'default' } }, icon('folder')),
+            h('span', { className: 'dtn-folder-name' }, '未归类'),
           ),
           loose.map(function (todo) { return renderTodoRow(group, todo, '') }),
         )
