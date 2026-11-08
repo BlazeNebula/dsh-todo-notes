@@ -12,10 +12,25 @@
       if (win.kind === 'preview' && win.editing === true) {
         const title = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
         if (title !== '' && title !== win.title) {
-          postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: title }).catch(function () {})
+          postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: title })
+            .then(function () { syncTodoTitle(win.groupKey, win.todoId, title) })
+            .catch(function () {})
         }
       }
       removePin(win.id)
+    }
+
+    // 预览信息里的文件夹名：主归属显示“无文件夹”，其余按当前组结构解析名称。
+    function pinFolderLabel(win) {
+      const meta = win.meta
+      const folderId = meta !== null && meta !== undefined && typeof meta.primaryFolder === 'string' && meta.primaryFolder !== ''
+        ? meta.primaryFolder
+        : PRIMARY
+      if (folderId === PRIMARY) return '无文件夹'
+      const group = findLiveGroup(win.groupKey)
+      const folder = group === null || group === undefined ? null : findFolder(group.folders || [], folderId)
+      if (folder === null || folder === undefined) return folderId
+      return typeof folder.name === 'string' && folder.name !== '' ? folder.name : folderId
     }
 
     function renderPinPreview(win) {
@@ -24,8 +39,12 @@
         'div',
         {
           key: win.id,
-          className: 'dtn-preview dtn-pin',
-          style: { left: win.pos.x + 'px', top: win.pos.y + 'px' },
+          className: 'dtn-preview dtn-pin' + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
+          style: {
+            left: win.pos.x + 'px',
+            top: win.pos.y + 'px',
+            zIndex: focusPin === win.id ? 2147482402 : 2147482400,
+          },
           onPointerDown: function (event) { event.stopPropagation() },
         },
         h(
@@ -79,7 +98,7 @@
             : [
                 h('span', { key: 'status' }, meta.status === 'done' ? '已完成' : meta.status === 'partial' ? '中间态（待人工确认）' : '未完成'),
                 isAiSource(meta.source) ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13)) : null,
-                h('span', { key: 'folder' }, '无文件夹：' + folderLabel(meta.primaryFolder)),
+                h('span', { key: 'folder' }, pinFolderLabel(win)),
                 h('span', { key: 'priority', style: { color: prioColor(meta.priority) } }, '优先级 T' + (typeof meta.priority === 'number' ? meta.priority : 1)),
                 meta.created !== '' ? h('span', { key: 'created' }, '创建 ' + formatStamp(meta.created)) : null,
               ],

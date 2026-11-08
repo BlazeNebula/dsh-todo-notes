@@ -417,6 +417,12 @@ window.__ModuleLoader__.load({
 .dtn-preview-body { overflow: auto; padding: 10px 14px 16px; }
 .dtn-preview.dtn-batch { width: 440px; height: 320px; }
 .dtn-preview.dtn-pin { z-index: 2147482400; }
+.dtn-pin-pulse { animation: dtn-pin-pulse 360ms cubic-bezier(0.22, 0.61, 0.36, 1) 1; }
+@keyframes dtn-pin-pulse {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
+  100% { filter: brightness(1); }
+}
 .dtn-edit-body { display: flex; flex-direction: column; gap: 8px; }
 .dtn-edit-body .dtn-batch-field { flex: 1 1 auto; min-height: 160px; overflow: visible; }
 .dtn-edit-input {
@@ -907,6 +913,8 @@ window.__ModuleLoader__.load({
       const [pinned, setPinned] = React.useState(function () {
         return sanitizePinnedWindows(readStored(LS_WINDOWS, []))
       })
+      const [pulsePin, setPulsePin] = React.useState('')
+      const [focusPin, setFocusPin] = React.useState('')
       const pinnedRef = React.useRef(pinned)
       const pinSeq = React.useRef(0)
       const pinSaveTimers = React.useRef({})
@@ -918,6 +926,31 @@ window.__ModuleLoader__.load({
         pinnedRef.current = pinned
         writeStored(LS_WINDOWS, pinned)
       }, [pinned])
+      // 面板里的勾选、优先级、文件夹变更刷新数据后，同步更新已保留预览窗的信息区。
+      React.useEffect(function () {
+        if (data === null || data === undefined) return
+        setPinned(function (list) {
+          let changed = false
+          const next = list.map(function (win) {
+            if (win.kind !== 'preview') return win
+            const group = findLiveGroup(win.groupKey)
+            if (group === null || group === undefined) return win
+            const todo = (group.todos || []).find(function (item) { return item.id === win.todoId })
+            if (todo === undefined) return win
+            const meta = {
+              status: todo.status,
+              priority: todo.priority,
+              source: todo.source,
+              primaryFolder: todo.primaryFolder,
+              created: todo.created,
+            }
+            if (JSON.stringify(meta) === JSON.stringify(win.meta) && todo.title === win.title) return win
+            changed = true
+            return Object.assign({}, win, { title: todo.title, meta: meta })
+          })
+          return changed ? next : list
+        })
+      }, [data])
       React.useEffect(function () {
         return function () {
           const keys = Object.keys(pinSaveTimers.current)
@@ -927,12 +960,13 @@ window.__ModuleLoader__.load({
       }, [])
       // 浏览器 localStorage 按端口隔离，DSH 重启端口可能变化；窗口数据落到插件数据目录。
       React.useEffect(function () {
+        if (embedded === true) return undefined
         if (typeof fetch !== 'function') {
           windowsLoadedRef.current = true
           return undefined
         }
         let alive = true
-        fetch(ROUTE + '?what=windows', { headers: { accept: 'application/json' } })
+        fetch(ROUTE + '?what=windows&ts=' + Date.now(), { cache: 'no-store', headers: { accept: 'application/json' } })
           .then(function (response) {
             if (!response.ok) throw new Error('HTTP ' + response.status)
             return response.json()
@@ -952,7 +986,7 @@ window.__ModuleLoader__.load({
               fetch(ROUTE, {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({ action: 'saveWindows', windows: pinnedRef.current }),
+                body: JSON.stringify({ action: 'saveWindows', windows: serializePinnedWindows(pinnedRef.current) }),
               }).catch(function () {})
             }
           })
@@ -961,13 +995,29 @@ window.__ModuleLoader__.load({
           })
         return function () { alive = false }
       }, [])
+      // 右侧栏实例新建的浮窗转交给浮动面板实例渲染，避免两份相同窗口。
       React.useEffect(function () {
+        if (embedded === true || SYNC_BUS === null) return undefined
+        const onPin = function (event) {
+          const win = event !== null && event !== undefined ? event.detail : null
+          if (win === null || win === undefined || typeof win.id !== 'string') return
+          setPinned(function (list) {
+            if (list.some(function (item) { return item.id === win.id })) return list
+            return list.concat([win])
+          })
+          setFocusPin(win.id)
+        }
+        SYNC_BUS.addEventListener('pin-open', onPin)
+        return function () { SYNC_BUS.removeEventListener('pin-open', onPin) }
+      }, [])
+      React.useEffect(function () {
+        if (embedded === true) return undefined
         if (windowsLoadedRef.current !== true) return undefined
         const timer = window.setTimeout(function () {
           fetch(ROUTE, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ action: 'saveWindows', windows: pinned }),
+            body: JSON.stringify({ action: 'saveWindows', windows: serializePinnedWindows(pinned) }),
           }).catch(function () {})
         }, 500)
         return function () { window.clearTimeout(timer) }
@@ -978,7 +1028,8 @@ window.__ModuleLoader__.load({
         pending.forEach(function (item) {
           if (pinFetchStarted.current[item.id] === true) return
           pinFetchStarted.current[item.id] = true
-          fetch(ROUTE + '?what=todo&id=' + encodeURIComponent(item.todoId) + '&cwd=' + encodeURIComponent(cwd) + '&session=' + encodeURIComponent(sessionId), {
+          fetch(ROUTE + '?what=todo&id=' + encodeURIComponent(item.todoId) + '&cwd=' + encodeURIComponent(cwd) + '&session=' + encodeURIComponent(sessionId) + '&ts=' + Date.now(), {
+            cache: 'no-store',
             headers: { accept: 'application/json' },
           })
             .then(function (response) {
@@ -1140,7 +1191,7 @@ window.__ModuleLoader__.load({
         if (typeof fetch !== 'function') return undefined
         let alive = true
         const tick = function () {
-          fetch(ROUTE + '?' + query, { headers: { accept: 'application/json' } })
+          fetch(ROUTE + '?' + query + '&ts=' + Date.now(), { cache: 'no-store', headers: { accept: 'application/json' } })
             .then(function (response) {
               if (!response.ok) throw new Error('HTTP ' + response.status)
               return response.json()
@@ -1203,7 +1254,8 @@ window.__ModuleLoader__.load({
         let alive = true
         setPreviewData(null)
         setPreviewError('')
-        fetch(ROUTE + '?what=todo&id=' + encodeURIComponent(preview.id) + '&cwd=' + encodeURIComponent(cwd) + '&session=' + encodeURIComponent(sessionId), {
+        fetch(ROUTE + '?what=todo&id=' + encodeURIComponent(preview.id) + '&cwd=' + encodeURIComponent(cwd) + '&session=' + encodeURIComponent(sessionId) + '&ts=' + Date.now(), {
+          cache: 'no-store',
           headers: { accept: 'application/json' },
         })
           .then(function (response) {
@@ -1430,6 +1482,8 @@ window.__ModuleLoader__.load({
       }
 
       function openPreview(group, todo, rect) {
+        // 已经有保留的预览窗时，直接复用它：置顶并脉冲一次，不再新开一个预览。
+        if (reusePreviewPin(group, todo)) return
         // 同一条目再次点击时保留已加载的正文，避免预览退回到「加载中」。
         const same = preview !== null && preview.id === todo.id
         setPreview({ id: todo.id, groupKey: group.key, title: todo.title })
@@ -2186,8 +2240,8 @@ window.__ModuleLoader__.load({
           const group = findLiveGroup(item.groupKey)
           if (group !== null && group !== undefined) groups.push(group)
         })
-        const seen = {}
-        const out = []
+        const seen = { [PRIMARY]: true }
+        const out = [{ id: PRIMARY, label: folderLabel(PRIMARY), depth: 0 }]
         groups.forEach(function (group) {
           folderOptions(group).forEach(function (option) {
             if (seen[option.id] === true) return
@@ -2330,10 +2384,12 @@ window.__ModuleLoader__.load({
         setBatchRename(null)
         const tasks = []
         const folderRenames = {}
+        const todoRenames = []
         state.items.forEach(function (item, index) {
           const name = String(names[index] === undefined ? '' : names[index]).trim()
           if (name === '') return
           if (item.type === 'todo') {
+            todoRenames.push({ groupKey: item.groupKey, id: item.id, title: name })
             tasks.push(function () { return postApi({ action: 'renameTodo', key: item.groupKey, id: item.id, title: name }) })
           } else {
             if (folderRenames[item.groupKey] === undefined) folderRenames[item.groupKey] = {}
@@ -2354,6 +2410,7 @@ window.__ModuleLoader__.load({
         runSequential(tasks)
           .then(function () {
             setSelectionNow([])
+            todoRenames.forEach(function (item) { syncTodoTitle(item.groupKey, item.id, item.title) })
             animatePendingRef.current = true
             refresh()
             showBubble('已重命名 ' + tasks.length + ' 项', null)
@@ -2373,7 +2430,10 @@ window.__ModuleLoader__.load({
         const title = String(state.draft === undefined || state.draft === null ? '' : state.draft).replace(/\r?\n/g, ' ').trim()
         if (title === '') return
         postApi({ action: 'renameTodo', key: group.key, id: state.id, title: title })
-          .then(function () { refresh() })
+          .then(function () {
+            syncTodoTitle(group.key, state.id, title)
+            refresh()
+          })
           .catch(function (err) { failWith(event, err) })
       }
 
@@ -3752,10 +3812,19 @@ window.__ModuleLoader__.load({
         if (kinds[item.kind] !== true) continue
         if (typeof item.id !== 'string' || item.id === '') continue
         const pos = item.pos !== null && typeof item.pos === 'object' ? item.pos : { x: 12, y: 64 }
+        const ratio = item.ratio === true || item.ratio === 1
+        const viewWidth = typeof window === 'undefined' ? 0 : window.innerWidth
+        const viewHeight = typeof window === 'undefined' ? 0 : window.innerHeight
+        const point = ratio
+          ? {
+              x: (Number(pos.x) || 0) * (viewWidth > 0 ? viewWidth : 1280),
+              y: (Number(pos.y) || 0) * (viewHeight > 0 ? viewHeight : 800),
+            }
+          : { x: Number(pos.x) || 12, y: Number(pos.y) || 64 }
         const base = {
           id: item.id,
           kind: item.kind,
-          pos: clampPos({ x: Number(pos.x) || 12, y: Number(pos.y) || 64 }, 440, 200),
+          pos: clampPos(point, 440, 200),
         }
         if (item.kind === 'preview') {
           list.push(Object.assign(base, {
@@ -3789,6 +3858,37 @@ window.__ModuleLoader__.load({
       return list
     }
 
+    // 位置按视口比例持久化：换分辨率或窗口大小后仍在相近位置出现。
+    function serializePinnedWindows(list) {
+      const viewWidth = window.innerWidth > 0 ? window.innerWidth : 1280
+      const viewHeight = window.innerHeight > 0 ? window.innerHeight : 800
+      return list.map(function (win) {
+        return Object.assign({}, win, {
+          pos: { x: win.pos.x / viewWidth, y: win.pos.y / viewHeight },
+          ratio: true,
+        })
+      })
+    }
+
+    // 右侧栏实例不渲染浮窗：它新建窗口时把数据交给浮动面板实例，避免同一窗口渲染两份。
+    function emitPinnedWindow(win) {
+      if (embedded !== true || SYNC_BUS === null || typeof CustomEvent !== 'function') return false
+      SYNC_BUS.dispatchEvent(new CustomEvent('pin-open', { detail: win }))
+      return true
+    }
+
+    // 标题改名后同时更新面板数据与已保留的窗口，不依赖下一次轮询。
+    function syncTodoTitle(groupKey, todoId, title) {
+      patchBoardTitle(groupKey, todoId, title)
+      setPinned(function (list) {
+        return list.map(function (win) {
+          if (win.todoId !== todoId || win.groupKey !== groupKey) return win
+          if (win.editing === true) return Object.assign({}, win, { title: title })
+          return Object.assign({}, win, { title: title, renameDraft: undefined })
+        })
+      })
+    }
+
     function nextPinId() {
       return 'w' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1296).toString(36)
     }
@@ -3804,35 +3904,88 @@ window.__ModuleLoader__.load({
         window.clearTimeout(pinSaveTimers.current[id])
         delete pinSaveTimers.current[id]
       }
+      if (pinTitleTimers.current[id] !== undefined) {
+        window.clearTimeout(pinTitleTimers.current[id])
+        delete pinTitleTimers.current[id]
+      }
       setPinned(function (list) { return list.filter(function (item) { return item.id !== id }) })
+    }
+
+    // 把改名结果直接写回面板数据，避免只靠下一次拉取才更新。
+    function patchBoardTitle(groupKey, todoId, title) {
+      setData(function (current) {
+        if (current === null || typeof current !== 'object') return current
+        let changed = false
+        const apply = function (group) {
+          if (group === null || typeof group !== 'object') return group
+          if (group.key !== groupKey || !Array.isArray(group.todos)) return group
+          let touched = false
+          const todos = group.todos.map(function (todo) {
+            if (todo === null || typeof todo !== 'object' || todo.id !== todoId) return todo
+            if (todo.title === title) return todo
+            touched = true
+            return Object.assign({}, todo, { title: title })
+          })
+          if (!touched) return group
+          changed = true
+          return Object.assign({}, group, { todos: todos })
+        }
+        const next = Object.assign({}, current, {
+          user: apply(current.user),
+          workspaces: Array.isArray(current.workspaces) ? current.workspaces.map(apply) : current.workspaces,
+          sessions: Array.isArray(current.sessions) ? current.sessions.map(apply) : current.sessions,
+        })
+        return changed ? next : current
+      })
+    }
+
+    // 只对「同一个条目」复用已保留的预览窗：置顶并整块高亮一次，内容保持不动。
+    function reusePreviewPin(group, todo) {
+      const candidate = pinnedRef.current.filter(function (item) {
+        return item.kind === 'preview' && item.todoId === todo.id && item.groupKey === group.key
+      }).slice(-1)[0]
+      if (candidate === undefined) return false
+      // 只抬高层级，不做内容重载，也不改变窗口顺序。
+      setFocusPin(candidate.id)
+      setPulsePin(candidate.id)
+      window.setTimeout(function () {
+        setPulsePin(function (value) { return value === candidate.id ? '' : value })
+      }, 420)
+      return true
     }
 
     function pinFromPreview(startEditing) {
       if (preview === null) return ''
       const data = previewData
       const id = nextPinId()
+      setFocusPin(id)
+      const win = {
+        id: id,
+        kind: 'preview',
+        pos: { x: previewPos.x, y: previewPos.y },
+        todoId: preview.id,
+        groupKey: preview.groupKey,
+        title: data !== null && typeof data.title === 'string' ? data.title : preview.title,
+        markdown: data !== null && typeof data.markdown === 'string' ? data.markdown : '',
+        draft: data !== null && typeof data.markdown === 'string' ? data.markdown : '',
+        meta: data === null ? null : {
+          status: data.status,
+          priority: data.priority,
+          source: data.source,
+          primaryFolder: data.primaryFolder,
+          created: data.created,
+        },
+        editing: startEditing === true,
+        loading: data === null,
+        loaded: data !== null,
+        error: '',
+      }
+      if (emitPinnedWindow(win)) {
+        closePreview()
+        return id
+      }
       setPinned(function (list) {
-        return list.concat([{
-          id: id,
-          kind: 'preview',
-          pos: { x: previewPos.x, y: previewPos.y },
-          todoId: preview.id,
-          groupKey: preview.groupKey,
-          title: data !== null && typeof data.title === 'string' ? data.title : preview.title,
-          markdown: data !== null && typeof data.markdown === 'string' ? data.markdown : '',
-          draft: data !== null && typeof data.markdown === 'string' ? data.markdown : '',
-          meta: data === null ? null : {
-            status: data.status,
-            priority: data.priority,
-            source: data.source,
-            primaryFolder: data.primaryFolder,
-            created: data.created,
-          },
-          editing: startEditing === true,
-          loading: data === null,
-          loaded: data !== null,
-          error: '',
-        }])
+        return list.concat([win])
       })
       closePreview()
       return id
@@ -3842,17 +3995,20 @@ window.__ModuleLoader__.load({
       if (batchCreate === null) return ''
       const pos = batchPos || batchCreate.pos
       const id = nextPinId()
-      setPinned(function (list) {
-        return list.concat([{
-          id: id,
-          kind: 'batchCreate',
-          pos: { x: pos.x, y: pos.y },
-          groupKey: batchCreate.key,
-          folderId: batchCreate.folderId,
-          value: batchCreate.value,
-        }])
-      })
+      setFocusPin(id)
+      const win = {
+        id: id,
+        kind: 'batchCreate',
+        pos: { x: pos.x, y: pos.y },
+        groupKey: batchCreate.key,
+        folderId: batchCreate.folderId,
+        value: batchCreate.value,
+      }
       setBatchCreate(null)
+      if (emitPinnedWindow(win)) return id
+      setPinned(function (list) {
+        return list.concat([win])
+      })
       return id
     }
 
@@ -3860,18 +4016,21 @@ window.__ModuleLoader__.load({
       if (batchRename === null) return ''
       const pos = batchRename.pos
       const id = nextPinId()
-      setPinned(function (list) {
-        return list.concat([{
-          id: id,
-          kind: 'batchRename',
-          pos: { x: pos.x, y: pos.y },
-          items: batchRename.items.map(function (item) {
-            return { groupKey: item.groupKey, id: item.id, type: item.type, title: item.title }
-          }),
-          value: batchRename.value,
-        }])
-      })
+      setFocusPin(id)
+      const win = {
+        id: id,
+        kind: 'batchRename',
+        pos: { x: pos.x, y: pos.y },
+        items: batchRename.items.map(function (item) {
+          return { groupKey: item.groupKey, id: item.id, type: item.type, title: item.title }
+        }),
+        value: batchRename.value,
+      }
       setBatchRename(null)
+      if (emitPinnedWindow(win)) return id
+      setPinned(function (list) {
+        return list.concat([win])
+      })
       return id
     }
 
@@ -3966,6 +4125,7 @@ window.__ModuleLoader__.load({
       postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: title })
         .then(function () {
           updatePin(id, { title: title, renameDraft: undefined })
+          syncTodoTitle(win.groupKey, win.todoId, title)
           refresh()
           showBubble('标题已保存', { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
         })
@@ -4101,10 +4261,25 @@ window.__ModuleLoader__.load({
       if (win.kind === 'preview' && win.editing === true) {
         const title = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
         if (title !== '' && title !== win.title) {
-          postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: title }).catch(function () {})
+          postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: title })
+            .then(function () { syncTodoTitle(win.groupKey, win.todoId, title) })
+            .catch(function () {})
         }
       }
       removePin(win.id)
+    }
+
+    // 预览信息里的文件夹名：主归属显示“无文件夹”，其余按当前组结构解析名称。
+    function pinFolderLabel(win) {
+      const meta = win.meta
+      const folderId = meta !== null && meta !== undefined && typeof meta.primaryFolder === 'string' && meta.primaryFolder !== ''
+        ? meta.primaryFolder
+        : PRIMARY
+      if (folderId === PRIMARY) return '无文件夹'
+      const group = findLiveGroup(win.groupKey)
+      const folder = group === null || group === undefined ? null : findFolder(group.folders || [], folderId)
+      if (folder === null || folder === undefined) return folderId
+      return typeof folder.name === 'string' && folder.name !== '' ? folder.name : folderId
     }
 
     function renderPinPreview(win) {
@@ -4113,8 +4288,12 @@ window.__ModuleLoader__.load({
         'div',
         {
           key: win.id,
-          className: 'dtn-preview dtn-pin',
-          style: { left: win.pos.x + 'px', top: win.pos.y + 'px' },
+          className: 'dtn-preview dtn-pin' + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
+          style: {
+            left: win.pos.x + 'px',
+            top: win.pos.y + 'px',
+            zIndex: focusPin === win.id ? 2147482402 : 2147482400,
+          },
           onPointerDown: function (event) { event.stopPropagation() },
         },
         h(
@@ -4168,7 +4347,7 @@ window.__ModuleLoader__.load({
             : [
                 h('span', { key: 'status' }, meta.status === 'done' ? '已完成' : meta.status === 'partial' ? '中间态（待人工确认）' : '未完成'),
                 isAiSource(meta.source) ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13)) : null,
-                h('span', { key: 'folder' }, '无文件夹：' + folderLabel(meta.primaryFolder)),
+                h('span', { key: 'folder' }, pinFolderLabel(win)),
                 h('span', { key: 'priority', style: { color: prioColor(meta.priority) } }, '优先级 T' + (typeof meta.priority === 'number' ? meta.priority : 1)),
                 meta.created !== '' ? h('span', { key: 'created' }, '创建 ' + formatStamp(meta.created)) : null,
               ],
@@ -4613,7 +4792,7 @@ window.__ModuleLoader__.load({
             ),
           )
 
-      const pinnedNodes = renderPinnedWindows()
+      const pinnedNodes = embedded ? null : renderPinnedWindows()
       return h(React.Fragment, null, panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode)
     }
 

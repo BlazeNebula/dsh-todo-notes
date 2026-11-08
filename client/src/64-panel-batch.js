@@ -5,8 +5,8 @@
           const group = findLiveGroup(item.groupKey)
           if (group !== null && group !== undefined) groups.push(group)
         })
-        const seen = {}
-        const out = []
+        const seen = { [PRIMARY]: true }
+        const out = [{ id: PRIMARY, label: folderLabel(PRIMARY), depth: 0 }]
         groups.forEach(function (group) {
           folderOptions(group).forEach(function (option) {
             if (seen[option.id] === true) return
@@ -149,10 +149,12 @@
         setBatchRename(null)
         const tasks = []
         const folderRenames = {}
+        const todoRenames = []
         state.items.forEach(function (item, index) {
           const name = String(names[index] === undefined ? '' : names[index]).trim()
           if (name === '') return
           if (item.type === 'todo') {
+            todoRenames.push({ groupKey: item.groupKey, id: item.id, title: name })
             tasks.push(function () { return postApi({ action: 'renameTodo', key: item.groupKey, id: item.id, title: name }) })
           } else {
             if (folderRenames[item.groupKey] === undefined) folderRenames[item.groupKey] = {}
@@ -173,6 +175,7 @@
         runSequential(tasks)
           .then(function () {
             setSelectionNow([])
+            todoRenames.forEach(function (item) { syncTodoTitle(item.groupKey, item.id, item.title) })
             animatePendingRef.current = true
             refresh()
             showBubble('已重命名 ' + tasks.length + ' 项', null)
@@ -192,7 +195,10 @@
         const title = String(state.draft === undefined || state.draft === null ? '' : state.draft).replace(/\r?\n/g, ' ').trim()
         if (title === '') return
         postApi({ action: 'renameTodo', key: group.key, id: state.id, title: title })
-          .then(function () { refresh() })
+          .then(function () {
+            syncTodoTitle(group.key, state.id, title)
+            refresh()
+          })
           .catch(function (err) { failWith(event, err) })
       }
 

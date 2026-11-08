@@ -118,6 +118,8 @@
       const [pinned, setPinned] = React.useState(function () {
         return sanitizePinnedWindows(readStored(LS_WINDOWS, []))
       })
+      const [pulsePin, setPulsePin] = React.useState('')
+      const [focusPin, setFocusPin] = React.useState('')
       const pinnedRef = React.useRef(pinned)
       const pinSeq = React.useRef(0)
       const pinSaveTimers = React.useRef({})
@@ -129,6 +131,31 @@
         pinnedRef.current = pinned
         writeStored(LS_WINDOWS, pinned)
       }, [pinned])
+      // 面板里的勾选、优先级、文件夹变更刷新数据后，同步更新已保留预览窗的信息区。
+      React.useEffect(function () {
+        if (data === null || data === undefined) return
+        setPinned(function (list) {
+          let changed = false
+          const next = list.map(function (win) {
+            if (win.kind !== 'preview') return win
+            const group = findLiveGroup(win.groupKey)
+            if (group === null || group === undefined) return win
+            const todo = (group.todos || []).find(function (item) { return item.id === win.todoId })
+            if (todo === undefined) return win
+            const meta = {
+              status: todo.status,
+              priority: todo.priority,
+              source: todo.source,
+              primaryFolder: todo.primaryFolder,
+              created: todo.created,
+            }
+            if (JSON.stringify(meta) === JSON.stringify(win.meta) && todo.title === win.title) return win
+            changed = true
+            return Object.assign({}, win, { title: todo.title, meta: meta })
+          })
+          return changed ? next : list
+        })
+      }, [data])
       React.useEffect(function () {
         return function () {
           const keys = Object.keys(pinSaveTimers.current)
@@ -138,12 +165,13 @@
       }, [])
       // 浏览器 localStorage 按端口隔离，DSH 重启端口可能变化；窗口数据落到插件数据目录。
       React.useEffect(function () {
+        if (embedded === true) return undefined
         if (typeof fetch !== 'function') {
           windowsLoadedRef.current = true
           return undefined
         }
         let alive = true
-        fetch(ROUTE + '?what=windows', { headers: { accept: 'application/json' } })
+        fetch(ROUTE + '?what=windows&ts=' + Date.now(), { cache: 'no-store', headers: { accept: 'application/json' } })
           .then(function (response) {
             if (!response.ok) throw new Error('HTTP ' + response.status)
             return response.json()
@@ -163,7 +191,7 @@
               fetch(ROUTE, {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({ action: 'saveWindows', windows: pinnedRef.current }),
+                body: JSON.stringify({ action: 'saveWindows', windows: serializePinnedWindows(pinnedRef.current) }),
               }).catch(function () {})
             }
           })
@@ -172,13 +200,29 @@
           })
         return function () { alive = false }
       }, [])
+      // 右侧栏实例新建的浮窗转交给浮动面板实例渲染，避免两份相同窗口。
       React.useEffect(function () {
+        if (embedded === true || SYNC_BUS === null) return undefined
+        const onPin = function (event) {
+          const win = event !== null && event !== undefined ? event.detail : null
+          if (win === null || win === undefined || typeof win.id !== 'string') return
+          setPinned(function (list) {
+            if (list.some(function (item) { return item.id === win.id })) return list
+            return list.concat([win])
+          })
+          setFocusPin(win.id)
+        }
+        SYNC_BUS.addEventListener('pin-open', onPin)
+        return function () { SYNC_BUS.removeEventListener('pin-open', onPin) }
+      }, [])
+      React.useEffect(function () {
+        if (embedded === true) return undefined
         if (windowsLoadedRef.current !== true) return undefined
         const timer = window.setTimeout(function () {
           fetch(ROUTE, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ action: 'saveWindows', windows: pinned }),
+            body: JSON.stringify({ action: 'saveWindows', windows: serializePinnedWindows(pinned) }),
           }).catch(function () {})
         }, 500)
         return function () { window.clearTimeout(timer) }
@@ -189,7 +233,8 @@
         pending.forEach(function (item) {
           if (pinFetchStarted.current[item.id] === true) return
           pinFetchStarted.current[item.id] = true
-          fetch(ROUTE + '?what=todo&id=' + encodeURIComponent(item.todoId) + '&cwd=' + encodeURIComponent(cwd) + '&session=' + encodeURIComponent(sessionId), {
+          fetch(ROUTE + '?what=todo&id=' + encodeURIComponent(item.todoId) + '&cwd=' + encodeURIComponent(cwd) + '&session=' + encodeURIComponent(sessionId) + '&ts=' + Date.now(), {
+            cache: 'no-store',
             headers: { accept: 'application/json' },
           })
             .then(function (response) {
@@ -351,7 +396,7 @@
         if (typeof fetch !== 'function') return undefined
         let alive = true
         const tick = function () {
-          fetch(ROUTE + '?' + query, { headers: { accept: 'application/json' } })
+          fetch(ROUTE + '?' + query + '&ts=' + Date.now(), { cache: 'no-store', headers: { accept: 'application/json' } })
             .then(function (response) {
               if (!response.ok) throw new Error('HTTP ' + response.status)
               return response.json()
@@ -414,7 +459,8 @@
         let alive = true
         setPreviewData(null)
         setPreviewError('')
-        fetch(ROUTE + '?what=todo&id=' + encodeURIComponent(preview.id) + '&cwd=' + encodeURIComponent(cwd) + '&session=' + encodeURIComponent(sessionId), {
+        fetch(ROUTE + '?what=todo&id=' + encodeURIComponent(preview.id) + '&cwd=' + encodeURIComponent(cwd) + '&session=' + encodeURIComponent(sessionId) + '&ts=' + Date.now(), {
+          cache: 'no-store',
           headers: { accept: 'application/json' },
         })
           .then(function (response) {

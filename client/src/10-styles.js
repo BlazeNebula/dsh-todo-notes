@@ -387,6 +387,12 @@
 .dtn-preview-body { overflow: auto; padding: 10px 14px 16px; }
 .dtn-preview.dtn-batch { width: 440px; height: 320px; }
 .dtn-preview.dtn-pin { z-index: 2147482400; }
+.dtn-pin-pulse { animation: dtn-pin-pulse 360ms cubic-bezier(0.22, 0.61, 0.36, 1) 1; }
+@keyframes dtn-pin-pulse {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
+  100% { filter: brightness(1); }
+}
 .dtn-edit-body { display: flex; flex-direction: column; gap: 8px; }
 .dtn-edit-body .dtn-batch-field { flex: 1 1 auto; min-height: 160px; overflow: visible; }
 .dtn-edit-input {

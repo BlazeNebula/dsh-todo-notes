@@ -206,6 +206,8 @@
       }
 
       function openPreview(group, todo, rect) {
+        // 已经有保留的预览窗时，直接复用它：置顶并脉冲一次，不再新开一个预览。
+        if (reusePreviewPin(group, todo)) return
         // 同一条目再次点击时保留已加载的正文，避免预览退回到「加载中」。
         const same = preview !== null && preview.id === todo.id
         setPreview({ id: todo.id, groupKey: group.key, title: todo.title })
