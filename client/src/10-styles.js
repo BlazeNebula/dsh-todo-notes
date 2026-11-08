@@ -456,6 +456,7 @@
   border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 6px;
 }
 .tns-unit { color: var(--dsw-alias-label-secondary, #a3a3ab); }
+.tns-check { width: 16px; height: 16px; margin: 0; accent-color: #4d9cff; }
 .tns-preview { margin: 0 0 20px; padding: 10px 12px; border-radius: 8px; background: var(--dsw-alias-bg-layer-1, #232327); }
 .tns-preview-label { margin-bottom: 6px; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 11px; }
 .tns-preview-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }

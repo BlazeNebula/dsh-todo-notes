@@ -23,6 +23,7 @@
       const [partialOpacity, setPartialOpacity] = React.useState(67)
       const [palette, setPalette] = React.useState(UI_DEFAULT_PALETTE.slice())
       const [autosaveSec, setAutosaveSec] = React.useState('5')
+      const [agentAllow, setAgentAllow] = React.useState(false)
 
       function applyUi(ui, config) {
         if (ui === null || ui === undefined) return
@@ -33,6 +34,9 @@
           ? ui.bodyAutosaveMs
           : (config !== null && config !== undefined && typeof config.bodyAutosaveMs === 'number' ? config.bodyAutosaveMs : 5000)
         setAutosaveSec(String(Math.max(1, Math.round(delay / 1000))))
+        if (ui.agentWriteUserTodos === true) setAgentAllow(true)
+        else if (ui.agentWriteUserTodos === false) setAgentAllow(false)
+        else setAgentAllow(config !== null && config !== undefined && config.agentWriteUserTodos === true)
       }
 
       React.useEffect(function () {
@@ -86,6 +90,7 @@
             partialOpacity: partialOpacity,
             priorityPalette: palette.join(';'),
             bodyAutosaveMs: seconds * 1000,
+            agentWriteUserTodos: agentAllow,
           },
         })
       }
@@ -224,6 +229,20 @@
                 'section',
                 { className: 'tns-section' },
                 h('h3', { className: 'tns-section-title' }, '编辑与保存'),
+                h(
+                  'div',
+                  { className: 'tns-row' },
+                  h(
+                    'div',
+                    { className: 'tns-row-text' },
+                    h('div', { className: 'tns-label' }, '允许智能体修改你手写的条目'),
+                    h('div', { className: 'tns-hint' }, '关闭时智能体只能动自己创建的条目；打开后每次写入仍需 DSH 审批'),
+                  ),
+                  h('input', {
+                    type: 'checkbox', className: 'tns-check', checked: agentAllow,
+                    onChange: function (event) { setAgentAllow(event.target.checked === true) },
+                  }),
+                ),
                 h(
                   'div',
                   { className: 'tns-row' },
