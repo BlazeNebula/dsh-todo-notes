@@ -4929,12 +4929,17 @@ window.__ModuleLoader__.load({
       const [doneOpacity, setDoneOpacity] = React.useState(35)
       const [partialOpacity, setPartialOpacity] = React.useState(75)
       const [palette, setPalette] = React.useState(UI_DEFAULT_PALETTE.slice())
+      const [autosaveSec, setAutosaveSec] = React.useState('5')
 
-      function applyUi(ui) {
+      function applyUi(ui, config) {
         if (ui === null || ui === undefined) return
         setDoneOpacity(typeof ui.doneOpacity === 'number' ? ui.doneOpacity : 35)
         setPartialOpacity(typeof ui.partialOpacity === 'number' ? ui.partialOpacity : 75)
         setPalette(splitPalette(ui.priorityPalette))
+        const delay = ui.bodyAutosaveMs !== null && ui.bodyAutosaveMs !== undefined
+          ? ui.bodyAutosaveMs
+          : (config !== null && config !== undefined && typeof config.bodyAutosaveMs === 'number' ? config.bodyAutosaveMs : 5000)
+        setAutosaveSec(String(Math.max(1, Math.round(delay / 1000))))
       }
 
       React.useEffect(function () {
@@ -4943,7 +4948,7 @@ window.__ModuleLoader__.load({
           .then(function (response) { return response.json() })
           .then(function (payload) {
             if (!alive) return
-            if (payload !== null && payload !== undefined && payload.ok === true) applyUi(payload.ui)
+            if (payload !== null && payload !== undefined && payload.ok === true) applyUi(payload.ui, payload.config)
             else setError('读取设置失败')
             setLoading(false)
           })
@@ -4966,7 +4971,7 @@ window.__ModuleLoader__.load({
           .then(function (response) { return response.json() })
           .then(function (payload) {
             if (payload !== null && payload !== undefined && payload.ok === true) {
-              applyUi(payload.ui)
+              applyUi(payload.ui, payload.config)
               setStatus('已保存')
             } else {
               setStatus('保存失败：' + (payload !== null && payload !== undefined && payload.error ? payload.error : '未知错误'))
@@ -4980,7 +4985,16 @@ window.__ModuleLoader__.load({
       }
 
       function save() {
-        patchUi({ action: 'saveUiSettings', ui: { doneOpacity: doneOpacity, partialOpacity: partialOpacity, priorityPalette: palette.join(';') } })
+        const seconds = Math.max(1, Math.min(60, Math.round(Number(autosaveSec) || 5)))
+        patchUi({
+          action: 'saveUiSettings',
+          ui: {
+            doneOpacity: doneOpacity,
+            partialOpacity: partialOpacity,
+            priorityPalette: palette.join(';'),
+            bodyAutosaveMs: seconds * 1000,
+          },
+        })
       }
 
       function reset() {
@@ -5047,6 +5061,13 @@ window.__ModuleLoader__.load({
                 h('div', { className: 'tns-preview-label' }, '预览'),
                 h(
                   'div',
+                  { className: 'tns-preview-row' },
+                  h('span', { className: 'tns-preview-check' }, '☐'),
+                  h('span', { className: 'tns-preview-prio', style: { color: palette[3] } }, 'T3'),
+                  h('span', null, '未完成的条目'),
+                ),
+                h(
+                  'div',
                   { className: 'tns-preview-row', style: { opacity: doneOpacity / 100 } },
                   h('span', { className: 'tns-preview-check' }, '☑'),
                   h('span', { className: 'tns-preview-prio', style: { color: palette[1] } }, 'T1'),
@@ -5066,6 +5087,30 @@ window.__ModuleLoader__.load({
                 h('h3', { className: 'tns-section-title' }, '状态外观'),
                 opacityRow('已完成', '整行变淡，便于把注意力留在未完成项上', doneOpacity, setDoneOpacity),
                 opacityRow('半完成', '智能体已勾选、等待你确认的条目', partialOpacity, setPartialOpacity),
+              ),
+              h(
+                'section',
+                { className: 'tns-section' },
+                h('h3', { className: 'tns-section-title' }, '编辑与保存'),
+                h(
+                  'div',
+                  { className: 'tns-row' },
+                  h(
+                    'div',
+                    { className: 'tns-row-text' },
+                    h('div', { className: 'tns-label' }, '正文自动保存'),
+                    h('div', { className: 'tns-hint' }, '停止输入后等待多久保存；标题使用同一个间隔'),
+                  ),
+                  h(
+                    'div',
+                    { className: 'tns-opacity' },
+                    h('input', {
+                      type: 'number', min: 1, max: 60, value: autosaveSec, className: 'tns-number',
+                      onChange: function (event) { setAutosaveSec(event.target.value) },
+                    }),
+                    h('span', { className: 'tns-unit' }, '秒'),
+                  ),
+                ),
               ),
               h(
                 'section',
