@@ -202,6 +202,16 @@
             ],
       )
 
+      function previewFolderLabel(data) {
+        if (data === null || data === undefined) return ''
+        const folderId = typeof data.primaryFolder === 'string' && data.primaryFolder !== '' ? data.primaryFolder : PRIMARY
+        if (folderId === PRIMARY) return '无文件夹'
+        const group = preview !== null && preview !== undefined ? findLiveGroup(preview.groupKey) : null
+        const folder = group === null || group === undefined ? null : findFolder(group.folders || [], folderId)
+        if (folder === null || folder === undefined) return folderId
+        return typeof folder.name === 'string' && folder.name !== '' ? folder.name : folderId
+      }
+
       const previewPanel = h(
         'div',
         {
@@ -252,7 +262,7 @@
                       isAiSource(previewData.source)
                         ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13))
                         : null,
-                      h('span', { key: 'folder' }, '无文件夹：' + folderLabel(previewData.primaryFolder)),
+                      h('span', { key: 'folder' }, previewFolderLabel(previewData)),
                       h('span', { key: 'priority', style: { color: prioColor(previewData.priority) } }, '优先级 T' + (typeof previewData.priority === 'number' ? previewData.priority : 1)),
                       previewData.created !== '' ? h('span', { key: 'created' }, '创建 ' + formatStamp(previewData.created)) : null,
                     ]

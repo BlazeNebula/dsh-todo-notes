@@ -830,6 +830,21 @@ window.__ModuleLoader__.load({
         SYNC_BUS.addEventListener('refresh', onSync)
         return function () { SYNC_BUS.removeEventListener('refresh', onSync) }
       }, [])
+      // 标题改名在另一侧发生时，本实例也立刻更新行标题与临时预览，不等轮询。
+      React.useEffect(function () {
+        if (SYNC_BUS === null) return undefined
+        const onTitle = function (event) {
+          const detail = event !== null && event !== undefined ? event.detail : null
+          if (detail === null || detail === undefined || typeof detail.title !== 'string') return
+          patchBoardTitle(detail.groupKey, detail.todoId, detail.title)
+          setPreviewData(function (current) {
+            if (current === null || current === undefined || current.id !== detail.todoId) return current
+            return Object.assign({}, current, { title: detail.title })
+          })
+        }
+        SYNC_BUS.addEventListener('todo-title', onTitle)
+        return function () { SYNC_BUS.removeEventListener('todo-title', onTitle) }
+      }, [])
 
       const maxPanelWidth = function () {
         const view = typeof window === 'undefined' ? 1440 : window.innerWidth
@@ -1643,15 +1658,6 @@ window.__ModuleLoader__.load({
         const text = groupCopyText(group)
         if (text === '') return
         copyText(text).then(function () { showBubble(message, event) }).catch(function () {}) 
-      }
-
-      // 双击会话组的标题：让 DSH 切到该会话。由宿主注入的 openSession 完成导航。
-      function openSessionGroup(group, event) {
-        const owner = group !== null && group !== undefined ? group.owner : null
-        const sessionId = owner !== null && owner !== undefined && typeof owner.sessionId === 'string' ? owner.sessionId : ''
-        if (sessionId === '') return
-        const opened = typeof props.openSession === 'function' ? props.openSession(sessionId) : false
-        if (!opened) showBubble('当前 DSH 不支持跳转会话', event)
       }
 
       function dragData(event) {
@@ -3041,10 +3047,7 @@ window.__ModuleLoader__.load({
                   className: 'dtn-group-head' + (current ? ' dtn-current' : '') + (dropKey === 'group:' + group.key ? ' dtn-drop-target' : ''),
                   onClick: function () { toggleGroup(group.key) },
                   onContextMenu: function (event) { openTreeMenu(event, { kind: 'group', group: group }) },
-                  onDoubleClick: group.kind === 'session'
-                    ? function (event) { event.stopPropagation(); openSessionGroup(group, event) }
-                    : undefined,
-                  title: group.kind === 'session' ? '双击切换到该会话' : (group.subtitle || group.title),
+                  title: group.subtitle || group.title,
                   onDragOver: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     if (dragPayloadKey.current !== group.key) return
@@ -3075,7 +3078,7 @@ window.__ModuleLoader__.load({
                 h('span', {
                   className: 'dtn-group-name',
                   style: group.current === true && (group.kind === 'workspace' || group.kind === 'session') ? { fontStyle: 'italic' } : undefined,
-                  title: (group.kind === 'session' ? '双击切换到该会话' : (group.subtitle || group.title || '')) +
+                  title: (group.subtitle || group.title || '') +
                     (group.current === true && group.kind === 'workspace' ? '（当前工作区）' : group.current === true && group.kind === 'session' ? '（当前会话）' : ''),
                 }, group.title || '未命名组'),
                 group.kind === 'workspace' || group.kind === 'session'
@@ -3356,6 +3359,16 @@ window.__ModuleLoader__.load({
             ],
       )
 
+      function previewFolderLabel(data) {
+        if (data === null || data === undefined) return ''
+        const folderId = typeof data.primaryFolder === 'string' && data.primaryFolder !== '' ? data.primaryFolder : PRIMARY
+        if (folderId === PRIMARY) return '无文件夹'
+        const group = preview !== null && preview !== undefined ? findLiveGroup(preview.groupKey) : null
+        const folder = group === null || group === undefined ? null : findFolder(group.folders || [], folderId)
+        if (folder === null || folder === undefined) return folderId
+        return typeof folder.name === 'string' && folder.name !== '' ? folder.name : folderId
+      }
+
       const previewPanel = h(
         'div',
         {
@@ -3406,7 +3419,7 @@ window.__ModuleLoader__.load({
                       isAiSource(previewData.source)
                         ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13))
                         : null,
-                      h('span', { key: 'folder' }, '无文件夹：' + folderLabel(previewData.primaryFolder)),
+                      h('span', { key: 'folder' }, previewFolderLabel(previewData)),
                       h('span', { key: 'priority', style: { color: prioColor(previewData.priority) } }, '优先级 T' + (typeof previewData.priority === 'number' ? previewData.priority : 1)),
                       previewData.created !== '' ? h('span', { key: 'created' }, '创建 ' + formatStamp(previewData.created)) : null,
                     ]
@@ -3884,9 +3897,13 @@ window.__ModuleLoader__.load({
       return true
     }
 
-    // 标题改名后同时更新面板数据与已保留的窗口，不依赖下一次轮询。
+    // 标题改名后同时更新面板数据、临时预览与已保留的窗口，不依赖下一次轮询。
     function syncTodoTitle(groupKey, todoId, title) {
       patchBoardTitle(groupKey, todoId, title)
+      setPreviewData(function (current) {
+        if (current === null || current === undefined || current.id !== todoId) return current
+        return Object.assign({}, current, { title: title })
+      })
       setPinned(function (list) {
         return list.map(function (win) {
           if (win.todoId !== todoId || win.groupKey !== groupKey) return win
@@ -3894,6 +3911,9 @@ window.__ModuleLoader__.load({
           return Object.assign({}, win, { title: title, renameDraft: undefined })
         })
       })
+      if (SYNC_BUS !== null && typeof CustomEvent === 'function') {
+        SYNC_BUS.dispatchEvent(new CustomEvent('todo-title', { detail: { groupKey: groupKey, todoId: todoId, title: title } }))
+      }
     }
 
     function nextPinId() {
@@ -4836,17 +4856,6 @@ window.__ModuleLoader__.load({
           try {
             if (ctx.layout !== undefined && ctx.layout !== null && typeof ctx.layout.closeRightbar === 'function') ctx.layout.closeRightbar()
           } catch (error) { /* 忽略 */ }
-        },
-        openSession: function (sessionId) {
-          if (typeof sessionId !== 'string' || sessionId === '') return false
-          try {
-            const service = typeof ctx.get === 'function' ? ctx.get('uiWorkspace') : ctx.uiWorkspace
-            if (service !== undefined && service !== null && typeof service.openSession === 'function') {
-              service.openSession(sessionId)
-              return true
-            }
-          } catch (error) { /* 导航失败时退回提示 */ }
-          return false
         },
       }
       function wrap(extra) {

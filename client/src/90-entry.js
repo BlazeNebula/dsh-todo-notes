@@ -32,17 +32,6 @@
             if (ctx.layout !== undefined && ctx.layout !== null && typeof ctx.layout.closeRightbar === 'function') ctx.layout.closeRightbar()
           } catch (error) { /* 忽略 */ }
         },
-        openSession: function (sessionId) {
-          if (typeof sessionId !== 'string' || sessionId === '') return false
-          try {
-            const service = typeof ctx.get === 'function' ? ctx.get('uiWorkspace') : ctx.uiWorkspace
-            if (service !== undefined && service !== null && typeof service.openSession === 'function') {
-              service.openSession(sessionId)
-              return true
-            }
-          } catch (error) { /* 导航失败时退回提示 */ }
-          return false
-        },
       }
       function wrap(extra) {
         return function Wrapped(props) {

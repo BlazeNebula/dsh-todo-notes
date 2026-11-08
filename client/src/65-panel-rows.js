@@ -377,10 +377,7 @@
                   className: 'dtn-group-head' + (current ? ' dtn-current' : '') + (dropKey === 'group:' + group.key ? ' dtn-drop-target' : ''),
                   onClick: function () { toggleGroup(group.key) },
                   onContextMenu: function (event) { openTreeMenu(event, { kind: 'group', group: group }) },
-                  onDoubleClick: group.kind === 'session'
-                    ? function (event) { event.stopPropagation(); openSessionGroup(group, event) }
-                    : undefined,
-                  title: group.kind === 'session' ? '双击切换到该会话' : (group.subtitle || group.title),
+                  title: group.subtitle || group.title,
                   onDragOver: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     if (dragPayloadKey.current !== group.key) return
@@ -411,7 +408,7 @@
                 h('span', {
                   className: 'dtn-group-name',
                   style: group.current === true && (group.kind === 'workspace' || group.kind === 'session') ? { fontStyle: 'italic' } : undefined,
-                  title: (group.kind === 'session' ? '双击切换到该会话' : (group.subtitle || group.title || '')) +
+                  title: (group.subtitle || group.title || '') +
                     (group.current === true && group.kind === 'workspace' ? '（当前工作区）' : group.current === true && group.kind === 'session' ? '（当前会话）' : ''),
                 }, group.title || '未命名组'),
                 group.kind === 'workspace' || group.kind === 'session'

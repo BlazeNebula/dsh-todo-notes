@@ -371,15 +371,6 @@
         copyText(text).then(function () { showBubble(message, event) }).catch(function () {}) 
       }
 
-      // 双击会话组的标题：让 DSH 切到该会话。由宿主注入的 openSession 完成导航。
-      function openSessionGroup(group, event) {
-        const owner = group !== null && group !== undefined ? group.owner : null
-        const sessionId = owner !== null && owner !== undefined && typeof owner.sessionId === 'string' ? owner.sessionId : ''
-        if (sessionId === '') return
-        const opened = typeof props.openSession === 'function' ? props.openSession(sessionId) : false
-        if (!opened) showBubble('当前 DSH 不支持跳转会话', event)
-      }
-
       function dragData(event) {
         if (event === null || event === undefined || event.dataTransfer === undefined) return null
         try {

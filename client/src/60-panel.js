@@ -37,6 +37,21 @@
         SYNC_BUS.addEventListener('refresh', onSync)
         return function () { SYNC_BUS.removeEventListener('refresh', onSync) }
       }, [])
+      // 标题改名在另一侧发生时，本实例也立刻更新行标题与临时预览，不等轮询。
+      React.useEffect(function () {
+        if (SYNC_BUS === null) return undefined
+        const onTitle = function (event) {
+          const detail = event !== null && event !== undefined ? event.detail : null
+          if (detail === null || detail === undefined || typeof detail.title !== 'string') return
+          patchBoardTitle(detail.groupKey, detail.todoId, detail.title)
+          setPreviewData(function (current) {
+            if (current === null || current === undefined || current.id !== detail.todoId) return current
+            return Object.assign({}, current, { title: detail.title })
+          })
+        }
+        SYNC_BUS.addEventListener('todo-title', onTitle)
+        return function () { SYNC_BUS.removeEventListener('todo-title', onTitle) }
+      }, [])
 
       const maxPanelWidth = function () {
         const view = typeof window === 'undefined' ? 1440 : window.innerWidth

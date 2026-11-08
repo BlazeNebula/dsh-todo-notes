@@ -77,9 +77,13 @@
       return true
     }
 
-    // 标题改名后同时更新面板数据与已保留的窗口，不依赖下一次轮询。
+    // 标题改名后同时更新面板数据、临时预览与已保留的窗口，不依赖下一次轮询。
     function syncTodoTitle(groupKey, todoId, title) {
       patchBoardTitle(groupKey, todoId, title)
+      setPreviewData(function (current) {
+        if (current === null || current === undefined || current.id !== todoId) return current
+        return Object.assign({}, current, { title: title })
+      })
       setPinned(function (list) {
         return list.map(function (win) {
           if (win.todoId !== todoId || win.groupKey !== groupKey) return win
@@ -87,6 +91,9 @@
           return Object.assign({}, win, { title: title, renameDraft: undefined })
         })
       })
+      if (SYNC_BUS !== null && typeof CustomEvent === 'function') {
+        SYNC_BUS.dispatchEvent(new CustomEvent('todo-title', { detail: { groupKey: groupKey, todoId: todoId, title: title } }))
+      }
     }
 
     function nextPinId() {
