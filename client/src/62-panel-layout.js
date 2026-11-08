@@ -315,6 +315,74 @@
         })
       }
 
+      // 外观设置浮层：完成态/半完成态透明度与 T0~T9 共 10 个优先级颜色。
+      function openUiSettings(event) {
+        if (event !== null && event !== undefined && typeof event.stopPropagation === 'function') event.stopPropagation()
+        const ui = data !== null && data !== undefined && data.ui !== null && data.ui !== undefined ? data.ui : {}
+        const x = event !== null && event !== undefined && typeof event.clientX === 'number' ? event.clientX : panelPos.x + 40
+        const y = event !== null && event !== undefined && typeof event.clientY === 'number' ? event.clientY : panelPos.y + 56
+        setUiAnchor({ x: x, y: y })
+        setUiDraft({
+          doneOpacity: String(typeof ui.doneOpacity === 'number' ? ui.doneOpacity : 35),
+          partialOpacity: String(typeof ui.partialOpacity === 'number' ? ui.partialOpacity : 75),
+          priorityPalette: typeof ui.priorityPalette === 'string' ? ui.priorityPalette : '',
+        })
+        setUiOpen(true)
+      }
+
+      function closeUiSettings() {
+        setUiOpen(false)
+        setUiDraft(null)
+      }
+
+      function saveUiSettings(event) {
+        if (event !== null && event !== undefined && typeof event.stopPropagation === 'function') event.stopPropagation()
+        const draft = uiDraft !== null && uiDraft !== undefined ? uiDraft : {}
+        postApi({
+          action: 'saveUiSettings',
+          ui: {
+            doneOpacity: Number(draft.doneOpacity),
+            partialOpacity: Number(draft.partialOpacity),
+            priorityPalette: typeof draft.priorityPalette === 'string' ? draft.priorityPalette : '',
+          },
+        })
+          .then(function (payload) {
+            closeUiSettings()
+            if (payload !== null && payload !== undefined && payload.ui !== null && payload.ui !== undefined) {
+              setData(function (prev) {
+                return prev === null || prev === undefined ? prev : Object.assign({}, prev, { ui: payload.ui })
+              })
+            }
+            showBubble('外观设置已保存', event)
+            refresh()
+          })
+          .catch(function (err) {
+            showBubble('保存失败：' + (err !== null && err !== undefined && err.message ? err.message : err), event)
+          })
+      }
+
+      function resetUiSettings(event) {
+        if (event !== null && event !== undefined && typeof event.stopPropagation === 'function') event.stopPropagation()
+        postApi({ action: 'resetUiSettings' })
+          .then(function (payload) {
+            if (payload !== null && payload !== undefined && payload.ui !== null && payload.ui !== undefined) {
+              setData(function (prev) {
+                return prev === null || prev === undefined ? prev : Object.assign({}, prev, { ui: payload.ui })
+              })
+              setUiDraft({
+                doneOpacity: String(payload.ui.doneOpacity),
+                partialOpacity: String(payload.ui.partialOpacity),
+                priorityPalette: typeof payload.ui.priorityPalette === 'string' ? payload.ui.priorityPalette : '',
+              })
+            }
+            showBubble('已恢复默认外观', event)
+            refresh()
+          })
+          .catch(function (err) {
+            showBubble('恢复失败：' + (err !== null && err !== undefined && err.message ? err.message : err), event)
+          })
+      }
+
       // 在鼠标上方冒出一个提示（减去光标高度，避免挡住指针）：停留 1s，再用 2.5s 淡出。
       // 每条提示独立存在：连续操作会并排出现多个，各自计时消失，不互相顶掉。
       function showBubble(text, event) {

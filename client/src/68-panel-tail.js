@@ -281,5 +281,5 @@
           )
 
       const pinnedNodes = embedded ? null : renderPinnedWindows()
-      return h(React.Fragment, null, panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode)
+      return h(React.Fragment, null, panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode, uiSettingsNode)
     }

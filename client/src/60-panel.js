@@ -84,6 +84,9 @@
       })
       const [data, setData] = React.useState(null)
       const [error, setError] = React.useState('')
+      const [uiOpen, setUiOpen] = React.useState(false)
+      const [uiAnchor, setUiAnchor] = React.useState({ x: 0, y: 0 })
+      const [uiDraft, setUiDraft] = React.useState(null)
       const [openGroups, setOpenGroups] = React.useState({})
       const [openFolders, setOpenFolders] = React.useState({})
       const [treeMenu, setTreeMenu] = React.useState(null)
@@ -146,6 +149,11 @@
         pinnedRef.current = pinned
         writeStored(LS_WINDOWS, pinned)
       }, [pinned])
+      // 外观设置（插件自己的设置浮层）变化后立即生效。
+      React.useEffect(function () {
+        const ui = data !== null && data !== undefined && data.ui !== null && data.ui !== undefined ? data.ui : {}
+        applyPriorityPalette(ui.priorityPalette)
+      }, [data])
       // 面板里的勾选、优先级、文件夹变更刷新数据后，同步更新已保留预览窗的信息区。
       React.useEffect(function () {
         if (data === null || data === undefined) return
