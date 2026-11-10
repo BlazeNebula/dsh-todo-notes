@@ -17,7 +17,7 @@
             'data-select-group': group.key,
             'data-select-id': todo.id,
             'data-select-folder': rowScope,
-            className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
+            className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : ''),
             style: rowIndent > 0 ? { marginLeft: rowIndent + 'px' } : undefined,
             title: todo.title,
             draggable: !renamingTodo,
@@ -29,9 +29,9 @@
             onDragOver: function (event) {
               if (event !== null && event.preventDefault !== undefined) event.preventDefault()
               if (dragPayloadKey.current !== group.key) return
-              markDropTarget(rowKey)
+              markDropTarget(event.currentTarget)
             },
-            onDragLeave: function (event) { leaveDropTarget(rowKey, event) },
+            onDragLeave: function (event) { leaveDropTarget(event.currentTarget, event) },
             onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; clearDropTarget() },
             onDrop: function (event) { clearDropTarget(); onTodoDrop(event, group, todo, folderId) },
             onContextMenu: function (event) {
@@ -172,7 +172,7 @@
               'data-select-type': 'folder',
               'data-select-group': group.key,
               'data-select-id': folder.id,
-              className: 'dtn-folder-head' + (selected ? ' dtn-selected' : '') + (dropKey === folderKey ? ' dtn-drop-target' : ''),
+              className: 'dtn-folder-head' + (selected ? ' dtn-selected' : ''),
               onClick: function (event) {
                 if (marqueeMovedRef.current === true) { marqueeMovedRef.current = false; return }
                 if (renaming) return
@@ -195,9 +195,9 @@
               onDragOver: function (event) {
                 if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                 if (dragPayloadKey.current !== group.key) return
-                markDropTarget(folderKey)
+                markDropTarget(event.currentTarget)
               },
-              onDragLeave: function (event) { leaveDropTarget(folderKey, event) },
+              onDragLeave: function (event) { leaveDropTarget(event.currentTarget, event) },
               onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; clearDropTarget() },
               onDrop: function (event) {
                 clearDropTarget()
@@ -328,15 +328,15 @@
         return h(
           'div',
           Object.assign(
-            { key: group.key, className: 'dtn-group' + (hideHead === true && dropKey === 'group:' + group.key ? ' dtn-drop-target' : ''), 'data-dtn-group': group.key },
+            { key: group.key, className: 'dtn-group', 'data-dtn-group': group.key },
             hideHead === true
               ? {
                   onDragOver: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     if (dragPayloadKey.current !== group.key) return
-                    markDropTarget('group:' + group.key)
+                    markDropTarget(event.currentTarget)
                   },
-                  onDragLeave: function (event) { leaveDropTarget('group:' + group.key, event) },
+                  onDragLeave: function (event) { leaveDropTarget(event.currentTarget, event) },
                   onDrop: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     clearDropTarget()
@@ -359,16 +359,16 @@
             : h(
                 'div',
                 {
-                  className: 'dtn-group-head' + (current ? ' dtn-current' : '') + (dropKey === 'group:' + group.key ? ' dtn-drop-target' : ''),
+                  className: 'dtn-group-head' + (current ? ' dtn-current' : ''),
                   onClick: function () { toggleGroup(group.key) },
                   onContextMenu: function (event) { openTreeMenu(event, { kind: 'group', group: group }) },
                   title: group.subtitle || group.title,
                   onDragOver: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     if (dragPayloadKey.current !== group.key) return
-                    markDropTarget('group:' + group.key)
+                    markDropTarget(event.currentTarget)
                   },
-                  onDragLeave: function (event) { leaveDropTarget('group:' + group.key, event) },
+                  onDragLeave: function (event) { leaveDropTarget(event.currentTarget, event) },
                   onDrop: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     clearDropTarget()

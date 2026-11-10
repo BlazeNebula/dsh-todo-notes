@@ -350,23 +350,27 @@
         return { text: chars.slice(0, limit).join(''), truncated: true, limit: limit }
       }
 
-      // 拖拽落点：进入时立即点亮；离开时延迟 90ms 再熄灭，避免跨子元素/文本节点时闪一下。
-      function markDropTarget(key) {
+      // 拖拽落点：直接给 DOM 加高亮类，不经过 React 状态，避免拖拽过程中整行重渲染造成闪烁。
+      function markDropTarget(element) {
         if (dropClearTimer.current !== null) {
           window.clearTimeout(dropClearTimer.current)
           dropClearTimer.current = null
         }
-        if (dropKey !== key) setDropKey(key)
+        if (dropTargetEl.current !== null && dropTargetEl.current !== element) {
+          dropTargetEl.current.classList.remove('dtn-drop-target')
+        }
+        dropTargetEl.current = element
+        if (element !== null && element !== undefined) element.classList.add('dtn-drop-target')
       }
 
-      function leaveDropTarget(key, event) {
-        if (dropKey !== key) return
+      function leaveDropTarget(element, event) {
+        if (dropTargetEl.current !== element) return
         const related = event !== null && event !== undefined ? event.relatedTarget : null
         if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
         if (dropClearTimer.current !== null) window.clearTimeout(dropClearTimer.current)
         dropClearTimer.current = window.setTimeout(function () {
           dropClearTimer.current = null
-          setDropKey('')
+          clearDropTarget()
         }, 90)
       }
 
@@ -375,7 +379,8 @@
           window.clearTimeout(dropClearTimer.current)
           dropClearTimer.current = null
         }
-        setDropKey('')
+        if (dropTargetEl.current !== null) dropTargetEl.current.classList.remove('dtn-drop-target')
+        dropTargetEl.current = null
       }
 
       function copyText(text) {

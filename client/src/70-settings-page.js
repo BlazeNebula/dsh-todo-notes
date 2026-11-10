@@ -1,6 +1,6 @@
     // ------------------------------------------------------------ 设置页（DSH 设置 → 插件 → TODO 便签）
 
-    const UI_DEFAULT_PALETTE = ['#d9a441', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8', '#2da1d8', '#2d7cd8', '#2d58d8', '#2d33d8']
+    const UI_DEFAULT_PALETTE = ['#d9a441', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8', '#339fd2', '#387dcd', '#3d60c8', '#4246c3']
 
     function splitPalette(raw) {
       const text = typeof raw === 'string' ? raw.trim() : ''
