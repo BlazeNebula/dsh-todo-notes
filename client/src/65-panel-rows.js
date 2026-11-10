@@ -389,10 +389,6 @@
                         .then(function () { showBubble('已归入无文件夹', event); refresh() })
                         .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
                     } else if (payload.kind === 'folder') {
-                      if (Array.isArray(payload.ids) && payload.ids.length > 1) {
-                        moveFolderBatch(group, payload.ids, PRIMARY, true, event)
-                        return
-                      }
                       moveFolderToPrimary(group, payload.id, event)
                     }
                   },
@@ -431,10 +427,6 @@
                         .then(function () { showBubble('已归入无文件夹', event); refresh() })
                         .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
                     } else if (payload.kind === 'folder') {
-                      if (Array.isArray(payload.ids) && payload.ids.length > 1) {
-                        moveFolderBatch(group, payload.ids, PRIMARY, true, event)
-                        return
-                      }
                       moveFolderToPrimary(group, payload.id, event)
                     }
                   },

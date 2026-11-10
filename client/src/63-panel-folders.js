@@ -26,67 +26,11 @@
         }).catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
       }
 
-      function folderAncestorIds(nodes, id, trail) {
-        for (let i = 0; i < nodes.length; i += 1) {
-          const node = nodes[i]
-          if (node === null || typeof node !== 'object') continue
-          if (node.id === id) return trail
-          const children = Array.isArray(node.children) ? node.children : []
-          const found = folderAncestorIds(children, id, trail.concat([node.id]))
-          if (found !== null) return found
-        }
-        return null
-      }
-
-      // 批量移动文件夹：保持各自的相对嵌套；若同时选中了父与子，只移动父，避免重复。
-      function moveFolderBatch(group, ids, targetId, intoChild, event) {
-        setFolderMenu(null)
-        const tree = JSON.parse(JSON.stringify(Array.isArray(group.folders) ? group.folders : []))
-        const selected = ids.filter(function (id) { return typeof id === 'string' && id !== '' && id !== targetId })
-        const kept = selected.filter(function (id) {
-          const ancestors = folderAncestorIds(tree, id, []) || []
-          return !ancestors.some(function (ancestor) { return selected.indexOf(ancestor) >= 0 })
-        })
-        let lastId = targetId
-        for (let i = 0; i < kept.length; i += 1) {
-          const moved = detachFolder(tree, kept[i])
-          if (moved === null) continue
-          if (targetId === PRIMARY) {
-            let primary = null
-            for (let j = 0; j < tree.length; j += 1) {
-              if (tree[j] !== null && typeof tree[j] === 'object' && tree[j].id === PRIMARY) { primary = tree[j]; break }
-            }
-            if (primary === null) tree.unshift({ id: PRIMARY, name: '无文件夹', children: [moved] })
-            else {
-              if (!Array.isArray(primary.children)) primary.children = []
-              primary.children.push(moved)
-            }
-          } else if (intoChild) {
-            if (folderContains(moved, targetId)) continue
-            const targetNode = findFolder(tree, targetId)
-            if (targetNode === null) continue
-            if (!Array.isArray(targetNode.children)) targetNode.children = []
-            targetNode.children.push(moved)
-          } else {
-            if (!insertAfterFolder(tree, lastId, moved)) continue
-            lastId = moved.id
-          }
-        }
-        postApi({ action: 'folders', key: group.key, folders: tree }).then(function () {
-          showBubble('已移动 ' + kept.length + ' 个文件夹', event)
-          refresh()
-        }).catch(function (err) { failWith(event, err) })
-      }
-
       function onFolderDrop(event, group, target, intoChild) {
         if (event !== null && event.preventDefault !== undefined) event.preventDefault()
         dragPayloadKey.current = ''
         const payload = dragData(event)
         if (payload === null || payload.kind !== 'folder' || payload.key !== group.key || payload.id === target.id) return
-        if (Array.isArray(payload.ids) && payload.ids.length > 1) {
-          moveFolderBatch(group, payload.ids, target.id, intoChild, event)
-          return
-        }
         const tree = JSON.parse(JSON.stringify(Array.isArray(group.folders) ? group.folders : []))
         const targetNode = findFolder(tree, target.id)
         if (targetNode === null) return
@@ -279,9 +223,13 @@
         })
         if (unique.length === 0) return
         dragPayloadKey.current = ''
-        Promise.all(unique.map(function (id) {
-          return postApi({ action: 'moveTodo', key: group.key, id: id, folder: folderId })
-        })).then(function () {
+        let chain = Promise.resolve()
+        unique.forEach(function (id) {
+          chain = chain.then(function () {
+            return postApi({ action: 'moveTodo', key: group.key, id: id, folder: folderId })
+          })
+        })
+        chain.then(function () {
           showBubble('已移动 ' + unique.length + ' 条到' + folderLabel(folderId), event)
           refresh()
         }).catch(function (err) { failWith(event, err) })
