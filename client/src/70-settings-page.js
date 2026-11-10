@@ -23,6 +23,7 @@
       const [partialOpacity, setPartialOpacity] = React.useState(67)
       const [palette, setPalette] = React.useState(UI_DEFAULT_PALETTE.slice())
       const [autosaveSec, setAutosaveSec] = React.useState('5')
+      const [titleMax, setTitleMax] = React.useState('30')
       const [agentAllow, setAgentAllow] = React.useState(false)
 
       function applyUi(ui, config) {
@@ -34,6 +35,7 @@
           ? ui.bodyAutosaveMs
           : (config !== null && config !== undefined && typeof config.bodyAutosaveMs === 'number' ? config.bodyAutosaveMs : 5000)
         setAutosaveSec(String(Math.max(1, Math.round(delay / 1000))))
+        setTitleMax(String(typeof ui.titleMaxLength === 'number' ? ui.titleMaxLength : 30))
         if (ui.agentWriteUserTodos === true) setAgentAllow(true)
         else if (ui.agentWriteUserTodos === false) setAgentAllow(false)
         else setAgentAllow(config !== null && config !== undefined && config.agentWriteUserTodos === true)
@@ -83,6 +85,7 @@
 
       function save() {
         const seconds = Math.max(1, Math.min(60, Math.round(Number(autosaveSec) || 5)))
+        const maxTitle = Math.max(1, Math.min(200, Math.round(Number(titleMax) || 30)))
         patchUi({
           action: 'saveUiSettings',
           ui: {
@@ -91,6 +94,7 @@
             priorityPalette: palette.join(';'),
             bodyAutosaveMs: seconds * 1000,
             agentWriteUserTodos: agentAllow,
+            titleMaxLength: maxTitle,
           },
         })
       }
@@ -260,6 +264,25 @@
                       onChange: function (event) { setAutosaveSec(event.target.value) },
                     }),
                     h('span', { className: 'tns-unit' }, '秒'),
+                  ),
+                ),
+                h(
+                  'div',
+                  { className: 'tns-row' },
+                  h(
+                    'div',
+                    { className: 'tns-row-text' },
+                    h('div', { className: 'tns-label' }, '标题最大长度'),
+                    h('div', { className: 'tns-hint' }, '手动改名与智能体创建、改名都受此限制；超出部分会被截掉，默认 30 个字'),
+                  ),
+                  h(
+                    'div',
+                    { className: 'tns-opacity' },
+                    h('input', {
+                      type: 'number', min: 1, max: 200, value: titleMax, className: 'tns-number',
+                      onChange: function (event) { setTitleMax(event.target.value) },
+                    }),
+                    h('span', { className: 'tns-unit' }, '字'),
                   ),
                 ),
               ),
