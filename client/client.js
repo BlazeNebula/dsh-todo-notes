@@ -1275,6 +1275,12 @@ window.__ModuleLoader__.load({
         const onDragOver = function (event) {
           if (dragPayloadKey.current === '') return
           const target = event.target
+          // 层级标题不在任何便签组里，但用户级标题是合法的落点，不能把 dropEffect 设为 none。
+          const sectionEl = target !== null && target.closest !== undefined ? target.closest('.dtn-sec-head') : null
+          if (sectionEl !== null) {
+            if (event.dataTransfer !== null && event.dataTransfer !== undefined) event.dataTransfer.dropEffect = 'move'
+            return
+          }
           const groupEl = target !== null && target.closest !== undefined ? target.closest('[data-dtn-group]') : null
           if (groupEl === null || groupEl.getAttribute('data-dtn-group') !== dragPayloadKey.current) {
             if (event.dataTransfer !== null && event.dataTransfer !== undefined) event.dataTransfer.dropEffect = 'none'
