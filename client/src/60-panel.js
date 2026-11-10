@@ -297,7 +297,7 @@
       const bubbleTimers = React.useRef([])
       const [version, setVersion] = React.useState(0)
       const [flashKey, setFlashKey] = React.useState('')
-      const dropTargetEl = React.useRef(null)
+      const [dropKey, setDropKey] = React.useState('')
       const dropClearTimer = React.useRef(null)
       const [editingFolder, setEditingFolder] = React.useState(null)
       const [folderMenu, setFolderMenu] = React.useState(null)

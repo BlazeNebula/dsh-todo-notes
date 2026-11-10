@@ -700,7 +700,7 @@ window.__ModuleLoader__.load({
     const PRIO_PALETTE = [
       'var(--dsw-alias-state-warn-primary, #d9a441)',
       '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8',
-      '#339fd2', '#387dcd', '#3d60c8', '#4246c3',
+      '#44a7d7', '#5a93d6', '#6f89d6', '#8386d8',
     ]
     let prioOverride = null
 
@@ -1161,7 +1161,7 @@ window.__ModuleLoader__.load({
       const bubbleTimers = React.useRef([])
       const [version, setVersion] = React.useState(0)
       const [flashKey, setFlashKey] = React.useState('')
-      const dropTargetEl = React.useRef(null)
+      const [dropKey, setDropKey] = React.useState('')
       const dropClearTimer = React.useRef(null)
       const [editingFolder, setEditingFolder] = React.useState(null)
       const [folderMenu, setFolderMenu] = React.useState(null)
@@ -1716,28 +1716,24 @@ window.__ModuleLoader__.load({
         return { text: chars.slice(0, limit).join(''), truncated: true, limit: limit }
       }
 
-      // 拖拽落点：直接给 DOM 加高亮类，不经过 React 状态，避免拖拽过程中整行重渲染造成闪烁。
-      function markDropTarget(element) {
+      // 拖拽落点：进入元素时点亮一次；离开后延迟 120ms 再熄灭，避免跨子元素/文本节点时闪。
+      function markDropTarget(key) {
         if (dropClearTimer.current !== null) {
           window.clearTimeout(dropClearTimer.current)
           dropClearTimer.current = null
         }
-        if (dropTargetEl.current !== null && dropTargetEl.current !== element) {
-          dropTargetEl.current.classList.remove('dtn-drop-target')
-        }
-        dropTargetEl.current = element
-        if (element !== null && element !== undefined) element.classList.add('dtn-drop-target')
+        if (dropKey !== key) setDropKey(key)
       }
 
-      function leaveDropTarget(element, event) {
-        if (dropTargetEl.current !== element) return
+      function leaveDropTarget(key, event) {
+        if (dropKey !== key) return
         const related = event !== null && event !== undefined ? event.relatedTarget : null
         if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
         if (dropClearTimer.current !== null) window.clearTimeout(dropClearTimer.current)
         dropClearTimer.current = window.setTimeout(function () {
           dropClearTimer.current = null
-          clearDropTarget()
-        }, 90)
+          setDropKey('')
+        }, 120)
       }
 
       function clearDropTarget() {
@@ -1745,8 +1741,7 @@ window.__ModuleLoader__.load({
           window.clearTimeout(dropClearTimer.current)
           dropClearTimer.current = null
         }
-        if (dropTargetEl.current !== null) dropTargetEl.current.classList.remove('dtn-drop-target')
-        dropTargetEl.current = null
+        setDropKey('')
       }
 
       function copyText(text) {
@@ -2830,7 +2825,7 @@ window.__ModuleLoader__.load({
             'data-select-group': group.key,
             'data-select-id': todo.id,
             'data-select-folder': rowScope,
-            className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : ''),
+            className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
             style: rowIndent > 0 ? { marginLeft: rowIndent + 'px' } : undefined,
             title: todo.title,
             draggable: !renamingTodo,
@@ -2839,12 +2834,14 @@ window.__ModuleLoader__.load({
               dragArmedRef.current = false
               onTodoDragStart(event, group, todo, folderId)
             },
+            onDragEnter: function (event) {
+              if (dragPayloadKey.current !== group.key) return
+              markDropTarget(rowKey)
+            },
             onDragOver: function (event) {
               if (event !== null && event.preventDefault !== undefined) event.preventDefault()
-              if (dragPayloadKey.current !== group.key) return
-              markDropTarget(event.currentTarget)
             },
-            onDragLeave: function (event) { leaveDropTarget(event.currentTarget, event) },
+            onDragLeave: function (event) { leaveDropTarget(rowKey, event) },
             onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; clearDropTarget() },
             onDrop: function (event) { clearDropTarget(); onTodoDrop(event, group, todo, folderId) },
             onContextMenu: function (event) {
@@ -2985,7 +2982,7 @@ window.__ModuleLoader__.load({
               'data-select-type': 'folder',
               'data-select-group': group.key,
               'data-select-id': folder.id,
-              className: 'dtn-folder-head' + (selected ? ' dtn-selected' : ''),
+              className: 'dtn-folder-head' + (selected ? ' dtn-selected' : '') + (dropKey === folderKey ? ' dtn-drop-target' : ''),
               onClick: function (event) {
                 if (marqueeMovedRef.current === true) { marqueeMovedRef.current = false; return }
                 if (renaming) return
@@ -3005,12 +3002,14 @@ window.__ModuleLoader__.load({
                 dragArmedRef.current = false
                 onFolderDragStart(event, group, folder)
               },
+              onDragEnter: function (event) {
+                if (dragPayloadKey.current !== group.key) return
+                markDropTarget(folderKey)
+              },
               onDragOver: function (event) {
                 if (event !== null && event.preventDefault !== undefined) event.preventDefault()
-                if (dragPayloadKey.current !== group.key) return
-                markDropTarget(event.currentTarget)
               },
-              onDragLeave: function (event) { leaveDropTarget(event.currentTarget, event) },
+              onDragLeave: function (event) { leaveDropTarget(folderKey, event) },
               onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; clearDropTarget() },
               onDrop: function (event) {
                 clearDropTarget()
@@ -3141,15 +3140,17 @@ window.__ModuleLoader__.load({
         return h(
           'div',
           Object.assign(
-            { key: group.key, className: 'dtn-group', 'data-dtn-group': group.key },
+            { key: group.key, className: 'dtn-group' + (hideHead === true && dropKey === 'group:' + group.key ? ' dtn-drop-target' : ''), 'data-dtn-group': group.key },
             hideHead === true
               ? {
+                  onDragEnter: function (event) {
+                    if (dragPayloadKey.current !== group.key) return
+                    markDropTarget('group:' + group.key)
+                  },
                   onDragOver: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
-                    if (dragPayloadKey.current !== group.key) return
-                    markDropTarget(event.currentTarget)
                   },
-                  onDragLeave: function (event) { leaveDropTarget(event.currentTarget, event) },
+                  onDragLeave: function (event) { leaveDropTarget('group:' + group.key, event) },
                   onDrop: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     clearDropTarget()
@@ -3172,16 +3173,18 @@ window.__ModuleLoader__.load({
             : h(
                 'div',
                 {
-                  className: 'dtn-group-head' + (current ? ' dtn-current' : ''),
+                  className: 'dtn-group-head' + (current ? ' dtn-current' : '') + (dropKey === 'group:' + group.key ? ' dtn-drop-target' : ''),
                   onClick: function () { toggleGroup(group.key) },
                   onContextMenu: function (event) { openTreeMenu(event, { kind: 'group', group: group }) },
                   title: group.subtitle || group.title,
+                  onDragEnter: function (event) {
+                    if (dragPayloadKey.current !== group.key) return
+                    markDropTarget('group:' + group.key)
+                  },
                   onDragOver: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
-                    if (dragPayloadKey.current !== group.key) return
-                    markDropTarget(event.currentTarget)
                   },
-                  onDragLeave: function (event) { leaveDropTarget(event.currentTarget, event) },
+                  onDragLeave: function (event) { leaveDropTarget('group:' + group.key, event) },
                   onDrop: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     clearDropTarget()
@@ -4968,7 +4971,7 @@ window.__ModuleLoader__.load({
 
     // ------------------------------------------------------------ 设置页（DSH 设置 → 插件 → TODO 便签）
 
-    const UI_DEFAULT_PALETTE = ['#d9a441', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8', '#339fd2', '#387dcd', '#3d60c8', '#4246c3']
+    const UI_DEFAULT_PALETTE = ['#d9a441', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8', '#44a7d7', '#5a93d6', '#6f89d6', '#8386d8']
 
     function splitPalette(raw) {
       const text = typeof raw === 'string' ? raw.trim() : ''
