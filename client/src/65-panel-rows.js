@@ -304,8 +304,8 @@
           h(
             'div',
             { className: 'dtn-fold' + (folderOpen ? '' : ' dtn-fold-off') },
-            children.map(function (child) { return renderFolder(group, child, depth + 1) }),
             todos.map(function (todo) { return renderTodoRow(group, todo, folder.id, 24) }),
+            children.map(function (child) { return renderFolder(group, child, depth + 1) }),
           ),
         )
       }
@@ -483,9 +483,9 @@
             { className: 'dtn-group-body dtn-fold' + (groupOpen ? '' : ' dtn-fold-off') },
             // 主归属是默认容器，不单独显示成文件夹；它的条目直接列在组里。
             todosForFolder(group, PRIMARY).map(function (todo) { return renderTodoRow(group, todo, PRIMARY) }),
+            renderLooseTodos(group),
             renderPrimaryChildren(group),
             renderTopFolders(group),
-            renderLooseTodos(group),
           ),
         )
       }
