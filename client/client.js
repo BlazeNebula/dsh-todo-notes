@@ -2835,15 +2835,20 @@ window.__ModuleLoader__.load({
               onTodoDragStart(event, group, todo, folderId)
             },
             onDragEnter: function (event) {
+              event.stopPropagation()
               if (dragPayloadKey.current !== group.key) return
               markDropTarget(rowKey)
             },
             onDragOver: function (event) {
+              event.stopPropagation()
               if (event !== null && event.preventDefault !== undefined) event.preventDefault()
             },
-            onDragLeave: function (event) { leaveDropTarget(rowKey, event) },
+            onDragLeave: function (event) {
+              event.stopPropagation()
+              leaveDropTarget(rowKey, event)
+            },
             onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; clearDropTarget() },
-            onDrop: function (event) { clearDropTarget(); onTodoDrop(event, group, todo, folderId) },
+            onDrop: function (event) { event.stopPropagation(); clearDropTarget(); onTodoDrop(event, group, todo, folderId) },
             onContextMenu: function (event) {
               event.preventDefault()
               event.stopPropagation()
@@ -3003,15 +3008,21 @@ window.__ModuleLoader__.load({
                 onFolderDragStart(event, group, folder)
               },
               onDragEnter: function (event) {
+                event.stopPropagation()
                 if (dragPayloadKey.current !== group.key) return
                 markDropTarget(folderKey)
               },
               onDragOver: function (event) {
+                event.stopPropagation()
                 if (event !== null && event.preventDefault !== undefined) event.preventDefault()
               },
-              onDragLeave: function (event) { leaveDropTarget(folderKey, event) },
+              onDragLeave: function (event) {
+                event.stopPropagation()
+                leaveDropTarget(folderKey, event)
+              },
               onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; clearDropTarget() },
               onDrop: function (event) {
+                event.stopPropagation()
                 clearDropTarget()
                 const payload = dragData(event)
                 if (payload !== null && payload.kind === 'todo') {
@@ -3144,14 +3155,20 @@ window.__ModuleLoader__.load({
             hideHead === true
               ? {
                   onDragEnter: function (event) {
+                    if (event.target !== event.currentTarget) return
                     if (dragPayloadKey.current !== group.key) return
                     markDropTarget('group:' + group.key)
                   },
                   onDragOver: function (event) {
+                    if (event.target !== event.currentTarget) return
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                   },
-                  onDragLeave: function (event) { leaveDropTarget('group:' + group.key, event) },
+                  onDragLeave: function (event) {
+                    if (event.target !== event.currentTarget) return
+                    leaveDropTarget('group:' + group.key, event)
+                  },
                   onDrop: function (event) {
+                    if (event.target !== event.currentTarget) return
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     clearDropTarget()
                     const payload = dragData(event)
