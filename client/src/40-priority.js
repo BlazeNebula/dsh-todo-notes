@@ -3,7 +3,7 @@
     const PRIO_PALETTE = [
       'var(--dsw-alias-state-warn-primary, #d9a441)',
       '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8',
-      '#44a7d7', '#5a93d6', '#6f89d6', '#8386d8',
+      '#3ca5d7', '#4b8cd6', '#5a79d6', '#686cd6',
     ]
     let prioOverride = null
 
