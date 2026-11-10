@@ -298,6 +298,7 @@
       const [version, setVersion] = React.useState(0)
       const [flashKey, setFlashKey] = React.useState('')
       const [dropKey, setDropKey] = React.useState('')
+      const dropClearTimer = React.useRef(null)
       const [editingFolder, setEditingFolder] = React.useState(null)
       const [folderMenu, setFolderMenu] = React.useState(null)
       const [confirmDialog, setConfirmDialog] = React.useState(null)

@@ -29,16 +29,11 @@
             onDragOver: function (event) {
               if (event !== null && event.preventDefault !== undefined) event.preventDefault()
               if (dragPayloadKey.current !== group.key) return
-              if (dropKey !== rowKey) setDropKey(rowKey)
+              markDropTarget(rowKey)
             },
-            onDragLeave: function (event) {
-              if (dropKey !== rowKey) return
-              const related = event !== null && event !== undefined ? event.relatedTarget : null
-              if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
-              setDropKey('')
-            },
-            onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; setDropKey('') },
-            onDrop: function (event) { setDropKey(''); onTodoDrop(event, group, todo, folderId) },
+            onDragLeave: function (event) { leaveDropTarget(rowKey, event) },
+            onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; clearDropTarget() },
+            onDrop: function (event) { clearDropTarget(); onTodoDrop(event, group, todo, folderId) },
             onContextMenu: function (event) {
               event.preventDefault()
               event.stopPropagation()
@@ -200,17 +195,12 @@
               onDragOver: function (event) {
                 if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                 if (dragPayloadKey.current !== group.key) return
-                if (dropKey !== folderKey) setDropKey(folderKey)
+                markDropTarget(folderKey)
               },
-              onDragLeave: function (event) {
-                if (dropKey !== folderKey) return
-                const related = event !== null && event !== undefined ? event.relatedTarget : null
-                if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
-                setDropKey('')
-              },
-              onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; setDropKey('') },
+              onDragLeave: function (event) { leaveDropTarget(folderKey, event) },
+              onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; clearDropTarget() },
               onDrop: function (event) {
-                setDropKey('')
+                clearDropTarget()
                 const payload = dragData(event)
                 if (payload !== null && payload.kind === 'todo') {
                   onFolderTodoDrop(event, group, folder)
@@ -344,17 +334,12 @@
                   onDragOver: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     if (dragPayloadKey.current !== group.key) return
-                    if (dropKey !== 'group:' + group.key) setDropKey('group:' + group.key)
+                    markDropTarget('group:' + group.key)
                   },
-                  onDragLeave: function (event) {
-                    if (dropKey !== 'group:' + group.key) return
-                    const related = event !== null && event !== undefined ? event.relatedTarget : null
-                    if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
-                    setDropKey('')
-                  },
+                  onDragLeave: function (event) { leaveDropTarget('group:' + group.key, event) },
                   onDrop: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
-                    setDropKey('')
+                    clearDropTarget()
                     const payload = dragData(event)
                     dragPayloadKey.current = ''
                     if (payload === null || payload.key !== group.key) return
@@ -381,17 +366,12 @@
                   onDragOver: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     if (dragPayloadKey.current !== group.key) return
-                    if (dropKey !== 'group:' + group.key) setDropKey('group:' + group.key)
+                    markDropTarget('group:' + group.key)
                   },
-                  onDragLeave: function (event) {
-                    if (dropKey !== 'group:' + group.key) return
-                    const related = event !== null && event !== undefined ? event.relatedTarget : null
-                    if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
-                    setDropKey('')
-                  },
+                  onDragLeave: function (event) { leaveDropTarget('group:' + group.key, event) },
                   onDrop: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
-                    setDropKey('')
+                    clearDropTarget()
                     const payload = dragData(event)
                     dragPayloadKey.current = ''
                     if (payload === null || payload.key !== group.key) return

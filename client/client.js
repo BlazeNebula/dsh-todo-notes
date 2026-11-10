@@ -700,7 +700,7 @@ window.__ModuleLoader__.load({
     const PRIO_PALETTE = [
       'var(--dsw-alias-state-warn-primary, #d9a441)',
       '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8',
-      '#2da7d8', '#2d7ad8', '#2d44d8', '#2d5ad8',
+      '#2da1d8', '#2d7cd8', '#2d58d8', '#2d33d8',
     ]
     let prioOverride = null
 
@@ -1162,6 +1162,7 @@ window.__ModuleLoader__.load({
       const [version, setVersion] = React.useState(0)
       const [flashKey, setFlashKey] = React.useState('')
       const [dropKey, setDropKey] = React.useState('')
+      const dropClearTimer = React.useRef(null)
       const [editingFolder, setEditingFolder] = React.useState(null)
       const [folderMenu, setFolderMenu] = React.useState(null)
       const [confirmDialog, setConfirmDialog] = React.useState(null)
@@ -1713,6 +1714,34 @@ window.__ModuleLoader__.load({
         const chars = Array.from(String(draft === null || draft === undefined ? '' : draft))
         if (chars.length <= limit) return { text: chars.join(''), truncated: false, limit: limit }
         return { text: chars.slice(0, limit).join(''), truncated: true, limit: limit }
+      }
+
+      // 拖拽落点：进入时立即点亮；离开时延迟 90ms 再熄灭，避免跨子元素/文本节点时闪一下。
+      function markDropTarget(key) {
+        if (dropClearTimer.current !== null) {
+          window.clearTimeout(dropClearTimer.current)
+          dropClearTimer.current = null
+        }
+        if (dropKey !== key) setDropKey(key)
+      }
+
+      function leaveDropTarget(key, event) {
+        if (dropKey !== key) return
+        const related = event !== null && event !== undefined ? event.relatedTarget : null
+        if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
+        if (dropClearTimer.current !== null) window.clearTimeout(dropClearTimer.current)
+        dropClearTimer.current = window.setTimeout(function () {
+          dropClearTimer.current = null
+          setDropKey('')
+        }, 90)
+      }
+
+      function clearDropTarget() {
+        if (dropClearTimer.current !== null) {
+          window.clearTimeout(dropClearTimer.current)
+          dropClearTimer.current = null
+        }
+        setDropKey('')
       }
 
       function copyText(text) {
@@ -2808,16 +2837,11 @@ window.__ModuleLoader__.load({
             onDragOver: function (event) {
               if (event !== null && event.preventDefault !== undefined) event.preventDefault()
               if (dragPayloadKey.current !== group.key) return
-              if (dropKey !== rowKey) setDropKey(rowKey)
+              markDropTarget(rowKey)
             },
-            onDragLeave: function (event) {
-              if (dropKey !== rowKey) return
-              const related = event !== null && event !== undefined ? event.relatedTarget : null
-              if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
-              setDropKey('')
-            },
-            onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; setDropKey('') },
-            onDrop: function (event) { setDropKey(''); onTodoDrop(event, group, todo, folderId) },
+            onDragLeave: function (event) { leaveDropTarget(rowKey, event) },
+            onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; clearDropTarget() },
+            onDrop: function (event) { clearDropTarget(); onTodoDrop(event, group, todo, folderId) },
             onContextMenu: function (event) {
               event.preventDefault()
               event.stopPropagation()
@@ -2979,17 +3003,12 @@ window.__ModuleLoader__.load({
               onDragOver: function (event) {
                 if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                 if (dragPayloadKey.current !== group.key) return
-                if (dropKey !== folderKey) setDropKey(folderKey)
+                markDropTarget(folderKey)
               },
-              onDragLeave: function (event) {
-                if (dropKey !== folderKey) return
-                const related = event !== null && event !== undefined ? event.relatedTarget : null
-                if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
-                setDropKey('')
-              },
-              onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; setDropKey('') },
+              onDragLeave: function (event) { leaveDropTarget(folderKey, event) },
+              onDragEnd: function () { dragArmedRef.current = false; dragPayloadKey.current = ''; clearDropTarget() },
               onDrop: function (event) {
-                setDropKey('')
+                clearDropTarget()
                 const payload = dragData(event)
                 if (payload !== null && payload.kind === 'todo') {
                   onFolderTodoDrop(event, group, folder)
@@ -3123,17 +3142,12 @@ window.__ModuleLoader__.load({
                   onDragOver: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     if (dragPayloadKey.current !== group.key) return
-                    if (dropKey !== 'group:' + group.key) setDropKey('group:' + group.key)
+                    markDropTarget('group:' + group.key)
                   },
-                  onDragLeave: function (event) {
-                    if (dropKey !== 'group:' + group.key) return
-                    const related = event !== null && event !== undefined ? event.relatedTarget : null
-                    if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
-                    setDropKey('')
-                  },
+                  onDragLeave: function (event) { leaveDropTarget('group:' + group.key, event) },
                   onDrop: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
-                    setDropKey('')
+                    clearDropTarget()
                     const payload = dragData(event)
                     dragPayloadKey.current = ''
                     if (payload === null || payload.key !== group.key) return
@@ -3160,17 +3174,12 @@ window.__ModuleLoader__.load({
                   onDragOver: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
                     if (dragPayloadKey.current !== group.key) return
-                    if (dropKey !== 'group:' + group.key) setDropKey('group:' + group.key)
+                    markDropTarget('group:' + group.key)
                   },
-                  onDragLeave: function (event) {
-                    if (dropKey !== 'group:' + group.key) return
-                    const related = event !== null && event !== undefined ? event.relatedTarget : null
-                    if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
-                    setDropKey('')
-                  },
+                  onDragLeave: function (event) { leaveDropTarget('group:' + group.key, event) },
                   onDrop: function (event) {
                     if (event !== null && event.preventDefault !== undefined) event.preventDefault()
-                    setDropKey('')
+                    clearDropTarget()
                     const payload = dragData(event)
                     dragPayloadKey.current = ''
                     if (payload === null || payload.key !== group.key) return
@@ -4954,7 +4963,7 @@ window.__ModuleLoader__.load({
 
     // ------------------------------------------------------------ 设置页（DSH 设置 → 插件 → TODO 便签）
 
-    const UI_DEFAULT_PALETTE = ['#d9a441', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8', '#2da7d8', '#2d7ad8', '#2d44d8', '#2d5ad8']
+    const UI_DEFAULT_PALETTE = ['#d9a441', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8', '#2da1d8', '#2d7cd8', '#2d58d8', '#2d33d8']
 
     function splitPalette(raw) {
       const text = typeof raw === 'string' ? raw.trim() : ''

@@ -350,6 +350,34 @@
         return { text: chars.slice(0, limit).join(''), truncated: true, limit: limit }
       }
 
+      // 拖拽落点：进入时立即点亮；离开时延迟 90ms 再熄灭，避免跨子元素/文本节点时闪一下。
+      function markDropTarget(key) {
+        if (dropClearTimer.current !== null) {
+          window.clearTimeout(dropClearTimer.current)
+          dropClearTimer.current = null
+        }
+        if (dropKey !== key) setDropKey(key)
+      }
+
+      function leaveDropTarget(key, event) {
+        if (dropKey !== key) return
+        const related = event !== null && event !== undefined ? event.relatedTarget : null
+        if (related !== null && related !== undefined && event.currentTarget !== null && event.currentTarget.contains(related)) return
+        if (dropClearTimer.current !== null) window.clearTimeout(dropClearTimer.current)
+        dropClearTimer.current = window.setTimeout(function () {
+          dropClearTimer.current = null
+          setDropKey('')
+        }, 90)
+      }
+
+      function clearDropTarget() {
+        if (dropClearTimer.current !== null) {
+          window.clearTimeout(dropClearTimer.current)
+          dropClearTimer.current = null
+        }
+        setDropKey('')
+      }
+
       function copyText(text) {
         if (typeof navigator !== 'undefined' && navigator.clipboard !== undefined && typeof navigator.clipboard.writeText === 'function') {
           return navigator.clipboard.writeText(text)
