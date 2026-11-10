@@ -696,11 +696,11 @@ window.__ModuleLoader__.load({
     }
 
     // 优先级颜色：T0 用主题的 warn 色，T1~T9 用 ColorBrewer 的 YlGnBu 9 档顺序色阶。
-    // T1~T4 保留原始的浅色饱和度，保证四档并列时仍能分出层次；T5~T9 统一到平均饱和度。
+    // T1~T4 保留原始的浅色饱和度，保证四档并列时仍能分出层次；T5~T9 统一到 T5 的亮度与平均饱和度。
     const PRIO_PALETTE = [
       'var(--dsw-alias-state-warn-primary, #d9a441)',
       '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8',
-      '#238fba', '#205eaa', '#1e30a2', '#1e41a2',
+      '#2da7d8', '#2d7ad8', '#2d44d8', '#2d5ad8',
     ]
     let prioOverride = null
 
@@ -4954,7 +4954,7 @@ window.__ModuleLoader__.load({
 
     // ------------------------------------------------------------ 设置页（DSH 设置 → 插件 → TODO 便签）
 
-    const UI_DEFAULT_PALETTE = ['#d9a441', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8', '#238fba', '#205eaa', '#1e30a2', '#1e41a2']
+    const UI_DEFAULT_PALETTE = ['#d9a441', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8', '#2da7d8', '#2d7ad8', '#2d44d8', '#2d5ad8']
 
     function splitPalette(raw) {
       const text = typeof raw === 'string' ? raw.trim() : ''
