@@ -474,7 +474,13 @@
 
       function onFolderDragStart(event, group, folder) {
         dragPayloadKey.current = group.key
-        setDragData(event, { kind: 'folder', key: group.key, id: folder.id })
+        const payload = { kind: 'folder', key: group.key, id: folder.id }
+        const selected = Array.isArray(selectionRef.current) ? selectionRef.current : []
+        const ids = selected
+          .filter(function (item) { return item !== null && item !== undefined && item.type === 'folder' && item.groupKey === group.key })
+          .map(function (item) { return item.id })
+        if (ids.length > 1 && ids.indexOf(folder.id) >= 0) payload.ids = ids
+        setDragData(event, payload)
       }
 
       // 从树里摘掉一个文件夹节点，返回该节点。

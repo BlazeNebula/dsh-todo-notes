@@ -185,12 +185,12 @@
                 if (renaming) return
                 clickSelect(selectItem, event)
                 if (event.ctrlKey === true || event.metaKey === true || event.shiftKey === true) return
-                // 单击延迟 200ms 再收展；双击重命名会在这之前取消掉，避免先收起再展开。
+                // 单击延迟 100ms 再收展；双击重命名会在这之前取消掉，避免先收起再展开。
                 if (folderClickTimer.current !== null) window.clearTimeout(folderClickTimer.current)
                 folderClickTimer.current = window.setTimeout(function () {
                   folderClickTimer.current = null
                   toggleFolder(folderKey)
-                }, 200)
+                }, 100)
               },
               onContextMenu: function (event) {
                 event.preventDefault()
@@ -389,6 +389,10 @@
                         .then(function () { showBubble('已归入无文件夹', event); refresh() })
                         .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
                     } else if (payload.kind === 'folder') {
+                      if (Array.isArray(payload.ids) && payload.ids.length > 1) {
+                        moveFolderBatch(group, payload.ids, PRIMARY, true, event)
+                        return
+                      }
                       moveFolderToPrimary(group, payload.id, event)
                     }
                   },
@@ -427,6 +431,10 @@
                         .then(function () { showBubble('已归入无文件夹', event); refresh() })
                         .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
                     } else if (payload.kind === 'folder') {
+                      if (Array.isArray(payload.ids) && payload.ids.length > 1) {
+                        moveFolderBatch(group, payload.ids, PRIMARY, true, event)
+                        return
+                      }
                       moveFolderToPrimary(group, payload.id, event)
                     }
                   },
