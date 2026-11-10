@@ -76,6 +76,11 @@
                   icon('addBatch'),
                 )
               : null,
+            h(
+              'span',
+              { className: 'dtn-sec-count', title: '该层级 TODO 总数' },
+              String(groups.reduce(function (total, group) { return total + (Array.isArray(group.todos) ? group.todos.length : 0) }, 0)),
+            ),
           ),
           h(
             'div',

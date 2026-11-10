@@ -108,6 +108,12 @@
   border-bottom: 1px solid var(--dsw-alias-border-l1, #2e2e34);
 }
 .dtn-sec-head:hover { background: var(--dsw-alias-bg-layer-1, #232328); }
+.dtn-sec-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--dsw-alias-label-secondary, #a3a3ab);
+  font-variant-numeric: tabular-nums;
+}
 .dtn-sec-caret { display: inline-flex; align-items: center; color: var(--dsw-alias-label-secondary, #a3a3ab); width: 14px; flex: none; }
 .dtn-sec-name { font-weight: 600; font-size: 12.5px; }
 .dtn-sec-body { overflow: visible; padding: 6px 6px 10px; }

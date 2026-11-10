@@ -431,7 +431,14 @@
       function onTodoDragStart(event, group, todo, folderId) {
         dragPayloadKey.current = group.key
         const folder = typeof folderId === 'string' && folderId !== '' ? folderId : (typeof todo.primaryFolder === 'string' && todo.primaryFolder !== '' ? todo.primaryFolder : PRIMARY)
-        setDragData(event, { kind: 'todo', key: group.key, id: todo.id, folder: folder, priority: typeof todo.priority === 'number' ? todo.priority : 1 })
+        const payload = { kind: 'todo', key: group.key, id: todo.id, folder: folder, priority: typeof todo.priority === 'number' ? todo.priority : 1 }
+        // 多选时把同组的选中条目一起带上，拖拽才会是批量移动。
+        const selected = Array.isArray(selectionRef.current) ? selectionRef.current : []
+        const ids = selected
+          .filter(function (item) { return item !== null && item !== undefined && item.type === 'todo' && item.groupKey === group.key })
+          .map(function (item) { return item.id })
+        if (ids.length > 1 && ids.indexOf(todo.id) >= 0) payload.ids = ids
+        setDragData(event, payload)
       }
 
       function onTodoDrop(event, group, target, folderId) {
@@ -441,6 +448,11 @@
         if (payload === null || payload.kind !== 'todo' || payload.key !== group.key || payload.id === target.id) return
         const next = Math.max(0, Math.min(9, typeof target.priority === 'number' ? target.priority : 1))
         const folder = typeof folderId === 'string' && folderId !== '' ? folderId : (typeof target.primaryFolder === 'string' && target.primaryFolder !== '' ? target.primaryFolder : PRIMARY)
+        // 多选拖拽：把选中的条目一起移动到目标文件夹，不做单条重排/优先级同化。
+        if (Array.isArray(payload.ids) && payload.ids.length > 1) {
+          moveBatchTodos(group, payload.ids, folder, event)
+          return
+        }
         const fromFolder = typeof payload.folder === 'string' && payload.folder !== '' ? payload.folder : PRIMARY
         // 只有同一文件夹内的移动才同化优先级；跨文件夹只移动、不改优先级。
         const changed = fromFolder === folder && (payload.priority === undefined || payload.priority !== next)

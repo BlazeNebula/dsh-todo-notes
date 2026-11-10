@@ -184,6 +184,13 @@
                 if (marqueeMovedRef.current === true) { marqueeMovedRef.current = false; return }
                 if (renaming) return
                 clickSelect(selectItem, event)
+                if (event.ctrlKey === true || event.metaKey === true || event.shiftKey === true) return
+                // 单击延迟 200ms 再收展；双击重命名会在这之前取消掉，避免先收起再展开。
+                if (folderClickTimer.current !== null) window.clearTimeout(folderClickTimer.current)
+                folderClickTimer.current = window.setTimeout(function () {
+                  folderClickTimer.current = null
+                  toggleFolder(folderKey)
+                }, 200)
               },
               onContextMenu: function (event) {
                 event.preventDefault()
@@ -259,7 +266,14 @@
                   },
                   h('span', {
                     className: 'dtn-folder-text',
-                    onDoubleClick: function (event) { event.stopPropagation(); startRenameFolder(group, folder) },
+                    onDoubleClick: function (event) {
+                      event.stopPropagation()
+                      if (folderClickTimer.current !== null) {
+                        window.clearTimeout(folderClickTimer.current)
+                        folderClickTimer.current = null
+                      }
+                      startRenameFolder(group, folder)
+                    },
                   }, folder.name || folderLabel(folder.id)),
                 ),
             h(
@@ -367,6 +381,10 @@
                     dragPayloadKey.current = ''
                     if (payload === null || payload.key !== group.key) return
                     if (payload.kind === 'todo') {
+                      if (Array.isArray(payload.ids) && payload.ids.length > 1) {
+                        moveBatchTodos(group, payload.ids, PRIMARY, event)
+                        return
+                      }
                       postApi({ action: 'moveTodo', key: group.key, id: payload.id, folder: PRIMARY })
                         .then(function () { showBubble('已归入无文件夹', event); refresh() })
                         .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
@@ -401,6 +419,10 @@
                     dragPayloadKey.current = ''
                     if (payload === null || payload.key !== group.key) return
                     if (payload.kind === 'todo') {
+                      if (Array.isArray(payload.ids) && payload.ids.length > 1) {
+                        moveBatchTodos(group, payload.ids, PRIMARY, event)
+                        return
+                      }
                       postApi({ action: 'moveTodo', key: group.key, id: payload.id, folder: PRIMARY })
                         .then(function () { showBubble('已归入无文件夹', event); refresh() })
                         .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })

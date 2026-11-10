@@ -138,6 +138,12 @@ window.__ModuleLoader__.load({
   border-bottom: 1px solid var(--dsw-alias-border-l1, #2e2e34);
 }
 .dtn-sec-head:hover { background: var(--dsw-alias-bg-layer-1, #232328); }
+.dtn-sec-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--dsw-alias-label-secondary, #a3a3ab);
+  font-variant-numeric: tabular-nums;
+}
 .dtn-sec-caret { display: inline-flex; align-items: center; color: var(--dsw-alias-label-secondary, #a3a3ab); width: 14px; flex: none; }
 .dtn-sec-name { font-weight: 600; font-size: 12.5px; }
 .dtn-sec-body { overflow: visible; padding: 6px 6px 10px; }
@@ -1797,7 +1803,14 @@ window.__ModuleLoader__.load({
       function onTodoDragStart(event, group, todo, folderId) {
         dragPayloadKey.current = group.key
         const folder = typeof folderId === 'string' && folderId !== '' ? folderId : (typeof todo.primaryFolder === 'string' && todo.primaryFolder !== '' ? todo.primaryFolder : PRIMARY)
-        setDragData(event, { kind: 'todo', key: group.key, id: todo.id, folder: folder, priority: typeof todo.priority === 'number' ? todo.priority : 1 })
+        const payload = { kind: 'todo', key: group.key, id: todo.id, folder: folder, priority: typeof todo.priority === 'number' ? todo.priority : 1 }
+        // 多选时把同组的选中条目一起带上，拖拽才会是批量移动。
+        const selected = Array.isArray(selectionRef.current) ? selectionRef.current : []
+        const ids = selected
+          .filter(function (item) { return item !== null && item !== undefined && item.type === 'todo' && item.groupKey === group.key })
+          .map(function (item) { return item.id })
+        if (ids.length > 1 && ids.indexOf(todo.id) >= 0) payload.ids = ids
+        setDragData(event, payload)
       }
 
       function onTodoDrop(event, group, target, folderId) {
@@ -1807,6 +1820,11 @@ window.__ModuleLoader__.load({
         if (payload === null || payload.kind !== 'todo' || payload.key !== group.key || payload.id === target.id) return
         const next = Math.max(0, Math.min(9, typeof target.priority === 'number' ? target.priority : 1))
         const folder = typeof folderId === 'string' && folderId !== '' ? folderId : (typeof target.primaryFolder === 'string' && target.primaryFolder !== '' ? target.primaryFolder : PRIMARY)
+        // 多选拖拽：把选中的条目一起移动到目标文件夹，不做单条重排/优先级同化。
+        if (Array.isArray(payload.ids) && payload.ids.length > 1) {
+          moveBatchTodos(group, payload.ids, folder, event)
+          return
+        }
         const fromFolder = typeof payload.folder === 'string' && payload.folder !== '' ? payload.folder : PRIMARY
         // 只有同一文件夹内的移动才同化优先级；跨文件夹只移动、不改优先级。
         const changed = fromFolder === folder && (payload.priority === undefined || payload.priority !== next)
@@ -2095,12 +2113,32 @@ window.__ModuleLoader__.load({
           .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
       }
 
+      // 批量拖拽：把选中的多条 TODO 一起移动到目标文件夹。
+      function moveBatchTodos(group, ids, folderId, event) {
+        const unique = []
+        ids.forEach(function (id) {
+          if (typeof id === 'string' && id !== '' && unique.indexOf(id) < 0) unique.push(id)
+        })
+        if (unique.length === 0) return
+        dragPayloadKey.current = ''
+        Promise.all(unique.map(function (id) {
+          return postApi({ action: 'moveTodo', key: group.key, id: id, folder: folderId })
+        })).then(function () {
+          showBubble('已移动 ' + unique.length + ' 条到' + folderLabel(folderId), event)
+          refresh()
+        }).catch(function (err) { failWith(event, err) })
+      }
+
       // 拖 TODO 到文件夹头：按住 Ctrl = 额外加入该文件夹；否则移动（主归属改到该文件夹）。
       function onFolderTodoDrop(event, group, folder) {
         if (event !== null && event.preventDefault !== undefined) event.preventDefault()
-        dragPayloadKey.current = ''
         const payload = dragData(event)
         if (payload === null || payload.kind !== 'todo' || payload.key !== group.key) return
+        if (Array.isArray(payload.ids) && payload.ids.length > 1) {
+          moveBatchTodos(group, payload.ids, folder.id, event)
+          return
+        }
+        dragPayloadKey.current = ''
         const action = event.ctrlKey === true ? 'reference' : 'moveTodo'
         postApi({ action: action, key: group.key, id: payload.id, folder: folder.id })
           .then(function () { showBubble(action === 'reference' ? '已加入' + folderLabel(folder.id) : '已移动到' + folderLabel(folder.id), event); refresh() })
@@ -2992,6 +3030,13 @@ window.__ModuleLoader__.load({
                 if (marqueeMovedRef.current === true) { marqueeMovedRef.current = false; return }
                 if (renaming) return
                 clickSelect(selectItem, event)
+                if (event.ctrlKey === true || event.metaKey === true || event.shiftKey === true) return
+                // 单击延迟 200ms 再收展；双击重命名会在这之前取消掉，避免先收起再展开。
+                if (folderClickTimer.current !== null) window.clearTimeout(folderClickTimer.current)
+                folderClickTimer.current = window.setTimeout(function () {
+                  folderClickTimer.current = null
+                  toggleFolder(folderKey)
+                }, 200)
               },
               onContextMenu: function (event) {
                 event.preventDefault()
@@ -3067,7 +3112,14 @@ window.__ModuleLoader__.load({
                   },
                   h('span', {
                     className: 'dtn-folder-text',
-                    onDoubleClick: function (event) { event.stopPropagation(); startRenameFolder(group, folder) },
+                    onDoubleClick: function (event) {
+                      event.stopPropagation()
+                      if (folderClickTimer.current !== null) {
+                        window.clearTimeout(folderClickTimer.current)
+                        folderClickTimer.current = null
+                      }
+                      startRenameFolder(group, folder)
+                    },
                   }, folder.name || folderLabel(folder.id)),
                 ),
             h(
@@ -3175,6 +3227,10 @@ window.__ModuleLoader__.load({
                     dragPayloadKey.current = ''
                     if (payload === null || payload.key !== group.key) return
                     if (payload.kind === 'todo') {
+                      if (Array.isArray(payload.ids) && payload.ids.length > 1) {
+                        moveBatchTodos(group, payload.ids, PRIMARY, event)
+                        return
+                      }
                       postApi({ action: 'moveTodo', key: group.key, id: payload.id, folder: PRIMARY })
                         .then(function () { showBubble('已归入无文件夹', event); refresh() })
                         .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
@@ -3209,6 +3265,10 @@ window.__ModuleLoader__.load({
                     dragPayloadKey.current = ''
                     if (payload === null || payload.key !== group.key) return
                     if (payload.kind === 'todo') {
+                      if (Array.isArray(payload.ids) && payload.ids.length > 1) {
+                        moveBatchTodos(group, payload.ids, PRIMARY, event)
+                        return
+                      }
                       postApi({ action: 'moveTodo', key: group.key, id: payload.id, folder: PRIMARY })
                         .then(function () { showBubble('已归入无文件夹', event); refresh() })
                         .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
@@ -3376,6 +3436,11 @@ window.__ModuleLoader__.load({
                   icon('addBatch'),
                 )
               : null,
+            h(
+              'span',
+              { className: 'dtn-sec-count', title: '该层级 TODO 总数' },
+              String(groups.reduce(function (total, group) { return total + (Array.isArray(group.todos) ? group.todos.length : 0) }, 0)),
+            ),
           ),
           h(
             'div',

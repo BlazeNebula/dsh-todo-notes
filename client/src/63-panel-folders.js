@@ -215,12 +215,32 @@
           .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
       }
 
+      // 批量拖拽：把选中的多条 TODO 一起移动到目标文件夹。
+      function moveBatchTodos(group, ids, folderId, event) {
+        const unique = []
+        ids.forEach(function (id) {
+          if (typeof id === 'string' && id !== '' && unique.indexOf(id) < 0) unique.push(id)
+        })
+        if (unique.length === 0) return
+        dragPayloadKey.current = ''
+        Promise.all(unique.map(function (id) {
+          return postApi({ action: 'moveTodo', key: group.key, id: id, folder: folderId })
+        })).then(function () {
+          showBubble('已移动 ' + unique.length + ' 条到' + folderLabel(folderId), event)
+          refresh()
+        }).catch(function (err) { failWith(event, err) })
+      }
+
       // 拖 TODO 到文件夹头：按住 Ctrl = 额外加入该文件夹；否则移动（主归属改到该文件夹）。
       function onFolderTodoDrop(event, group, folder) {
         if (event !== null && event.preventDefault !== undefined) event.preventDefault()
-        dragPayloadKey.current = ''
         const payload = dragData(event)
         if (payload === null || payload.kind !== 'todo' || payload.key !== group.key) return
+        if (Array.isArray(payload.ids) && payload.ids.length > 1) {
+          moveBatchTodos(group, payload.ids, folder.id, event)
+          return
+        }
+        dragPayloadKey.current = ''
         const action = event.ctrlKey === true ? 'reference' : 'moveTodo'
         postApi({ action: action, key: group.key, id: payload.id, folder: folder.id })
           .then(function () { showBubble(action === 'reference' ? '已加入' + folderLabel(folder.id) : '已移动到' + folderLabel(folder.id), event); refresh() })
