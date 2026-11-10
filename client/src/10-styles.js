@@ -153,7 +153,8 @@
 .dtn-todo.dtn-drop { background: var(--dsw-alias-bg-layer-2, #2b2b31); }
 .dtn-todo.dtn-drop-target,
 .dtn-folder-head.dtn-drop-target,
-.dtn-group-head.dtn-drop-target {
+.dtn-group-head.dtn-drop-target,
+.dtn-sec-head.dtn-drop-target {
   outline: 1px dashed var(--dsw-alias-brand-primary, #4d9cff);
   outline-offset: -1px;
   border-radius: 6px;

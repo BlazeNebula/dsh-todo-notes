@@ -183,7 +183,8 @@ window.__ModuleLoader__.load({
 .dtn-todo.dtn-drop { background: var(--dsw-alias-bg-layer-2, #2b2b31); }
 .dtn-todo.dtn-drop-target,
 .dtn-folder-head.dtn-drop-target,
-.dtn-group-head.dtn-drop-target {
+.dtn-group-head.dtn-drop-target,
+.dtn-sec-head.dtn-drop-target {
   outline: 1px dashed var(--dsw-alias-brand-primary, #4d9cff);
   outline-offset: -1px;
   border-radius: 6px;
@@ -3392,7 +3393,39 @@ window.__ModuleLoader__.load({
           { key: kind, className: 'dtn-sec' },
           h(
             'div',
-            { className: 'dtn-sec-head', onClick: function () { toggleSection(kind) }, onContextMenu: function (event) { openTreeMenu(event, { kind: 'section', sectionKind: kind, groups: groups }) } },
+            Object.assign(
+              {
+                className: 'dtn-sec-head' + (kind === 'user' && dropKey === 'section:user' ? ' dtn-drop-target' : ''),
+                onClick: function () { toggleSection(kind) },
+                onContextMenu: function (event) { openTreeMenu(event, { kind: 'section', sectionKind: kind, groups: groups }) },
+              },
+              kind === 'user' && groups.length > 0
+                ? {
+                    onDragEnter: function () {
+                      if (dragPayloadKey.current === '') return
+                      markDropTarget('section:user')
+                    },
+                    onDragOver: function (event) {
+                      if (event !== null && event.preventDefault !== undefined) event.preventDefault()
+                    },
+                    onDragLeave: function (event) { leaveDropTarget('section:user', event) },
+                    onDrop: function (event) {
+                      if (event !== null && event.preventDefault !== undefined) event.preventDefault()
+                      clearDropTarget()
+                      const payload = dragData(event)
+                      dragPayloadKey.current = ''
+                      if (payload === null || payload.kind !== 'todo' || payload.key !== groups[0].key) return
+                      if (Array.isArray(payload.ids) && payload.ids.length > 1) {
+                        moveBatchTodos(groups[0], payload.ids, PRIMARY, event)
+                        return
+                      }
+                      postApi({ action: 'moveTodo', key: groups[0].key, id: payload.id, folder: PRIMARY })
+                        .then(function () { showBubble('已归入无文件夹', event); refresh() })
+                        .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+                    },
+                  }
+                : {},
+            ),
             h('span', { className: 'dtn-sec-caret' }, sectionCollapsed ? icon('chevronRight') : icon('chevronDown')),
             h('span', { className: 'dtn-sec-name' }, label),
             kind === 'user' && groups.length > 0
