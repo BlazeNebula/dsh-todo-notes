@@ -150,12 +150,15 @@
         const tasks = []
         const folderRenames = {}
         const todoRenames = []
+        let truncatedLimit = 0
         state.items.forEach(function (item, index) {
           const name = String(names[index] === undefined ? '' : names[index]).trim()
           if (name === '') return
           if (item.type === 'todo') {
-            todoRenames.push({ groupKey: item.groupKey, id: item.id, title: name })
-            tasks.push(function () { return postApi({ action: 'renameTodo', key: item.groupKey, id: item.id, title: name }) })
+            const clamped = clampTitleDraft(name)
+            if (clamped.truncated) truncatedLimit = clamped.limit
+            todoRenames.push({ groupKey: item.groupKey, id: item.id, title: clamped.text })
+            tasks.push(function () { return postApi({ action: 'renameTodo', key: item.groupKey, id: item.id, title: clamped.text }) })
           } else {
             if (folderRenames[item.groupKey] === undefined) folderRenames[item.groupKey] = {}
             folderRenames[item.groupKey][item.id] = name
@@ -178,6 +181,9 @@
             todoRenames.forEach(function (item) { syncTodoTitle(item.groupKey, item.id, item.title) })
             animatePendingRef.current = true
             refresh()
+            if (truncatedLimit > 0) {
+              showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+            }
             showBubble('已重命名 ' + tasks.length + ' 项', null)
           })
           .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
@@ -192,11 +198,16 @@
         const state = editingTodo
         if (state === null || state === undefined || state.key !== group.key) return
         setEditingTodo(null)
-        const title = String(state.draft === undefined || state.draft === null ? '' : state.draft).replace(/\r?\n/g, ' ').trim()
+        const raw = String(state.draft === undefined || state.draft === null ? '' : state.draft).replace(/\r?\n/g, ' ').trim()
+        const clamped = clampTitleDraft(raw)
+        const title = clamped.text
         if (title === '') return
         postApi({ action: 'renameTodo', key: group.key, id: state.id, title: title })
           .then(function () {
             syncTodoTitle(group.key, state.id, title)
+            if (clamped.truncated) {
+              showBubble('标题最多 ' + clamped.limit + ' 个字，已截断并保存', event !== null && event !== undefined && typeof event.clientX === 'number' ? event : { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+            }
             refresh()
           })
           .catch(function (err) { failWith(event, err) })

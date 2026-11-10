@@ -10,7 +10,9 @@
         postApi({ action: 'saveTodoBody', key: win.groupKey, id: win.todoId, body: win.draft }).catch(function () {})
       }
       if (win.kind === 'preview' && win.editing === true) {
-        const title = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
+        const raw = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
+        const clamped = clampTitleDraft(raw)
+        const title = clamped.text
         if (title !== '' && title !== win.title) {
           postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: title })
             .then(function () { syncTodoTitle(win.groupKey, win.todoId, title) })

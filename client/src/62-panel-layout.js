@@ -336,6 +336,20 @@
         bubbleTimers.current.push(timer)
       }
 
+      // 标题上限来自插件设置（groups 负载的 config.titleMaxLength），默认 30 个字。
+      function titleLimitValue() {
+        const config = data !== null && data !== undefined && data.config !== null && data.config !== undefined ? data.config : null
+        const limit = config !== null ? Number(config.titleMaxLength) : NaN
+        return Number.isFinite(limit) && limit > 0 ? Math.round(limit) : 30
+      }
+
+      function clampTitleDraft(draft) {
+        const limit = titleLimitValue()
+        const chars = Array.from(String(draft === null || draft === undefined ? '' : draft))
+        if (chars.length <= limit) return { text: chars.join(''), truncated: false, limit: limit }
+        return { text: chars.slice(0, limit).join(''), truncated: true, limit: limit }
+      }
+
       function copyText(text) {
         if (typeof navigator !== 'undefined' && navigator.clipboard !== undefined && typeof navigator.clipboard.writeText === 'function') {
           return navigator.clipboard.writeText(text)

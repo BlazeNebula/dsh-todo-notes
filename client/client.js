@@ -1701,6 +1701,20 @@ window.__ModuleLoader__.load({
         bubbleTimers.current.push(timer)
       }
 
+      // 标题上限来自插件设置（groups 负载的 config.titleMaxLength），默认 30 个字。
+      function titleLimitValue() {
+        const config = data !== null && data !== undefined && data.config !== null && data.config !== undefined ? data.config : null
+        const limit = config !== null ? Number(config.titleMaxLength) : NaN
+        return Number.isFinite(limit) && limit > 0 ? Math.round(limit) : 30
+      }
+
+      function clampTitleDraft(draft) {
+        const limit = titleLimitValue()
+        const chars = Array.from(String(draft === null || draft === undefined ? '' : draft))
+        if (chars.length <= limit) return { text: chars.join(''), truncated: false, limit: limit }
+        return { text: chars.slice(0, limit).join(''), truncated: true, limit: limit }
+      }
+
       function copyText(text) {
         if (typeof navigator !== 'undefined' && navigator.clipboard !== undefined && typeof navigator.clipboard.writeText === 'function') {
           return navigator.clipboard.writeText(text)
@@ -2123,13 +2137,21 @@ window.__ModuleLoader__.load({
       function confirmBatchCreate() {
         const state = batchCreate
         if (state === null || state === undefined) return
-        const titles = String(state.value || '').split(/\r?\n/).map(function (line) { return line.trim() }).filter(function (line) { return line !== '' })
+        let truncatedLimit = 0
+        const titles = String(state.value || '').split(/\r?\n/).map(function (line) {
+          const clamped = clampTitleDraft(line.trim())
+          if (clamped.truncated) truncatedLimit = clamped.limit
+          return clamped.text
+        }).filter(function (line) { return line !== '' })
         if (titles.length === 0) return
         setBatchCreate(null)
         postApi({ action: 'createTodos', key: state.key, folder: state.folderId, titles: titles })
           .then(function (result) {
             animatePendingRef.current = true
             refresh()
+            if (truncatedLimit > 0) {
+              showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: state.pos.x + 20, clientY: state.pos.y + 14 })
+            }
             if (result !== null && typeof result === 'object' && typeof result.count === 'number') {
               setVersion(function (value) { return value + 1 })
             }
@@ -2465,12 +2487,15 @@ window.__ModuleLoader__.load({
         const tasks = []
         const folderRenames = {}
         const todoRenames = []
+        let truncatedLimit = 0
         state.items.forEach(function (item, index) {
           const name = String(names[index] === undefined ? '' : names[index]).trim()
           if (name === '') return
           if (item.type === 'todo') {
-            todoRenames.push({ groupKey: item.groupKey, id: item.id, title: name })
-            tasks.push(function () { return postApi({ action: 'renameTodo', key: item.groupKey, id: item.id, title: name }) })
+            const clamped = clampTitleDraft(name)
+            if (clamped.truncated) truncatedLimit = clamped.limit
+            todoRenames.push({ groupKey: item.groupKey, id: item.id, title: clamped.text })
+            tasks.push(function () { return postApi({ action: 'renameTodo', key: item.groupKey, id: item.id, title: clamped.text }) })
           } else {
             if (folderRenames[item.groupKey] === undefined) folderRenames[item.groupKey] = {}
             folderRenames[item.groupKey][item.id] = name
@@ -2493,6 +2518,9 @@ window.__ModuleLoader__.load({
             todoRenames.forEach(function (item) { syncTodoTitle(item.groupKey, item.id, item.title) })
             animatePendingRef.current = true
             refresh()
+            if (truncatedLimit > 0) {
+              showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+            }
             showBubble('已重命名 ' + tasks.length + ' 项', null)
           })
           .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
@@ -2507,11 +2535,16 @@ window.__ModuleLoader__.load({
         const state = editingTodo
         if (state === null || state === undefined || state.key !== group.key) return
         setEditingTodo(null)
-        const title = String(state.draft === undefined || state.draft === null ? '' : state.draft).replace(/\r?\n/g, ' ').trim()
+        const raw = String(state.draft === undefined || state.draft === null ? '' : state.draft).replace(/\r?\n/g, ' ').trim()
+        const clamped = clampTitleDraft(raw)
+        const title = clamped.text
         if (title === '') return
         postApi({ action: 'renameTodo', key: group.key, id: state.id, title: title })
           .then(function () {
             syncTodoTitle(group.key, state.id, title)
+            if (clamped.truncated) {
+              showBubble('标题最多 ' + clamped.limit + ' 个字，已截断并保存', event !== null && event !== undefined && typeof event.clientX === 'number' ? event : { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+            }
             refresh()
           })
           .catch(function (err) { failWith(event, err) })
@@ -4234,17 +4267,20 @@ window.__ModuleLoader__.load({
     function savePinTitle(id) {
       const win = pinnedRef.current.find(function (item) { return item.id === id })
       if (win === undefined || win.kind !== 'preview') return
-      const title = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
+      const raw = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
+      const clamped = clampTitleDraft(raw)
+      const title = clamped.text
       if (title === '' || title === win.title) {
-        updatePin(id, { renameDraft: undefined })
+        updatePin(id, { renameDraft: clamped.truncated ? title : undefined })
         return
       }
+      if (clamped.truncated) updatePin(id, { renameDraft: title })
       postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: title })
         .then(function () {
           updatePin(id, { title: title, renameDraft: undefined })
           syncTodoTitle(win.groupKey, win.todoId, title)
           refresh()
-          showBubble('标题已保存', { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
+          showBubble(clamped.truncated ? '标题最多 ' + clamped.limit + ' 个字，已截断并保存' : '标题已保存', { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
           showBubble('标题保存失败：' + String(failure && failure.message ? failure.message : failure), {
@@ -4298,7 +4334,12 @@ window.__ModuleLoader__.load({
     function confirmPinBatchCreate(id) {
       const win = pinnedRef.current.find(function (item) { return item.id === id })
       if (win === undefined) return
-      const titles = String(win.value || '').split(/\r?\n/).map(function (line) { return line.trim() }).filter(function (line) { return line !== '' })
+      let truncatedLimit = 0
+      const titles = String(win.value || '').split(/\r?\n/).map(function (line) {
+        const clamped = clampTitleDraft(line.trim())
+        if (clamped.truncated) truncatedLimit = clamped.limit
+        return clamped.text
+      }).filter(function (line) { return line !== '' })
       if (titles.length === 0) {
         showBubble('没有可创建的内容', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
         return
@@ -4308,6 +4349,9 @@ window.__ModuleLoader__.load({
           removePin(id)
           animatePendingRef.current = true
           refresh()
+          if (truncatedLimit > 0) {
+            showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+          }
           showBubble('已创建 ' + titles.length + ' 条 TODO', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
@@ -4376,7 +4420,9 @@ window.__ModuleLoader__.load({
         postApi({ action: 'saveTodoBody', key: win.groupKey, id: win.todoId, body: win.draft }).catch(function () {})
       }
       if (win.kind === 'preview' && win.editing === true) {
-        const title = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
+        const raw = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
+        const clamped = clampTitleDraft(raw)
+        const title = clamped.text
         if (title !== '' && title !== win.title) {
           postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: title })
             .then(function () { syncTodoTitle(win.groupKey, win.todoId, title) })

@@ -286,13 +286,21 @@
       function confirmBatchCreate() {
         const state = batchCreate
         if (state === null || state === undefined) return
-        const titles = String(state.value || '').split(/\r?\n/).map(function (line) { return line.trim() }).filter(function (line) { return line !== '' })
+        let truncatedLimit = 0
+        const titles = String(state.value || '').split(/\r?\n/).map(function (line) {
+          const clamped = clampTitleDraft(line.trim())
+          if (clamped.truncated) truncatedLimit = clamped.limit
+          return clamped.text
+        }).filter(function (line) { return line !== '' })
         if (titles.length === 0) return
         setBatchCreate(null)
         postApi({ action: 'createTodos', key: state.key, folder: state.folderId, titles: titles })
           .then(function (result) {
             animatePendingRef.current = true
             refresh()
+            if (truncatedLimit > 0) {
+              showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: state.pos.x + 20, clientY: state.pos.y + 14 })
+            }
             if (result !== null && typeof result === 'object' && typeof result.count === 'number') {
               setVersion(function (value) { return value + 1 })
             }

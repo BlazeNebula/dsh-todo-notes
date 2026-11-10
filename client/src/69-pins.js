@@ -324,17 +324,20 @@
     function savePinTitle(id) {
       const win = pinnedRef.current.find(function (item) { return item.id === id })
       if (win === undefined || win.kind !== 'preview') return
-      const title = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
+      const raw = String(win.renameDraft !== undefined && win.renameDraft !== null ? win.renameDraft : win.title).trim()
+      const clamped = clampTitleDraft(raw)
+      const title = clamped.text
       if (title === '' || title === win.title) {
-        updatePin(id, { renameDraft: undefined })
+        updatePin(id, { renameDraft: clamped.truncated ? title : undefined })
         return
       }
+      if (clamped.truncated) updatePin(id, { renameDraft: title })
       postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: title })
         .then(function () {
           updatePin(id, { title: title, renameDraft: undefined })
           syncTodoTitle(win.groupKey, win.todoId, title)
           refresh()
-          showBubble('标题已保存', { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
+          showBubble(clamped.truncated ? '标题最多 ' + clamped.limit + ' 个字，已截断并保存' : '标题已保存', { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
           showBubble('标题保存失败：' + String(failure && failure.message ? failure.message : failure), {
@@ -388,7 +391,12 @@
     function confirmPinBatchCreate(id) {
       const win = pinnedRef.current.find(function (item) { return item.id === id })
       if (win === undefined) return
-      const titles = String(win.value || '').split(/\r?\n/).map(function (line) { return line.trim() }).filter(function (line) { return line !== '' })
+      let truncatedLimit = 0
+      const titles = String(win.value || '').split(/\r?\n/).map(function (line) {
+        const clamped = clampTitleDraft(line.trim())
+        if (clamped.truncated) truncatedLimit = clamped.limit
+        return clamped.text
+      }).filter(function (line) { return line !== '' })
       if (titles.length === 0) {
         showBubble('没有可创建的内容', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
         return
@@ -398,6 +406,9 @@
           removePin(id)
           animatePendingRef.current = true
           refresh()
+          if (truncatedLimit > 0) {
+            showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+          }
           showBubble('已创建 ' + titles.length + ' 条 TODO', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
