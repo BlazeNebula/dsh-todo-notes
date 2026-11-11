@@ -12,7 +12,25 @@
 
     function WindowFrame(props) {
       const collapsed = props.collapsed === true && props.expanded !== true
+      const localRef = React.useRef(null)
       const [focused, setFocused] = React.useState(activeWindowKey === props.windowKey)
+      React.useEffect(function () {
+        if (props.expanded !== true || typeof window === 'undefined') return undefined
+        const margin = 48
+        const onMove = function (event) {
+          const node = props.rootRef !== undefined && props.rootRef !== null ? props.rootRef.current : localRef.current
+          if (node === null || node === undefined) return
+          const rect = node.getBoundingClientRect()
+          const inside =
+            event.clientX >= rect.left - margin &&
+            event.clientX <= rect.right + margin &&
+            event.clientY >= rect.top - margin &&
+            event.clientY <= rect.bottom + margin
+          if (!inside && props.onHoverLeave !== undefined) props.onHoverLeave()
+        }
+        window.addEventListener('pointermove', onMove)
+        return function () { window.removeEventListener('pointermove', onMove) }
+      }, [props.expanded])
       React.useEffect(function () {
         if (typeof window === 'undefined') return undefined
         const onFocus = function (event) {
@@ -60,7 +78,7 @@
       return h(
         'div',
         {
-          ref: props.rootRef,
+          ref: props.rootRef !== undefined && props.rootRef !== null ? props.rootRef : localRef,
           'data-dtn-pin': props.pinId,
           className: props.className + (collapsed ? ' dtn-collapsed' : '') + (focused ? ' dtn-window-focused' : ''),
           style: style,

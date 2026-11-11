@@ -134,20 +134,14 @@
 
       React.useEffect(function () {
         if (hoverOpen !== true) return undefined
-        const margin = 48
-        const onMove = function (event) {
+        const onDown = function (event) {
+          // 点击面板外部时收起临时展开；面板内部交给各自控件处理。
           const node = panelRef.current
-          if (node === null || node === undefined) return
-          const rect = node.getBoundingClientRect()
-          const inside =
-            event.clientX >= rect.left - margin &&
-            event.clientX <= rect.right + margin &&
-            event.clientY >= rect.top - margin &&
-            event.clientY <= rect.bottom + margin
-          if (!inside) setHoverOpen(false)
+          if (node !== null && node !== undefined && node.contains(event.target)) return
+          setHoverOpen(false)
         }
-        window.addEventListener('pointermove', onMove)
-        return function () { window.removeEventListener('pointermove', onMove) }
+        window.addEventListener('pointerdown', onDown)
+        return function () { window.removeEventListener('pointerdown', onDown) }
       }, [hoverOpen])
 
       const panelCollapsed = collapsed && !(hoverOpen && !embedded)
@@ -188,6 +182,7 @@
           onHoverEnter: embedded
             ? undefined
             : function () { if (collapsed) setHoverOpen(true) },
+          onHoverLeave: embedded ? undefined : function () { if (hoverOpen) setHoverOpen(false) },
           onDragStart: embedded ? undefined : function (event) { startDrag(event, 'main') },
           onHeadClick: embedded
             ? undefined

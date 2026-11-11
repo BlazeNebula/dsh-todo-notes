@@ -1112,25 +1112,6 @@ window.__ModuleLoader__.load({
       React.useEffect(function () {
         if (focusPin !== '') focusWindowFrame(focusPin)
       }, [focusPin])
-
-      // 与主面板一致：收起后的临时展开以窗口外 48px 为边界，鼠标进入阴影区也不收起。
-      React.useEffect(function () {
-        if (hoverPin === '') return undefined
-        const margin = 48
-        const onMove = function (event) {
-          const node = document.querySelector('[data-dtn-pin="' + hoverPin + '"]')
-          if (node === null || node === undefined) return
-          const rect = node.getBoundingClientRect()
-          const inside =
-            event.clientX >= rect.left - margin &&
-            event.clientX <= rect.right + margin &&
-            event.clientY >= rect.top - margin &&
-            event.clientY <= rect.bottom + margin
-          if (!inside) setHoverPin('')
-        }
-        window.addEventListener('pointermove', onMove)
-        return function () { window.removeEventListener('pointermove', onMove) }
-      }, [hoverPin])
       const pinnedRef = React.useRef(pinned)
       const pinSeq = React.useRef(0)
       const pinSaveTimers = React.useRef({})
@@ -3668,20 +3649,14 @@ window.__ModuleLoader__.load({
 
       React.useEffect(function () {
         if (hoverOpen !== true) return undefined
-        const margin = 48
-        const onMove = function (event) {
+        const onDown = function (event) {
+          // 点击面板外部时收起临时展开；面板内部交给各自控件处理。
           const node = panelRef.current
-          if (node === null || node === undefined) return
-          const rect = node.getBoundingClientRect()
-          const inside =
-            event.clientX >= rect.left - margin &&
-            event.clientX <= rect.right + margin &&
-            event.clientY >= rect.top - margin &&
-            event.clientY <= rect.bottom + margin
-          if (!inside) setHoverOpen(false)
+          if (node !== null && node !== undefined && node.contains(event.target)) return
+          setHoverOpen(false)
         }
-        window.addEventListener('pointermove', onMove)
-        return function () { window.removeEventListener('pointermove', onMove) }
+        window.addEventListener('pointerdown', onDown)
+        return function () { window.removeEventListener('pointerdown', onDown) }
       }, [hoverOpen])
 
       const panelCollapsed = collapsed && !(hoverOpen && !embedded)
@@ -3722,6 +3697,7 @@ window.__ModuleLoader__.load({
           onHoverEnter: embedded
             ? undefined
             : function () { if (collapsed) setHoverOpen(true) },
+          onHoverLeave: embedded ? undefined : function () { if (hoverOpen) setHoverOpen(false) },
           onDragStart: embedded ? undefined : function (event) { startDrag(event, 'main') },
           onHeadClick: embedded
             ? undefined
@@ -5652,7 +5628,25 @@ window.__ModuleLoader__.load({
 
     function WindowFrame(props) {
       const collapsed = props.collapsed === true && props.expanded !== true
+      const localRef = React.useRef(null)
       const [focused, setFocused] = React.useState(activeWindowKey === props.windowKey)
+      React.useEffect(function () {
+        if (props.expanded !== true || typeof window === 'undefined') return undefined
+        const margin = 48
+        const onMove = function (event) {
+          const node = props.rootRef !== undefined && props.rootRef !== null ? props.rootRef.current : localRef.current
+          if (node === null || node === undefined) return
+          const rect = node.getBoundingClientRect()
+          const inside =
+            event.clientX >= rect.left - margin &&
+            event.clientX <= rect.right + margin &&
+            event.clientY >= rect.top - margin &&
+            event.clientY <= rect.bottom + margin
+          if (!inside && props.onHoverLeave !== undefined) props.onHoverLeave()
+        }
+        window.addEventListener('pointermove', onMove)
+        return function () { window.removeEventListener('pointermove', onMove) }
+      }, [props.expanded])
       React.useEffect(function () {
         if (typeof window === 'undefined') return undefined
         const onFocus = function (event) {
@@ -5700,7 +5694,7 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         {
-          ref: props.rootRef,
+          ref: props.rootRef !== undefined && props.rootRef !== null ? props.rootRef : localRef,
           'data-dtn-pin': props.pinId,
           className: props.className + (collapsed ? ' dtn-collapsed' : '') + (focused ? ' dtn-window-focused' : ''),
           style: style,
