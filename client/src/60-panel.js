@@ -78,6 +78,7 @@
         typeof window === 'undefined' ? { w: 1200, h: 800 } : { w: window.innerWidth, h: window.innerHeight },
       )
       const panelRef = React.useRef(null)
+      const layerRef = React.useRef(null)
       const [sections, setSections] = React.useState(function () {
         const stored = readStored(LS_SECTIONS, null)
         return stored !== null && typeof stored === 'object' ? stored : { user: false, workspace: false, session: false }
@@ -398,6 +399,15 @@
         window.addEventListener('resize', onResize)
         return function () { window.removeEventListener('resize', onResize) }
       }, [collapsed, panelWidth])
+
+      // 浮动实例把整组浮层放进 popover 顶层，避免被其它页面的侧边栏盖住。
+      React.useEffect(function () {
+        const el = layerRef.current
+        if (embedded || el === null || typeof el.showPopover !== 'function') return
+        try {
+          if (!el.matches(':popover-open')) el.showPopover()
+        } catch (error) {}
+      }, [embedded])
 
       // 拖拽只在源便签组内有效：鼠标移到其它组或面板外时，光标直接显示禁止。
       React.useEffect(function () {

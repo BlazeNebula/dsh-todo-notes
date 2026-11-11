@@ -29,6 +29,15 @@ window.__ModuleLoader__.load({
     const MIN_PANEL_WIDTH = 264
 
     const CSS = `
+.dtn-layer {
+  position: fixed; inset: 0; margin: 0; padding: 0; border: 0;
+  background: transparent; color: inherit; overflow: visible; pointer-events: none;
+}
+.dtn-layer .dtn-root,
+.dtn-layer .dtn-preview,
+.dtn-layer .dtn-menu,
+.dtn-layer .dtn-bubble,
+.dtn-layer .dtn-marquee { pointer-events: auto; }
 .dtn-root {
   position: fixed;
   z-index: 2147482500;
@@ -504,8 +513,6 @@ window.__ModuleLoader__.load({
 .tns-color-column { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .tns-color-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
 .tns-color-label { width: 26px; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px; }
-.tns-color-fixed { width: 22px; height: 20px; flex: none; border-radius: 4px; background: var(--dsw-alias-state-error-primary, #e55353); }
-.tns-color-note { font-size: 11px; }
 .tns-color-input {
   width: 28px; height: 26px; padding: 0; border: 1px solid var(--dsw-alias-border-l2, #3a3a41);
   border-radius: 6px; background: transparent; cursor: pointer;
@@ -708,7 +715,7 @@ window.__ModuleLoader__.load({
     // 优先级色相：Tailwind 300/400 色相带，T0 暖金 → T9 紫，按暖到冷排列。
     // 文字明度不写死，而是从主题前景色派生，因此浅色主题自动变深、深色主题自动变亮。
     const PRIO_PALETTE = [
-      '#f59e0b', '#eab308', '#84cc16', '#10b981', '#14b8a6',
+      '#e55353', '#eab308', '#84cc16', '#10b981', '#14b8a6',
       '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6',
     ]
     let prioOverride = null
@@ -768,9 +775,11 @@ window.__ModuleLoader__.load({
 
     function prioColor(priority) {
       const value = typeof priority === 'number' && priority >= 0 ? Math.min(9, Math.floor(priority)) : 1
-      // T0 固定使用 DSH 的错误色令牌，深浅主题都由主题本身校正。
-      if (value === 0) return 'var(--dsw-alias-state-error-primary, #e55353)'
       const palette = prioOverride === null ? PRIO_PALETTE : prioOverride
+      // T0 的默认值是 DSH 错误色；用户改成别的颜色后按用户颜色渲染。
+      if (value === 0 && String(palette[0]).trim().toLowerCase() === '#e55353') {
+        return 'var(--dsw-alias-state-error-primary, #e55353)'
+      }
       return prioInk(palette[value])
     }
 
@@ -995,6 +1004,7 @@ window.__ModuleLoader__.load({
         typeof window === 'undefined' ? { w: 1200, h: 800 } : { w: window.innerWidth, h: window.innerHeight },
       )
       const panelRef = React.useRef(null)
+      const layerRef = React.useRef(null)
       const [sections, setSections] = React.useState(function () {
         const stored = readStored(LS_SECTIONS, null)
         return stored !== null && typeof stored === 'object' ? stored : { user: false, workspace: false, session: false }
@@ -1315,6 +1325,15 @@ window.__ModuleLoader__.load({
         window.addEventListener('resize', onResize)
         return function () { window.removeEventListener('resize', onResize) }
       }, [collapsed, panelWidth])
+
+      // 浮动实例把整组浮层放进 popover 顶层，避免被其它页面的侧边栏盖住。
+      React.useEffect(function () {
+        const el = layerRef.current
+        if (embedded || el === null || typeof el.showPopover !== 'function') return
+        try {
+          if (!el.matches(':popover-open')) el.showPopover()
+        } catch (error) {}
+      }, [embedded])
 
       // 拖拽只在源便签组内有效：鼠标移到其它组或面板外时，光标直接显示禁止。
       React.useEffect(function () {
@@ -5137,12 +5156,15 @@ window.__ModuleLoader__.load({
           )
 
       const pinnedNodes = embedded ? null : renderPinnedWindows()
-      return h(React.Fragment, null, panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode)
+      const overlays = [panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode]
+      if (embedded) return h(React.Fragment, null, ...overlays)
+      // 浮动实例整体放进 popover 顶层，保证不会被 DS Bot 等页面的侧边栏盖住。
+      return h('div', { className: 'dtn-layer', popover: 'manual', ref: layerRef }, ...overlays)
     }
 
     // ------------------------------------------------------------ 设置页（DSH 设置 → 插件 → TODO 便签）
 
-    const UI_DEFAULT_PALETTE = ['#f59e0b', '#eab308', '#84cc16', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6']
+    const UI_DEFAULT_PALETTE = ['#e55353', '#eab308', '#84cc16', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6']
 
     function splitPalette(raw) {
       const text = typeof raw === 'string' ? raw.trim() : ''
@@ -5342,7 +5364,7 @@ window.__ModuleLoader__.load({
                 'section',
                 { className: 'tns-section' },
                 h('h3', { className: 'tns-section-title' }, '优先级颜色'),
-                h('p', { className: 'tns-hint' }, 'T0 固定使用错误色（随主题自动变化）；T1~T9 可点色块用取色器改，也可以直接填十六进制值。'),
+                h('p', { className: 'tns-hint' }, 'T0 最高，T9 最低。T0 默认跟随 DSH 错误色；10 档都可以点色块或用取色器改。'),
                 h(
                   'div',
                   { className: 'tns-colors' },
@@ -5352,15 +5374,6 @@ window.__ModuleLoader__.load({
                       { key: columnIndex, className: 'tns-color-column' },
                       column.map(function (index) {
                         const color = palette[index]
-                        if (index === 0) {
-                          return h(
-                            'div',
-                            { key: index, className: 'tns-color-row' },
-                            h('span', { className: 'tns-color-label' }, 'T0'),
-                            h('span', { className: 'tns-color-fixed', title: '跟随主题错误色' }),
-                            h('span', { className: 'tns-hint tns-color-note' }, '跟随错误色'),
-                          )
-                        }
                         return h(
                           'div',
                           { key: index, className: 'tns-color-row' },

@@ -1,7 +1,7 @@
     // 优先级色相：Tailwind 300/400 色相带，T0 暖金 → T9 紫，按暖到冷排列。
     // 文字明度不写死，而是从主题前景色派生，因此浅色主题自动变深、深色主题自动变亮。
     const PRIO_PALETTE = [
-      '#f59e0b', '#eab308', '#84cc16', '#10b981', '#14b8a6',
+      '#e55353', '#eab308', '#84cc16', '#10b981', '#14b8a6',
       '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6',
     ]
     let prioOverride = null
@@ -61,9 +61,11 @@
 
     function prioColor(priority) {
       const value = typeof priority === 'number' && priority >= 0 ? Math.min(9, Math.floor(priority)) : 1
-      // T0 固定使用 DSH 的错误色令牌，深浅主题都由主题本身校正。
-      if (value === 0) return 'var(--dsw-alias-state-error-primary, #e55353)'
       const palette = prioOverride === null ? PRIO_PALETTE : prioOverride
+      // T0 的默认值是 DSH 错误色；用户改成别的颜色后按用户颜色渲染。
+      if (value === 0 && String(palette[0]).trim().toLowerCase() === '#e55353') {
+        return 'var(--dsw-alias-state-error-primary, #e55353)'
+      }
       return prioInk(palette[value])
     }
 

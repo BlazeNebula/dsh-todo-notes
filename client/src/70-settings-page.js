@@ -1,6 +1,6 @@
     // ------------------------------------------------------------ 设置页（DSH 设置 → 插件 → TODO 便签）
 
-    const UI_DEFAULT_PALETTE = ['#f59e0b', '#eab308', '#84cc16', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6']
+    const UI_DEFAULT_PALETTE = ['#e55353', '#eab308', '#84cc16', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6']
 
     function splitPalette(raw) {
       const text = typeof raw === 'string' ? raw.trim() : ''
@@ -200,7 +200,7 @@
                 'section',
                 { className: 'tns-section' },
                 h('h3', { className: 'tns-section-title' }, '优先级颜色'),
-                h('p', { className: 'tns-hint' }, 'T0 固定使用错误色（随主题自动变化）；T1~T9 可点色块用取色器改，也可以直接填十六进制值。'),
+                h('p', { className: 'tns-hint' }, 'T0 最高，T9 最低。T0 默认跟随 DSH 错误色；10 档都可以点色块或用取色器改。'),
                 h(
                   'div',
                   { className: 'tns-colors' },
@@ -210,15 +210,6 @@
                       { key: columnIndex, className: 'tns-color-column' },
                       column.map(function (index) {
                         const color = palette[index]
-                        if (index === 0) {
-                          return h(
-                            'div',
-                            { key: index, className: 'tns-color-row' },
-                            h('span', { className: 'tns-color-label' }, 'T0'),
-                            h('span', { className: 'tns-color-fixed', title: '跟随主题错误色' }),
-                            h('span', { className: 'tns-hint tns-color-note' }, '跟随错误色'),
-                          )
-                        }
                         return h(
                           'div',
                           { key: index, className: 'tns-color-row' },

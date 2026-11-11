@@ -281,5 +281,8 @@
           )
 
       const pinnedNodes = embedded ? null : renderPinnedWindows()
-      return h(React.Fragment, null, panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode)
+      const overlays = [panel, previewPanel, pinnedNodes, bubbleNodes, folderMenuNode, treeMenuNode, todoMenuNode, batchMenuNode, batchRenameNode, marqueeNode, batchNode, prioMenuNode, confirmNode]
+      if (embedded) return h(React.Fragment, null, ...overlays)
+      // 浮动实例整体放进 popover 顶层，保证不会被 DS Bot 等页面的侧边栏盖住。
+      return h('div', { className: 'dtn-layer', popover: 'manual', ref: layerRef }, ...overlays)
     }
