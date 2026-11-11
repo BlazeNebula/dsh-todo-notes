@@ -5442,6 +5442,7 @@ window.__ModuleLoader__.load({
       const [injectAgentTodos, setInjectAgentTodos] = React.useState(true)
       const [injectMinPriority, setInjectMinPriority] = React.useState(2)
       const [injectDetail, setInjectDetail] = React.useState('headings')
+      const [injectMaxItems, setInjectMaxItems] = React.useState('20')
       const [enableAnimations, setEnableAnimations] = React.useState(true)
 
       function applyUi(ui, config) {
@@ -5460,6 +5461,7 @@ window.__ModuleLoader__.load({
         setInjectAgentTodos(ui.injectAgentTodos !== false)
         setInjectMinPriority(typeof ui.injectMinPriority === 'number' ? ui.injectMinPriority : 2)
         setInjectDetail(ui.injectDetail === 'title' || ui.injectDetail === 'body200' ? ui.injectDetail : 'headings')
+        setInjectMaxItems(String(typeof ui.injectMaxItems === 'number' ? ui.injectMaxItems : 20))
         setEnableAnimations(ui.enableAnimations !== false)
       }
 
@@ -5520,6 +5522,7 @@ window.__ModuleLoader__.load({
             injectAgentTodos: injectAgentTodos,
             injectMinPriority: injectMinPriority,
             injectDetail: injectDetail,
+            injectMaxItems: Math.max(1, Math.min(50, Math.round(Number(injectMaxItems) || 20))),
             enableAnimations: enableAnimations,
           },
         })
@@ -5715,8 +5718,27 @@ window.__ModuleLoader__.load({
                       onChange: function (event) { setInjectDetail(event.target.value) },
                     },
                     h('option', { value: 'title' }, '仅标题'),
-                    h('option', { value: 'headings' }, '正文中的所有 Markdown 标题'),
-                    h('option', { value: 'body200' }, '正文前 200 行'),
+                    h('option', { value: 'headings' }, '标题 + 正文中的所有 Markdown 标题'),
+                    h('option', { value: 'body200' }, '标题 + 所有标题 + 正文前 200 行'),
+                  ),
+                ),
+                h(
+                  'div',
+                  { className: 'tns-row' },
+                  h(
+                    'div',
+                    { className: 'tns-row-text' },
+                    h('div', { className: 'tns-label' }, '单次最多注入条目数'),
+                    h('div', { className: 'tns-hint' }, '超过上限的条目不会进入本轮上下文，默认 20 条'),
+                  ),
+                  h(
+                    'div',
+                    { className: 'tns-opacity' },
+                    h('input', {
+                      type: 'number', min: 1, max: 50, value: injectMaxItems, className: 'tns-number',
+                      onChange: function (event) { setInjectMaxItems(event.target.value) },
+                    }),
+                    h('span', { className: 'tns-unit' }, '条'),
                   ),
                 ),
               ),
