@@ -217,7 +217,7 @@
 }
 .dtn-marquee {
   position: fixed;
-  z-index: 2147482500;
+  z-index: 2147482525;
   border: 1px dashed var(--dsw-alias-brand-primary, #4d9cff);
   background: color-mix(in srgb, var(--dsw-alias-brand-primary, #4d9cff) 9%, transparent);
   border-radius: 2px;
