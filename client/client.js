@@ -537,6 +537,17 @@ window.__ModuleLoader__.load({
   border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 6px;
 }
 .tns-unit { color: var(--dsw-alias-label-secondary, #a3a3ab); }
+.tns-select {
+  height: 28px; padding: 0 8px; font: inherit; font-size: 12px;
+  color: var(--dsw-alias-label-primary, #e8e8ea); background: var(--dsw-alias-bg-layer-2, #2b2b31);
+  border: 1px solid var(--dsw-alias-border-l2, #3a3a41); border-radius: 6px;
+}
+.dtn-anim-off .dtn-root *,
+.dtn-anim-off .dtn-preview *,
+.dtn-anim-off .dtn-bubble * {
+  animation: none !important;
+  transition: none !important;
+}
 .tns-check { width: 16px; height: 16px; margin: 0; accent-color: #4d9cff; }
 .tns-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 20px; }
 .tns-preview-box { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--dsw-alias-border-l2, rgba(128,128,128,.25)); }
@@ -1067,6 +1078,17 @@ window.__ModuleLoader__.load({
         return stored !== null && typeof stored === 'object' ? stored : { user: false, workspace: false, session: false }
       })
       const [data, setData] = React.useState(null)
+      const animationsOff =
+        data !== null &&
+        data !== undefined &&
+        data.config !== null &&
+        data.config !== undefined &&
+        data.config.enableAnimations === false
+      React.useEffect(function () {
+        if (typeof document === 'undefined') return undefined
+        document.documentElement.classList.toggle('dtn-anim-off', animationsOff)
+        return function () { document.documentElement.classList.remove('dtn-anim-off') }
+      }, [animationsOff])
       const [error, setError] = React.useState('')
       const [openGroups, setOpenGroups] = React.useState({})
       const [openFolders, setOpenFolders] = React.useState({})
@@ -5417,6 +5439,10 @@ window.__ModuleLoader__.load({
       const [autosaveSec, setAutosaveSec] = React.useState('5')
       const [titleMax, setTitleMax] = React.useState('30')
       const [agentAllow, setAgentAllow] = React.useState(false)
+      const [injectAgentTodos, setInjectAgentTodos] = React.useState(true)
+      const [injectMinPriority, setInjectMinPriority] = React.useState(2)
+      const [injectDetail, setInjectDetail] = React.useState('headings')
+      const [enableAnimations, setEnableAnimations] = React.useState(true)
 
       function applyUi(ui, config) {
         if (ui === null || ui === undefined) return
@@ -5431,6 +5457,10 @@ window.__ModuleLoader__.load({
         if (ui.agentWriteUserTodos === true) setAgentAllow(true)
         else if (ui.agentWriteUserTodos === false) setAgentAllow(false)
         else setAgentAllow(config !== null && config !== undefined && config.agentWriteUserTodos === true)
+        setInjectAgentTodos(ui.injectAgentTodos !== false)
+        setInjectMinPriority(typeof ui.injectMinPriority === 'number' ? ui.injectMinPriority : 2)
+        setInjectDetail(ui.injectDetail === 'title' || ui.injectDetail === 'body200' ? ui.injectDetail : 'headings')
+        setEnableAnimations(ui.enableAnimations !== false)
       }
 
       React.useEffect(function () {
@@ -5487,6 +5517,10 @@ window.__ModuleLoader__.load({
             bodyAutosaveMs: seconds * 1000,
             agentWriteUserTodos: agentAllow,
             titleMaxLength: maxTitle,
+            injectAgentTodos: injectAgentTodos,
+            injectMinPriority: injectMinPriority,
+            injectDetail: injectDetail,
+            enableAnimations: enableAnimations,
           },
         })
       }
@@ -5630,6 +5664,65 @@ window.__ModuleLoader__.load({
               h(
                 'section',
                 { className: 'tns-section' },
+                h('h3', { className: 'tns-section-title' }, '智能体上下文'),
+                h(
+                  'div',
+                  { className: 'tns-row' },
+                  h(
+                    'div',
+                    { className: 'tns-row-text' },
+                    h('div', { className: 'tns-label' }, '每轮注入当前会话的智能体 TODO'),
+                    h('div', { className: 'tns-hint' }, '只注入会话级、由智能体创建且未完成的条目；默认开启'),
+                  ),
+                  h('input', {
+                    type: 'checkbox', className: 'tns-check', checked: injectAgentTodos,
+                    onChange: function (event) { setInjectAgentTodos(event.target.checked === true) },
+                  }),
+                ),
+                h(
+                  'div',
+                  { className: 'tns-row' },
+                  h(
+                    'div',
+                    { className: 'tns-row-text' },
+                    h('div', { className: 'tns-label' }, '注入最低优先级'),
+                    h('div', { className: 'tns-hint' }, '只注入该优先级及更高的条目（T0 最高）'),
+                  ),
+                  h(
+                    'select',
+                    {
+                      className: 'tns-select', value: String(injectMinPriority),
+                      onChange: function (event) { setInjectMinPriority(Number(event.target.value)) },
+                    },
+                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (level) {
+                      return h('option', { key: level, value: String(level) }, 'T' + level)
+                    }),
+                  ),
+                ),
+                h(
+                  'div',
+                  { className: 'tns-row' },
+                  h(
+                    'div',
+                    { className: 'tns-row-text' },
+                    h('div', { className: 'tns-label' }, '注入颗粒度'),
+                    h('div', { className: 'tns-hint' }, '控制正文随标题注入多少内容'),
+                  ),
+                  h(
+                    'select',
+                    {
+                      className: 'tns-select', value: injectDetail,
+                      onChange: function (event) { setInjectDetail(event.target.value) },
+                    },
+                    h('option', { value: 'title' }, '仅标题'),
+                    h('option', { value: 'headings' }, '正文中的所有 Markdown 标题'),
+                    h('option', { value: 'body200' }, '正文前 200 行'),
+                  ),
+                ),
+              ),
+              h(
+                'section',
+                { className: 'tns-section' },
                 h('h3', { className: 'tns-section-title' }, '编辑与保存'),
                 h(
                   'div',
@@ -5682,6 +5775,20 @@ window.__ModuleLoader__.load({
                     }),
                     h('span', { className: 'tns-unit' }, '字'),
                   ),
+                ),
+                h(
+                  'div',
+                  { className: 'tns-row' },
+                  h(
+                    'div',
+                    { className: 'tns-row-text' },
+                    h('div', { className: 'tns-label' }, '启用 CSS 动画'),
+                    h('div', { className: 'tns-hint' }, '关闭后收展、气泡与悬停过渡都不再播放'),
+                  ),
+                  h('input', {
+                    type: 'checkbox', className: 'tns-check', checked: enableAnimations,
+                    onChange: function (event) { setEnableAnimations(event.target.checked === true) },
+                  }),
                 ),
               ),
             ),

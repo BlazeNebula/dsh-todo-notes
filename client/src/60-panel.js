@@ -84,6 +84,17 @@
         return stored !== null && typeof stored === 'object' ? stored : { user: false, workspace: false, session: false }
       })
       const [data, setData] = React.useState(null)
+      const animationsOff =
+        data !== null &&
+        data !== undefined &&
+        data.config !== null &&
+        data.config !== undefined &&
+        data.config.enableAnimations === false
+      React.useEffect(function () {
+        if (typeof document === 'undefined') return undefined
+        document.documentElement.classList.toggle('dtn-anim-off', animationsOff)
+        return function () { document.documentElement.classList.remove('dtn-anim-off') }
+      }, [animationsOff])
       const [error, setError] = React.useState('')
       const [openGroups, setOpenGroups] = React.useState({})
       const [openFolders, setOpenFolders] = React.useState({})
