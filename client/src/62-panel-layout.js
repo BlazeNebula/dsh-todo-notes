@@ -172,9 +172,15 @@
         const sideRect = sideHost !== null && sideHost !== undefined && typeof sideHost.getBoundingClientRect === 'function'
           ? sideHost.getBoundingClientRect()
           : null
+        const panelNode = panelRef !== null && panelRef !== undefined ? panelRef.current : null
+        const panelRect = panelNode !== null && panelNode !== undefined && typeof panelNode.getBoundingClientRect === 'function'
+          ? panelNode.getBoundingClientRect()
+          : null
         const panelRight = sideRect !== null && sideRect !== undefined && sideRect.width > 0
           ? sideRect.left
-          : panelPos.x + (collapsed ? 300 : panelWidth)
+          : panelRect !== null && panelRect !== undefined && panelRect.width > 0
+            ? panelRect.right
+            : panelPos.x + (collapsed ? MIN_PANEL_WIDTH : panelWidth)
         const spaceRight = window.innerWidth - panelRight - margin
         const spaceLeft = panelPos.x - margin
         let x

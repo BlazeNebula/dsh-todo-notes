@@ -138,6 +138,25 @@
       const [focusPin, setFocusPin] = React.useState('')
       const [hoverPin, setHoverPin] = React.useState('')
       const pinDragMoved = React.useRef(false)
+
+      // 与主面板一致：收起后的临时展开以窗口外 48px 为边界，鼠标进入阴影区也不收起。
+      React.useEffect(function () {
+        if (hoverPin === '') return undefined
+        const margin = 48
+        const onMove = function (event) {
+          const node = document.querySelector('[data-dtn-pin="' + hoverPin + '"]')
+          if (node === null || node === undefined) return
+          const rect = node.getBoundingClientRect()
+          const inside =
+            event.clientX >= rect.left - margin &&
+            event.clientX <= rect.right + margin &&
+            event.clientY >= rect.top - margin &&
+            event.clientY <= rect.bottom + margin
+          if (!inside) setHoverPin('')
+        }
+        window.addEventListener('pointermove', onMove)
+        return function () { window.removeEventListener('pointermove', onMove) }
+      }, [hoverPin])
       const pinnedRef = React.useRef(pinned)
       const pinSeq = React.useRef(0)
       const pinSaveTimers = React.useRef({})

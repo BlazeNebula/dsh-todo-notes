@@ -12,6 +12,13 @@ window.__ModuleLoader__.load({
 
     const React = require('react')
     const h = React.createElement
+    // 复用 DSH 自己的 Markdown 渲染组件，会话正文的插件扩展（如 genui）随宿主一起生效。
+    let MarkdownText
+    try {
+      MarkdownText = require('@deepseek-ai/dsh-client-ui-primitives').MarkdownText
+    } catch (error) {
+      MarkdownText = undefined
+    }
 
     const ROUTE = '/dsh-todo-notes/api'
     const PRIMARY = '__primary__'
@@ -170,9 +177,10 @@ window.__ModuleLoader__.load({
 .dtn-group-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dtn-group-count { margin-left: auto; font-size: 11px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
 .dtn-current-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dsw-alias-brand-primary, #4d9cff); flex: none; }
-.dtn-group-body { padding: 2px 4px 6px 12px; }
+.dtn-group-body { padding: 2px 6px 6px 18px; }
 .dtn-folder { margin: 1px 0; }
 .dtn-folder-head {
+  position: relative;
   display: flex; align-items: center; gap: 5px;
   padding: 3px 5px; border-radius: 5px; cursor: pointer;
   color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px;
@@ -181,6 +189,7 @@ window.__ModuleLoader__.load({
 .dtn-folder-name { display: flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 65%, transparent); }
 .dtn-folder-count { margin-left: auto; font-size: 10.5px; }
 .dtn-todo {
+  position: relative;
   display: flex; align-items: center; gap: 6px;
   padding: 3px 0 3px 6px; border-radius: 6px; cursor: pointer;
   color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
@@ -1094,6 +1103,25 @@ window.__ModuleLoader__.load({
       const [focusPin, setFocusPin] = React.useState('')
       const [hoverPin, setHoverPin] = React.useState('')
       const pinDragMoved = React.useRef(false)
+
+      // 与主面板一致：收起后的临时展开以窗口外 48px 为边界，鼠标进入阴影区也不收起。
+      React.useEffect(function () {
+        if (hoverPin === '') return undefined
+        const margin = 48
+        const onMove = function (event) {
+          const node = document.querySelector('[data-dtn-pin="' + hoverPin + '"]')
+          if (node === null || node === undefined) return
+          const rect = node.getBoundingClientRect()
+          const inside =
+            event.clientX >= rect.left - margin &&
+            event.clientX <= rect.right + margin &&
+            event.clientY >= rect.top - margin &&
+            event.clientY <= rect.bottom + margin
+          if (!inside) setHoverPin('')
+        }
+        window.addEventListener('pointermove', onMove)
+        return function () { window.removeEventListener('pointermove', onMove) }
+      }, [hoverPin])
       const pinnedRef = React.useRef(pinned)
       const pinSeq = React.useRef(0)
       const pinSaveTimers = React.useRef({})
@@ -1648,9 +1676,15 @@ window.__ModuleLoader__.load({
         const sideRect = sideHost !== null && sideHost !== undefined && typeof sideHost.getBoundingClientRect === 'function'
           ? sideHost.getBoundingClientRect()
           : null
+        const panelNode = panelRef !== null && panelRef !== undefined ? panelRef.current : null
+        const panelRect = panelNode !== null && panelNode !== undefined && typeof panelNode.getBoundingClientRect === 'function'
+          ? panelNode.getBoundingClientRect()
+          : null
         const panelRight = sideRect !== null && sideRect !== undefined && sideRect.width > 0
           ? sideRect.left
-          : panelPos.x + (collapsed ? 300 : panelWidth)
+          : panelRect !== null && panelRect !== undefined && panelRect.width > 0
+            ? panelRect.right
+            : panelPos.x + (collapsed ? MIN_PANEL_WIDTH : panelWidth)
         const spaceRight = window.innerWidth - panelRight - margin
         const spaceLeft = panelPos.x - margin
         let x
@@ -3792,6 +3826,8 @@ window.__ModuleLoader__.load({
                   ? h('div', { className: 'dtn-error' }, '读取失败：' + previewError)
                   : previewData === null
                     ? h('div', { className: 'dtn-empty' }, '加载中…')
+                    : typeof MarkdownText === 'function' || (MarkdownText !== null && typeof MarkdownText === 'object')
+                    ? h(MarkdownText, { text: previewData.markdown, variant: 'body' })
                     : renderMarkdown(previewData.markdown),
               ),
             ],
@@ -4214,7 +4250,7 @@ window.__ModuleLoader__.load({
         const base = {
           id: item.id,
           kind: item.kind,
-          pos: clampPos(point, 440, 200),
+          pos: clampPos(point, 440, 200, 56),
           width: Number(item.width) > 0 ? Math.max(320, Math.min((viewWidth || 1280) - 24, Number(item.width))) : undefined,
           height: Number(item.height) > 0 ? Math.max(120, Math.min((viewHeight || 800) - 48, Number(item.height))) : undefined,
           collapsed: item.collapsed === true,
@@ -4484,13 +4520,13 @@ window.__ModuleLoader__.load({
         maxWidth: Math.max(320, viewWidth - 24),
         minHeight: 120,
         maxHeight: Math.max(120, viewHeight - 48),
-        minY: 8,
+        minY: 56,
         onStart: function () { setFocusPin(id) },
         onChange: function (next) {
           updatePin(id, {
             width: next.width,
             height: next.height,
-            pos: clampPos({ x: next.x, y: next.y }, next.width, 120, 8),
+            pos: clampPos({ x: next.x, y: next.y }, next.width, 120, 56),
           })
         },
       })
@@ -4510,7 +4546,7 @@ window.__ModuleLoader__.load({
         const pos = clampPos({
           x: origin.x + (next.clientX - startX),
           y: origin.y + (next.clientY - startY),
-        }, win.width || 440, win.height || 320)
+        }, win.width || 440, win.height || 320, 56)
         updatePin(id, { pos: pos })
       }
       const up = function () {
@@ -4720,14 +4756,12 @@ window.__ModuleLoader__.load({
     }
 
     function pinHeadCommon(win) {
-      return [
-        h('button', {
-          type: 'button',
-          className: 'dtn-btn',
-          title: win.collapsed ? '展开' : '收起',
-          onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
-        }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
-      ]
+      return h('button', {
+        type: 'button',
+        className: 'dtn-btn',
+        title: win.collapsed ? '展开' : '收起',
+        onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
+      }, icon(win.collapsed ? 'chevronRight' : 'chevronDown'))
     }
 
     function pinHeadClick(win) {
@@ -4749,6 +4783,7 @@ window.__ModuleLoader__.load({
         WindowFrame,
         {
           key: win.id,
+          pinId: win.id,
           className: options.className + (pulsePin === win.id && win.kind === 'preview' ? ' dtn-pin-pulse' : ''),
           headClassName: options.headClassName,
           bodyClassName: 'dtn-pin-content',
@@ -4776,7 +4811,7 @@ window.__ModuleLoader__.load({
 
     function renderPinPreview(win) {
       const meta = win.meta
-      const head = pinHeadCommon(win).concat([
+      const head = [
         h('span', { className: 'dtn-pin-type', title: '预览' }, icon('fileText', 13)),
         win.editing
           ? h('input', {
@@ -4816,8 +4851,9 @@ window.__ModuleLoader__.load({
             title: '关闭',
             onClick: function (event) { event.stopPropagation(); closePin(win) },
           }, icon('close')),
+          pinHeadCommon(win),
         ),
-      ])
+      ]
       const metaNodes = meta === null || meta === undefined
         ? [h('span', { key: 'loading' }, win.loading ? '加载中…' : '')]
         : [
@@ -4875,6 +4911,8 @@ window.__ModuleLoader__.load({
               { key: 'markdown', className: 'dtn-preview-body dtn-md' },
               win.error !== ''
                 ? h('div', { className: 'dtn-error' }, '读取失败：' + win.error)
+                : typeof MarkdownText === 'function' || (MarkdownText !== null && typeof MarkdownText === 'object')
+                ? h(MarkdownText, { text: win.markdown, variant: 'body' })
                 : renderMarkdown(win.markdown),
             ),
       ]
@@ -4888,15 +4926,16 @@ window.__ModuleLoader__.load({
 
     function renderPinBatchCreate(win) {
       const lines = String(win.value || '').split(/\r?\n/)
-      const head = pinHeadCommon(win).concat([
+      const head = [
         h('span', { className: 'dtn-pin-type', title: '批量新建' }, icon('addBatch', 13)),
         h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
         h(
           'div',
           { className: 'dtn-actions' },
           h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
+          pinHeadCommon(win),
         ),
-      ])
+      ]
       return pinShell(win, {
         className: 'dtn-preview dtn-batch dtn-pin',
         headClassName: 'dtn-preview-head',
@@ -4929,15 +4968,16 @@ window.__ModuleLoader__.load({
     }
 
     function renderPinBatchRename(win) {
-      const head = pinHeadCommon(win).concat([
+      const head = [
         h('span', { className: 'dtn-pin-type', title: '批量重命名' }, icon('edit', 13)),
         h('span', { className: 'dtn-preview-title' }, '批量重命名'),
         h(
           'div',
           { className: 'dtn-actions' },
           h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
+          pinHeadCommon(win),
         ),
-      ])
+      ]
       return pinShell(win, {
         className: 'dtn-preview dtn-batch dtn-pin',
         headClassName: 'dtn-preview-head',
@@ -5609,6 +5649,7 @@ window.__ModuleLoader__.load({
         'div',
         {
           ref: props.rootRef,
+          'data-dtn-pin': props.pinId,
           className: props.className + (collapsed ? ' dtn-collapsed' : ''),
           style: props.style,
           onPointerDown: props.onFocus,

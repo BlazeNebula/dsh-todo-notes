@@ -140,9 +140,10 @@
 .dtn-group-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dtn-group-count { margin-left: auto; font-size: 11px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
 .dtn-current-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dsw-alias-brand-primary, #4d9cff); flex: none; }
-.dtn-group-body { padding: 2px 4px 6px 12px; }
+.dtn-group-body { padding: 2px 6px 6px 18px; }
 .dtn-folder { margin: 1px 0; }
 .dtn-folder-head {
+  position: relative;
   display: flex; align-items: center; gap: 5px;
   padding: 3px 5px; border-radius: 5px; cursor: pointer;
   color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px;
@@ -151,6 +152,7 @@
 .dtn-folder-name { display: flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 65%, transparent); }
 .dtn-folder-count { margin-left: auto; font-size: 10.5px; }
 .dtn-todo {
+  position: relative;
   display: flex; align-items: center; gap: 6px;
   padding: 3px 0 3px 6px; border-radius: 6px; cursor: pointer;
   color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);

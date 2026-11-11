@@ -301,6 +301,8 @@
                   ? h('div', { className: 'dtn-error' }, '读取失败：' + previewError)
                   : previewData === null
                     ? h('div', { className: 'dtn-empty' }, '加载中…')
+                    : typeof MarkdownText === 'function' || (MarkdownText !== null && typeof MarkdownText === 'object')
+                    ? h(MarkdownText, { text: previewData.markdown, variant: 'body' })
                     : renderMarkdown(previewData.markdown),
               ),
             ],

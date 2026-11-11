@@ -29,14 +29,12 @@
     }
 
     function pinHeadCommon(win) {
-      return [
-        h('button', {
-          type: 'button',
-          className: 'dtn-btn',
-          title: win.collapsed ? '展开' : '收起',
-          onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
-        }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
-      ]
+      return h('button', {
+        type: 'button',
+        className: 'dtn-btn',
+        title: win.collapsed ? '展开' : '收起',
+        onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
+      }, icon(win.collapsed ? 'chevronRight' : 'chevronDown'))
     }
 
     function pinHeadClick(win) {
@@ -58,6 +56,7 @@
         WindowFrame,
         {
           key: win.id,
+          pinId: win.id,
           className: options.className + (pulsePin === win.id && win.kind === 'preview' ? ' dtn-pin-pulse' : ''),
           headClassName: options.headClassName,
           bodyClassName: 'dtn-pin-content',
@@ -85,7 +84,7 @@
 
     function renderPinPreview(win) {
       const meta = win.meta
-      const head = pinHeadCommon(win).concat([
+      const head = [
         h('span', { className: 'dtn-pin-type', title: '预览' }, icon('fileText', 13)),
         win.editing
           ? h('input', {
@@ -125,8 +124,9 @@
             title: '关闭',
             onClick: function (event) { event.stopPropagation(); closePin(win) },
           }, icon('close')),
+          pinHeadCommon(win),
         ),
-      ])
+      ]
       const metaNodes = meta === null || meta === undefined
         ? [h('span', { key: 'loading' }, win.loading ? '加载中…' : '')]
         : [
@@ -184,6 +184,8 @@
               { key: 'markdown', className: 'dtn-preview-body dtn-md' },
               win.error !== ''
                 ? h('div', { className: 'dtn-error' }, '读取失败：' + win.error)
+                : typeof MarkdownText === 'function' || (MarkdownText !== null && typeof MarkdownText === 'object')
+                ? h(MarkdownText, { text: win.markdown, variant: 'body' })
                 : renderMarkdown(win.markdown),
             ),
       ]
@@ -197,15 +199,16 @@
 
     function renderPinBatchCreate(win) {
       const lines = String(win.value || '').split(/\r?\n/)
-      const head = pinHeadCommon(win).concat([
+      const head = [
         h('span', { className: 'dtn-pin-type', title: '批量新建' }, icon('addBatch', 13)),
         h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
         h(
           'div',
           { className: 'dtn-actions' },
           h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
+          pinHeadCommon(win),
         ),
-      ])
+      ]
       return pinShell(win, {
         className: 'dtn-preview dtn-batch dtn-pin',
         headClassName: 'dtn-preview-head',
@@ -238,15 +241,16 @@
     }
 
     function renderPinBatchRename(win) {
-      const head = pinHeadCommon(win).concat([
+      const head = [
         h('span', { className: 'dtn-pin-type', title: '批量重命名' }, icon('edit', 13)),
         h('span', { className: 'dtn-preview-title' }, '批量重命名'),
         h(
           'div',
           { className: 'dtn-actions' },
           h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
+          pinHeadCommon(win),
         ),
-      ])
+      ]
       return pinShell(win, {
         className: 'dtn-preview dtn-batch dtn-pin',
         headClassName: 'dtn-preview-head',

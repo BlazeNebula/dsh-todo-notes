@@ -12,6 +12,13 @@ window.__ModuleLoader__.load({
 
     const React = require('react')
     const h = React.createElement
+    // 复用 DSH 自己的 Markdown 渲染组件，会话正文的插件扩展（如 genui）随宿主一起生效。
+    let MarkdownText
+    try {
+      MarkdownText = require('@deepseek-ai/dsh-client-ui-primitives').MarkdownText
+    } catch (error) {
+      MarkdownText = undefined
+    }
 
     const ROUTE = '/dsh-todo-notes/api'
     const PRIMARY = '__primary__'

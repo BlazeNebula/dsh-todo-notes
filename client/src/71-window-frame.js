@@ -37,6 +37,7 @@
         'div',
         {
           ref: props.rootRef,
+          'data-dtn-pin': props.pinId,
           className: props.className + (collapsed ? ' dtn-collapsed' : ''),
           style: props.style,
           onPointerDown: props.onFocus,

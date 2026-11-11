@@ -24,7 +24,7 @@
         const base = {
           id: item.id,
           kind: item.kind,
-          pos: clampPos(point, 440, 200),
+          pos: clampPos(point, 440, 200, 56),
           width: Number(item.width) > 0 ? Math.max(320, Math.min((viewWidth || 1280) - 24, Number(item.width))) : undefined,
           height: Number(item.height) > 0 ? Math.max(120, Math.min((viewHeight || 800) - 48, Number(item.height))) : undefined,
           collapsed: item.collapsed === true,
@@ -294,13 +294,13 @@
         maxWidth: Math.max(320, viewWidth - 24),
         minHeight: 120,
         maxHeight: Math.max(120, viewHeight - 48),
-        minY: 8,
+        minY: 56,
         onStart: function () { setFocusPin(id) },
         onChange: function (next) {
           updatePin(id, {
             width: next.width,
             height: next.height,
-            pos: clampPos({ x: next.x, y: next.y }, next.width, 120, 8),
+            pos: clampPos({ x: next.x, y: next.y }, next.width, 120, 56),
           })
         },
       })
@@ -320,7 +320,7 @@
         const pos = clampPos({
           x: origin.x + (next.clientX - startX),
           y: origin.y + (next.clientY - startY),
-        }, win.width || 440, win.height || 320)
+        }, win.width || 440, win.height || 320, 56)
         updatePin(id, { pos: pos })
       }
       const up = function () {
