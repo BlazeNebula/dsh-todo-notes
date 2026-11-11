@@ -95,6 +95,10 @@
 .dtn-root.dtn-collapsed .dtn-body-wrap { grid-template-rows: 0fr; }
 .dtn-root.dtn-collapsed .dtn-body { opacity: 0; pointer-events: none; }
 .dtn-root.dtn-embedded .dtn-body-wrap { grid-template-rows: 1fr; }
+.dtn-preview .dtn-body-wrap { min-height: 0; }
+.dtn-preview.dtn-collapsed .dtn-body-wrap { grid-template-rows: 0fr; }
+.dtn-preview.dtn-collapsed .dtn-pin-content { opacity: 0; pointer-events: none; }
+.dtn-pin-content { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 .dtn-root.dtn-embedded .dtn-body { opacity: 1; pointer-events: auto; }
 .dtn-sec {
   background: transparent;

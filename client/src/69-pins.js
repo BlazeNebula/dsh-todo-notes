@@ -278,14 +278,14 @@
     }
 
     // 保留浮窗复用主面板的缩放逻辑，只在自己的窗口数据上更新宽高与位置。
-    function beginPinResize(event, id) {
+    function beginPinResize(event, id, dir) {
       const win = pinnedRef.current.find(function (item) { return item.id === id })
       if (win === undefined) return
       const root = event.currentTarget !== null && event.currentTarget.closest !== undefined ? event.currentTarget.closest('.dtn-pin') : null
       const viewWidth = typeof window === 'undefined' ? 1280 : window.innerWidth
       const viewHeight = typeof window === 'undefined' ? 800 : window.innerHeight
       startBoxResize(event, {
-        dir: 'br',
+        dir: dir || 'br',
         x: win.pos.x,
         y: win.pos.y,
         width: win.width || (root !== null ? root.offsetWidth : 440),
@@ -314,7 +314,9 @@
       const startX = event.clientX
       const startY = event.clientY
       const origin = win.pos
+      pinDragMoved.current = false
       const move = function (next) {
+        if (Math.abs(next.clientX - startX) > 3 || Math.abs(next.clientY - startY) > 3) pinDragMoved.current = true
         const pos = clampPos({
           x: origin.x + (next.clientX - startX),
           y: origin.y + (next.clientY - startY),

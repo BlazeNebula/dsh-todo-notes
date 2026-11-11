@@ -136,6 +136,8 @@
       })
       const [pulsePin, setPulsePin] = React.useState('')
       const [focusPin, setFocusPin] = React.useState('')
+      const [hoverPin, setHoverPin] = React.useState('')
+      const pinDragMoved = React.useRef(false)
       const pinnedRef = React.useRef(pinned)
       const pinSeq = React.useRef(0)
       const pinSaveTimers = React.useRef({})
