@@ -47,52 +47,74 @@
         postApi({ action: 'folders', key: group.key, folders: tree }).then(refresh).catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
       }
 
-      function beginResize(event, dir) {
+      // 主面板与保留浮窗共用的拖动缩放逻辑：只在各自的状态更新与持久化上不同。
+      function startBoxResize(event, options) {
         if (event.button !== 0) return
         event.preventDefault()
         event.stopPropagation()
-        setResizing(true)
-        const root = event.currentTarget !== null ? event.currentTarget.parentElement : null
+        if (typeof options.onStart === 'function') options.onStart()
         const startX = event.clientX
         const startY = event.clientY
-        const startWidth = panelWidth
-        const startHeight = panelHeight !== null ? panelHeight : (root !== null ? root.offsetHeight : 320)
-        const startPos = { x: panelPos.x, y: panelPos.y }
-        const viewHeight = function () { return typeof window === 'undefined' ? 900 : window.innerHeight }
         const move = function (moveEvent) {
           const dx = moveEvent.clientX - startX
           const dy = moveEvent.clientY - startY
-          let nextWidth = startWidth
-          let nextHeight = startHeight
-          let nextX = startPos.x
-          let nextY = startPos.y
-          if (dir === 'r' || dir === 'br') nextWidth = startWidth + dx
-          if (dir === 'l') nextWidth = startWidth - dx
-          if (dir === 'b' || dir === 'br') nextHeight = startHeight + dy
-          if (dir === 't') nextHeight = startHeight - dy
-          nextWidth = Math.max(MIN_PANEL_WIDTH, Math.min(maxPanelWidth(), nextWidth))
-          nextHeight = Math.max(160, Math.min(viewHeight() - 72, nextHeight))
-          if (dir === 'l') nextX = startPos.x + (startWidth - nextWidth)
-          if (dir === 't') nextY = Math.max(56, startPos.y + (startHeight - nextHeight))
-          setPanelWidth(nextWidth)
-          setPanelHeight(nextHeight)
-          setPanelPos(clampPos({ x: nextX, y: nextY }, nextWidth, 200, 56))
+          let width = options.width
+          let height = options.height
+          let x = options.x
+          let y = options.y
+          if (options.dir === 'r' || options.dir === 'br') width = options.width + dx
+          if (options.dir === 'l') width = options.width - dx
+          if (options.dir === 'b' || options.dir === 'br') height = options.height + dy
+          if (options.dir === 't') height = options.height - dy
+          width = Math.max(options.minWidth, Math.min(options.maxWidth, width))
+          height = Math.max(options.minHeight, Math.min(options.maxHeight, height))
+          if (options.dir === 'l') x = options.x + (options.width - width)
+          if (options.dir === 't') y = Math.max(options.minY, options.y + (options.height - height))
+          options.onChange({ width: width, height: height, x: x, y: y })
         }
         const up = function () {
           window.removeEventListener('pointermove', move)
           window.removeEventListener('pointerup', up)
-          setResizing(false)
-          setPanelWidth(function (value) {
-            writeStored(LS_WIDTH, value)
-            return value
-          })
-          setPanelHeight(function (value) {
-            writeStored(LS_HEIGHT, value)
-            return value
-          })
+          if (typeof options.onEnd === 'function') options.onEnd()
         }
         window.addEventListener('pointermove', move)
         window.addEventListener('pointerup', up)
+      }
+
+      function beginResize(event, dir) {
+        if (event.button !== 0) return
+        const root = event.currentTarget !== null ? event.currentTarget.parentElement : null
+        const startHeight = panelHeight !== null ? panelHeight : (root !== null ? root.offsetHeight : 320)
+        const viewHeight = function () { return typeof window === 'undefined' ? 900 : window.innerHeight }
+        startBoxResize(event, {
+          dir: dir,
+          x: panelPos.x,
+          y: panelPos.y,
+          width: panelWidth,
+          height: startHeight,
+          minWidth: MIN_PANEL_WIDTH,
+          maxWidth: maxPanelWidth(),
+          minHeight: 160,
+          maxHeight: viewHeight() - 72,
+          minY: 56,
+          onStart: function () { setResizing(true) },
+          onChange: function (next) {
+            setPanelWidth(next.width)
+            setPanelHeight(next.height)
+            setPanelPos(clampPos({ x: next.x, y: next.y }, next.width, 200, 56))
+          },
+          onEnd: function () {
+            setResizing(false)
+            setPanelWidth(function (value) {
+              writeStored(LS_WIDTH, value)
+              return value
+            })
+            setPanelHeight(function (value) {
+              writeStored(LS_HEIGHT, value)
+              return value
+            })
+          },
+        })
       }
 
       // ---------------------------------------------------------- 文件夹编辑

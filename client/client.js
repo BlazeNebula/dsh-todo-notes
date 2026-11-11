@@ -428,6 +428,12 @@ window.__ModuleLoader__.load({
 .dtn-preview-body { overflow: auto; padding: 10px 14px 16px; }
 .dtn-preview.dtn-batch { width: 440px; height: 320px; }
 .dtn-preview.dtn-pin { z-index: 2147482510; }
+.dtn-preview.dtn-collapsed { height: auto; }
+.dtn-pin-resize {
+  position: absolute; right: 0; bottom: 0; width: 14px; height: 14px;
+  cursor: nwse-resize; z-index: 2; border-bottom-right-radius: 10px;
+  background: linear-gradient(135deg, transparent 50%, var(--dsw-alias-border-l2, #3a3a41) 50%);
+}
 .dtn-pin-pulse { animation: dtn-pin-pulse 360ms cubic-bezier(0.22, 0.61, 0.36, 1) 1; }
 @keyframes dtn-pin-pulse {
   0% { filter: brightness(1); }
@@ -2014,52 +2020,74 @@ window.__ModuleLoader__.load({
         postApi({ action: 'folders', key: group.key, folders: tree }).then(refresh).catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
       }
 
-      function beginResize(event, dir) {
+      // 主面板与保留浮窗共用的拖动缩放逻辑：只在各自的状态更新与持久化上不同。
+      function startBoxResize(event, options) {
         if (event.button !== 0) return
         event.preventDefault()
         event.stopPropagation()
-        setResizing(true)
-        const root = event.currentTarget !== null ? event.currentTarget.parentElement : null
+        if (typeof options.onStart === 'function') options.onStart()
         const startX = event.clientX
         const startY = event.clientY
-        const startWidth = panelWidth
-        const startHeight = panelHeight !== null ? panelHeight : (root !== null ? root.offsetHeight : 320)
-        const startPos = { x: panelPos.x, y: panelPos.y }
-        const viewHeight = function () { return typeof window === 'undefined' ? 900 : window.innerHeight }
         const move = function (moveEvent) {
           const dx = moveEvent.clientX - startX
           const dy = moveEvent.clientY - startY
-          let nextWidth = startWidth
-          let nextHeight = startHeight
-          let nextX = startPos.x
-          let nextY = startPos.y
-          if (dir === 'r' || dir === 'br') nextWidth = startWidth + dx
-          if (dir === 'l') nextWidth = startWidth - dx
-          if (dir === 'b' || dir === 'br') nextHeight = startHeight + dy
-          if (dir === 't') nextHeight = startHeight - dy
-          nextWidth = Math.max(MIN_PANEL_WIDTH, Math.min(maxPanelWidth(), nextWidth))
-          nextHeight = Math.max(160, Math.min(viewHeight() - 72, nextHeight))
-          if (dir === 'l') nextX = startPos.x + (startWidth - nextWidth)
-          if (dir === 't') nextY = Math.max(56, startPos.y + (startHeight - nextHeight))
-          setPanelWidth(nextWidth)
-          setPanelHeight(nextHeight)
-          setPanelPos(clampPos({ x: nextX, y: nextY }, nextWidth, 200, 56))
+          let width = options.width
+          let height = options.height
+          let x = options.x
+          let y = options.y
+          if (options.dir === 'r' || options.dir === 'br') width = options.width + dx
+          if (options.dir === 'l') width = options.width - dx
+          if (options.dir === 'b' || options.dir === 'br') height = options.height + dy
+          if (options.dir === 't') height = options.height - dy
+          width = Math.max(options.minWidth, Math.min(options.maxWidth, width))
+          height = Math.max(options.minHeight, Math.min(options.maxHeight, height))
+          if (options.dir === 'l') x = options.x + (options.width - width)
+          if (options.dir === 't') y = Math.max(options.minY, options.y + (options.height - height))
+          options.onChange({ width: width, height: height, x: x, y: y })
         }
         const up = function () {
           window.removeEventListener('pointermove', move)
           window.removeEventListener('pointerup', up)
-          setResizing(false)
-          setPanelWidth(function (value) {
-            writeStored(LS_WIDTH, value)
-            return value
-          })
-          setPanelHeight(function (value) {
-            writeStored(LS_HEIGHT, value)
-            return value
-          })
+          if (typeof options.onEnd === 'function') options.onEnd()
         }
         window.addEventListener('pointermove', move)
         window.addEventListener('pointerup', up)
+      }
+
+      function beginResize(event, dir) {
+        if (event.button !== 0) return
+        const root = event.currentTarget !== null ? event.currentTarget.parentElement : null
+        const startHeight = panelHeight !== null ? panelHeight : (root !== null ? root.offsetHeight : 320)
+        const viewHeight = function () { return typeof window === 'undefined' ? 900 : window.innerHeight }
+        startBoxResize(event, {
+          dir: dir,
+          x: panelPos.x,
+          y: panelPos.y,
+          width: panelWidth,
+          height: startHeight,
+          minWidth: MIN_PANEL_WIDTH,
+          maxWidth: maxPanelWidth(),
+          minHeight: 160,
+          maxHeight: viewHeight() - 72,
+          minY: 56,
+          onStart: function () { setResizing(true) },
+          onChange: function (next) {
+            setPanelWidth(next.width)
+            setPanelHeight(next.height)
+            setPanelPos(clampPos({ x: next.x, y: next.y }, next.width, 200, 56))
+          },
+          onEnd: function () {
+            setResizing(false)
+            setPanelWidth(function (value) {
+              writeStored(LS_WIDTH, value)
+              return value
+            })
+            setPanelHeight(function (value) {
+              writeStored(LS_HEIGHT, value)
+              return value
+            })
+          },
+        })
       }
 
       // ---------------------------------------------------------- 文件夹编辑
@@ -4172,6 +4200,9 @@ window.__ModuleLoader__.load({
           id: item.id,
           kind: item.kind,
           pos: clampPos(point, 440, 200),
+          width: Number(item.width) > 0 ? Math.max(320, Math.min((viewWidth || 1280) - 24, Number(item.width))) : undefined,
+          height: Number(item.height) > 0 ? Math.max(120, Math.min((viewHeight || 800) - 48, Number(item.height))) : undefined,
+          collapsed: item.collapsed === true,
         }
         if (item.kind === 'preview') {
           list.push(Object.assign(base, {
@@ -4421,6 +4452,35 @@ window.__ModuleLoader__.load({
       event.preventDefault()
     }
 
+    // 保留浮窗复用主面板的缩放逻辑，只在自己的窗口数据上更新宽高与位置。
+    function beginPinResize(event, id) {
+      const win = pinnedRef.current.find(function (item) { return item.id === id })
+      if (win === undefined) return
+      const root = event.currentTarget !== null && event.currentTarget.closest !== undefined ? event.currentTarget.closest('.dtn-pin') : null
+      const viewWidth = typeof window === 'undefined' ? 1280 : window.innerWidth
+      const viewHeight = typeof window === 'undefined' ? 800 : window.innerHeight
+      startBoxResize(event, {
+        dir: 'br',
+        x: win.pos.x,
+        y: win.pos.y,
+        width: win.width || (root !== null ? root.offsetWidth : 440),
+        height: win.height || (root !== null ? root.offsetHeight : 320),
+        minWidth: 320,
+        maxWidth: Math.max(320, viewWidth - 24),
+        minHeight: 120,
+        maxHeight: Math.max(120, viewHeight - 48),
+        minY: 8,
+        onStart: function () { setFocusPin(id) },
+        onChange: function (next) {
+          updatePin(id, {
+            width: next.width,
+            height: next.height,
+            pos: clampPos({ x: next.x, y: next.y }, next.width, 120, 8),
+          })
+        },
+      })
+    }
+
     function dragPinWindow(event, id) {
       if (event.button !== 0) return
       if (event.target !== null && event.target !== undefined && event.target.closest !== undefined && event.target.closest('button') !== null) return
@@ -4648,17 +4708,25 @@ window.__ModuleLoader__.load({
         'div',
         {
           key: win.id,
-          className: 'dtn-preview dtn-pin' + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
+          className: 'dtn-preview dtn-pin' + (win.collapsed ? ' dtn-collapsed' : '') + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
           style: {
             left: win.pos.x + 'px',
             top: win.pos.y + 'px',
+            width: win.width ? win.width + 'px' : undefined,
+            height: win.collapsed ? undefined : (win.height ? win.height + 'px' : undefined),
             zIndex: focusPin === win.id ? 2147482512 : 2147482510,
           },
-          onPointerDown: function (event) { event.stopPropagation() },
+          onPointerDown: function (event) { setFocusPin(win.id); event.stopPropagation() },
         },
         h(
           'div',
           { className: 'dtn-preview-head', onPointerDown: function (event) { dragPinWindow(event, win.id) } },
+          h('button', {
+            type: 'button',
+            className: 'dtn-btn',
+            title: win.collapsed ? '展开' : '收起',
+            onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
+          }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
           win.editing
             ? h('input', {
                 className: 'dtn-pin-title-input',
@@ -4699,7 +4767,7 @@ window.__ModuleLoader__.load({
             }, icon('close')),
           ),
         ),
-        h(
+        win.collapsed ? null : h(
           'div',
           { className: 'dtn-preview-meta' },
           meta === null || meta === undefined
@@ -4712,7 +4780,7 @@ window.__ModuleLoader__.load({
                 meta.created !== '' ? h('span', { key: 'created' }, '创建 ' + formatStamp(meta.created)) : null,
               ],
         ),
-        win.editing
+        win.collapsed ? null : win.editing
           ? h(
               'div',
               { className: 'dtn-preview-body dtn-edit-body' },
@@ -4760,6 +4828,11 @@ window.__ModuleLoader__.load({
                 ? h('div', { className: 'dtn-error' }, '读取失败：' + win.error)
                 : renderMarkdown(win.markdown),
             ),
+        win.collapsed ? null : h('div', {
+          className: 'dtn-pin-resize',
+          title: '拖动调整大小',
+          onPointerDown: function (event) { beginPinResize(event, win.id) },
+        }),
       )
     }
 
@@ -4769,13 +4842,25 @@ window.__ModuleLoader__.load({
         'div',
         {
           key: win.id,
-          className: 'dtn-preview dtn-batch dtn-pin',
-          style: { left: win.pos.x + 'px', top: win.pos.y + 'px' },
-          onPointerDown: function (event) { event.stopPropagation() },
+          className: 'dtn-preview dtn-batch dtn-pin' + (win.collapsed ? ' dtn-collapsed' : ''),
+          style: {
+            left: win.pos.x + 'px',
+            top: win.pos.y + 'px',
+            width: win.width ? win.width + 'px' : undefined,
+            height: win.collapsed ? undefined : (win.height ? win.height + 'px' : undefined),
+            zIndex: focusPin === win.id ? 2147482512 : 2147482510,
+          },
+          onPointerDown: function (event) { setFocusPin(win.id); event.stopPropagation() },
         },
         h(
           'div',
           { className: 'dtn-preview-head', onPointerDown: function (event) { dragPinWindow(event, win.id) } },
+          h('button', {
+            type: 'button',
+            className: 'dtn-btn',
+            title: win.collapsed ? '展开' : '收起',
+            onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
+          }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
           h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
           h(
             'div',
@@ -4783,7 +4868,7 @@ window.__ModuleLoader__.load({
             h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
           ),
         ),
-        h(
+        win.collapsed ? null : h(
           'div',
           { className: 'dtn-preview-body' },
           h('div', { className: 'dtn-batch-hint' }, '每行一条，空行忽略'),
@@ -4807,6 +4892,11 @@ window.__ModuleLoader__.load({
             h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchCreate(win.id) } }, '确认'),
           ),
         ),
+        win.collapsed ? null : h('div', {
+          className: 'dtn-pin-resize',
+          title: '拖动调整大小',
+          onPointerDown: function (event) { beginPinResize(event, win.id) },
+        }),
       )
     }
 
@@ -4815,13 +4905,25 @@ window.__ModuleLoader__.load({
         'div',
         {
           key: win.id,
-          className: 'dtn-preview dtn-batch dtn-pin',
-          style: { left: win.pos.x + 'px', top: win.pos.y + 'px' },
-          onPointerDown: function (event) { event.stopPropagation() },
+          className: 'dtn-preview dtn-batch dtn-pin' + (win.collapsed ? ' dtn-collapsed' : ''),
+          style: {
+            left: win.pos.x + 'px',
+            top: win.pos.y + 'px',
+            width: win.width ? win.width + 'px' : undefined,
+            height: win.collapsed ? undefined : (win.height ? win.height + 'px' : undefined),
+            zIndex: focusPin === win.id ? 2147482512 : 2147482510,
+          },
+          onPointerDown: function (event) { setFocusPin(win.id); event.stopPropagation() },
         },
         h(
           'div',
           { className: 'dtn-preview-head', onPointerDown: function (event) { dragPinWindow(event, win.id) } },
+          h('button', {
+            type: 'button',
+            className: 'dtn-btn',
+            title: win.collapsed ? '展开' : '收起',
+            onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
+          }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
           h('span', { className: 'dtn-preview-title' }, '批量重命名'),
           h(
             'div',
@@ -4829,7 +4931,7 @@ window.__ModuleLoader__.load({
             h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
           ),
         ),
-        h(
+        win.collapsed ? null : h(
           'div',
           { className: 'dtn-preview-body' },
           h('div', { className: 'dtn-batch-hint' }, '行数固定为选中条目数，不能增加或删除换行；清空的行会被跳过'),
@@ -4859,6 +4961,11 @@ window.__ModuleLoader__.load({
             h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchRename(win.id) } }, '确认'),
           ),
         ),
+        win.collapsed ? null : h('div', {
+          className: 'dtn-pin-resize',
+          title: '拖动调整大小',
+          onPointerDown: function (event) { beginPinResize(event, win.id) },
+        }),
       )
     }
 

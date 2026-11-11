@@ -34,17 +34,25 @@
         'div',
         {
           key: win.id,
-          className: 'dtn-preview dtn-pin' + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
+          className: 'dtn-preview dtn-pin' + (win.collapsed ? ' dtn-collapsed' : '') + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
           style: {
             left: win.pos.x + 'px',
             top: win.pos.y + 'px',
+            width: win.width ? win.width + 'px' : undefined,
+            height: win.collapsed ? undefined : (win.height ? win.height + 'px' : undefined),
             zIndex: focusPin === win.id ? 2147482512 : 2147482510,
           },
-          onPointerDown: function (event) { event.stopPropagation() },
+          onPointerDown: function (event) { setFocusPin(win.id); event.stopPropagation() },
         },
         h(
           'div',
           { className: 'dtn-preview-head', onPointerDown: function (event) { dragPinWindow(event, win.id) } },
+          h('button', {
+            type: 'button',
+            className: 'dtn-btn',
+            title: win.collapsed ? '展开' : '收起',
+            onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
+          }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
           win.editing
             ? h('input', {
                 className: 'dtn-pin-title-input',
@@ -85,7 +93,7 @@
             }, icon('close')),
           ),
         ),
-        h(
+        win.collapsed ? null : h(
           'div',
           { className: 'dtn-preview-meta' },
           meta === null || meta === undefined
@@ -98,7 +106,7 @@
                 meta.created !== '' ? h('span', { key: 'created' }, '创建 ' + formatStamp(meta.created)) : null,
               ],
         ),
-        win.editing
+        win.collapsed ? null : win.editing
           ? h(
               'div',
               { className: 'dtn-preview-body dtn-edit-body' },
@@ -146,6 +154,11 @@
                 ? h('div', { className: 'dtn-error' }, '读取失败：' + win.error)
                 : renderMarkdown(win.markdown),
             ),
+        win.collapsed ? null : h('div', {
+          className: 'dtn-pin-resize',
+          title: '拖动调整大小',
+          onPointerDown: function (event) { beginPinResize(event, win.id) },
+        }),
       )
     }
 
@@ -155,13 +168,25 @@
         'div',
         {
           key: win.id,
-          className: 'dtn-preview dtn-batch dtn-pin',
-          style: { left: win.pos.x + 'px', top: win.pos.y + 'px' },
-          onPointerDown: function (event) { event.stopPropagation() },
+          className: 'dtn-preview dtn-batch dtn-pin' + (win.collapsed ? ' dtn-collapsed' : ''),
+          style: {
+            left: win.pos.x + 'px',
+            top: win.pos.y + 'px',
+            width: win.width ? win.width + 'px' : undefined,
+            height: win.collapsed ? undefined : (win.height ? win.height + 'px' : undefined),
+            zIndex: focusPin === win.id ? 2147482512 : 2147482510,
+          },
+          onPointerDown: function (event) { setFocusPin(win.id); event.stopPropagation() },
         },
         h(
           'div',
           { className: 'dtn-preview-head', onPointerDown: function (event) { dragPinWindow(event, win.id) } },
+          h('button', {
+            type: 'button',
+            className: 'dtn-btn',
+            title: win.collapsed ? '展开' : '收起',
+            onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
+          }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
           h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
           h(
             'div',
@@ -169,7 +194,7 @@
             h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
           ),
         ),
-        h(
+        win.collapsed ? null : h(
           'div',
           { className: 'dtn-preview-body' },
           h('div', { className: 'dtn-batch-hint' }, '每行一条，空行忽略'),
@@ -193,6 +218,11 @@
             h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchCreate(win.id) } }, '确认'),
           ),
         ),
+        win.collapsed ? null : h('div', {
+          className: 'dtn-pin-resize',
+          title: '拖动调整大小',
+          onPointerDown: function (event) { beginPinResize(event, win.id) },
+        }),
       )
     }
 
@@ -201,13 +231,25 @@
         'div',
         {
           key: win.id,
-          className: 'dtn-preview dtn-batch dtn-pin',
-          style: { left: win.pos.x + 'px', top: win.pos.y + 'px' },
-          onPointerDown: function (event) { event.stopPropagation() },
+          className: 'dtn-preview dtn-batch dtn-pin' + (win.collapsed ? ' dtn-collapsed' : ''),
+          style: {
+            left: win.pos.x + 'px',
+            top: win.pos.y + 'px',
+            width: win.width ? win.width + 'px' : undefined,
+            height: win.collapsed ? undefined : (win.height ? win.height + 'px' : undefined),
+            zIndex: focusPin === win.id ? 2147482512 : 2147482510,
+          },
+          onPointerDown: function (event) { setFocusPin(win.id); event.stopPropagation() },
         },
         h(
           'div',
           { className: 'dtn-preview-head', onPointerDown: function (event) { dragPinWindow(event, win.id) } },
+          h('button', {
+            type: 'button',
+            className: 'dtn-btn',
+            title: win.collapsed ? '展开' : '收起',
+            onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
+          }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
           h('span', { className: 'dtn-preview-title' }, '批量重命名'),
           h(
             'div',
@@ -215,7 +257,7 @@
             h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
           ),
         ),
-        h(
+        win.collapsed ? null : h(
           'div',
           { className: 'dtn-preview-body' },
           h('div', { className: 'dtn-batch-hint' }, '行数固定为选中条目数，不能增加或删除换行；清空的行会被跳过'),
@@ -245,6 +287,11 @@
             h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchRename(win.id) } }, '确认'),
           ),
         ),
+        win.collapsed ? null : h('div', {
+          className: 'dtn-pin-resize',
+          title: '拖动调整大小',
+          onPointerDown: function (event) { beginPinResize(event, win.id) },
+        }),
       )
     }
 

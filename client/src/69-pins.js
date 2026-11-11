@@ -25,6 +25,9 @@
           id: item.id,
           kind: item.kind,
           pos: clampPos(point, 440, 200),
+          width: Number(item.width) > 0 ? Math.max(320, Math.min((viewWidth || 1280) - 24, Number(item.width))) : undefined,
+          height: Number(item.height) > 0 ? Math.max(120, Math.min((viewHeight || 800) - 48, Number(item.height))) : undefined,
+          collapsed: item.collapsed === true,
         }
         if (item.kind === 'preview') {
           list.push(Object.assign(base, {
@@ -272,6 +275,35 @@
       window.addEventListener('pointerup', up)
       window.addEventListener('pointercancel', up)
       event.preventDefault()
+    }
+
+    // 保留浮窗复用主面板的缩放逻辑，只在自己的窗口数据上更新宽高与位置。
+    function beginPinResize(event, id) {
+      const win = pinnedRef.current.find(function (item) { return item.id === id })
+      if (win === undefined) return
+      const root = event.currentTarget !== null && event.currentTarget.closest !== undefined ? event.currentTarget.closest('.dtn-pin') : null
+      const viewWidth = typeof window === 'undefined' ? 1280 : window.innerWidth
+      const viewHeight = typeof window === 'undefined' ? 800 : window.innerHeight
+      startBoxResize(event, {
+        dir: 'br',
+        x: win.pos.x,
+        y: win.pos.y,
+        width: win.width || (root !== null ? root.offsetWidth : 440),
+        height: win.height || (root !== null ? root.offsetHeight : 320),
+        minWidth: 320,
+        maxWidth: Math.max(320, viewWidth - 24),
+        minHeight: 120,
+        maxHeight: Math.max(120, viewHeight - 48),
+        minY: 8,
+        onStart: function () { setFocusPin(id) },
+        onChange: function (next) {
+          updatePin(id, {
+            width: next.width,
+            height: next.height,
+            pos: clampPos({ x: next.x, y: next.y }, next.width, 120, 8),
+          })
+        },
+      })
     }
 
     function dragPinWindow(event, id) {
