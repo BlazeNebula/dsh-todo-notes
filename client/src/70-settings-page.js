@@ -200,7 +200,7 @@
                 'section',
                 { className: 'tns-section' },
                 h('h3', { className: 'tns-section-title' }, '优先级颜色'),
-                h('p', { className: 'tns-hint' }, 'T0 最高，T9 最低。点色块用取色器改，也可以直接填十六进制值。'),
+                h('p', { className: 'tns-hint' }, 'T0 固定使用错误色（随主题自动变化）；T1~T9 可点色块用取色器改，也可以直接填十六进制值。'),
                 h(
                   'div',
                   { className: 'tns-colors' },
@@ -210,6 +210,15 @@
                       { key: columnIndex, className: 'tns-color-column' },
                       column.map(function (index) {
                         const color = palette[index]
+                        if (index === 0) {
+                          return h(
+                            'div',
+                            { key: index, className: 'tns-color-row' },
+                            h('span', { className: 'tns-color-label' }, 'T0'),
+                            h('span', { className: 'tns-color-fixed', title: '跟随主题错误色' }),
+                            h('span', { className: 'tns-hint tns-color-note' }, '跟随错误色'),
+                          )
+                        }
                         return h(
                           'div',
                           { key: index, className: 'tns-color-row' },

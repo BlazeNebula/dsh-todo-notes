@@ -474,6 +474,8 @@
 .tns-color-column { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .tns-color-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
 .tns-color-label { width: 26px; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px; }
+.tns-color-fixed { width: 22px; height: 20px; flex: none; border-radius: 4px; background: var(--dsw-alias-state-error-primary, #e55353); }
+.tns-color-note { font-size: 11px; }
 .tns-color-input {
   width: 28px; height: 26px; padding: 0; border: 1px solid var(--dsw-alias-border-l2, #3a3a41);
   border-radius: 6px; background: transparent; cursor: pointer;

@@ -61,6 +61,8 @@
 
     function prioColor(priority) {
       const value = typeof priority === 'number' && priority >= 0 ? Math.min(9, Math.floor(priority)) : 1
+      // T0 固定使用 DSH 的错误色令牌，深浅主题都由主题本身校正。
+      if (value === 0) return 'var(--dsw-alias-state-error-primary, #e55353)'
       const palette = prioOverride === null ? PRIO_PALETTE : prioOverride
       return prioInk(palette[value])
     }

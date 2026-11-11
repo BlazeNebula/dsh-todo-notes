@@ -504,6 +504,8 @@ window.__ModuleLoader__.load({
 .tns-color-column { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .tns-color-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
 .tns-color-label { width: 26px; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px; }
+.tns-color-fixed { width: 22px; height: 20px; flex: none; border-radius: 4px; background: var(--dsw-alias-state-error-primary, #e55353); }
+.tns-color-note { font-size: 11px; }
 .tns-color-input {
   width: 28px; height: 26px; padding: 0; border: 1px solid var(--dsw-alias-border-l2, #3a3a41);
   border-radius: 6px; background: transparent; cursor: pointer;
@@ -766,6 +768,8 @@ window.__ModuleLoader__.load({
 
     function prioColor(priority) {
       const value = typeof priority === 'number' && priority >= 0 ? Math.min(9, Math.floor(priority)) : 1
+      // T0 固定使用 DSH 的错误色令牌，深浅主题都由主题本身校正。
+      if (value === 0) return 'var(--dsw-alias-state-error-primary, #e55353)'
       const palette = prioOverride === null ? PRIO_PALETTE : prioOverride
       return prioInk(palette[value])
     }
@@ -5338,7 +5342,7 @@ window.__ModuleLoader__.load({
                 'section',
                 { className: 'tns-section' },
                 h('h3', { className: 'tns-section-title' }, '优先级颜色'),
-                h('p', { className: 'tns-hint' }, 'T0 最高，T9 最低。点色块用取色器改，也可以直接填十六进制值。'),
+                h('p', { className: 'tns-hint' }, 'T0 固定使用错误色（随主题自动变化）；T1~T9 可点色块用取色器改，也可以直接填十六进制值。'),
                 h(
                   'div',
                   { className: 'tns-colors' },
@@ -5348,6 +5352,15 @@ window.__ModuleLoader__.load({
                       { key: columnIndex, className: 'tns-color-column' },
                       column.map(function (index) {
                         const color = palette[index]
+                        if (index === 0) {
+                          return h(
+                            'div',
+                            { key: index, className: 'tns-color-row' },
+                            h('span', { className: 'tns-color-label' }, 'T0'),
+                            h('span', { className: 'tns-color-fixed', title: '跟随主题错误色' }),
+                            h('span', { className: 'tns-hint tns-color-note' }, '跟随错误色'),
+                          )
+                        }
                         return h(
                           'div',
                           { key: index, className: 'tns-color-row' },
