@@ -1,6 +1,6 @@
     // ------------------------------------------------------------ 设置页（DSH 设置 → 插件 → TODO 便签）
 
-    const UI_DEFAULT_PALETTE = ['#d9a441', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8', '#3ca5d7', '#4b8cd6', '#5a79d6', '#686cd6']
+    const UI_DEFAULT_PALETTE = ['#f59e0b', '#eab308', '#84cc16', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6']
 
     function splitPalette(raw) {
       const text = typeof raw === 'string' ? raw.trim() : ''
@@ -159,29 +159,35 @@
               ),
               h(
                 'div',
-                { className: 'tns-preview' },
-                h('div', { className: 'tns-preview-label' }, '预览'),
-                h(
-                  'div',
-                  { className: 'tns-preview-row' },
-                  h('span', { className: 'tns-preview-check' }, '☐'),
-                  h('span', { className: 'tns-preview-prio', style: { color: palette[3] } }, 'T3'),
-                  h('span', null, '未完成的条目'),
-                ),
-                h(
-                  'div',
-                  { className: 'tns-preview-row', style: { opacity: doneOpacity / 100 } },
-                  h('span', { className: 'tns-preview-check' }, '☑'),
-                  h('span', { className: 'tns-preview-prio', style: { color: palette[1] } }, 'T1'),
-                  h('span', null, '已完成的条目'),
-                ),
-                h(
-                  'div',
-                  { className: 'tns-preview-row', style: { opacity: partialOpacity / 100 } },
-                  h('span', { className: 'tns-preview-check' }, '◐'),
-                  h('span', { className: 'tns-preview-prio', style: { color: palette[2] } }, 'T2'),
-                  h('span', null, '半完成、等待确认的条目'),
-                ),
+                { className: 'tns-preview-grid' },
+                [['浅色主题', '#ffffff', '#1f1f24'], ['深色主题', '#1a1a1a', '#e8e8ea']].map(function (theme) {
+                  return h(
+                    'div',
+                    { key: theme[0], className: 'tns-preview-box', style: { background: theme[1], color: theme[2], '--dsw-alias-label-primary': theme[2] } },
+                    h('div', { className: 'tns-preview-label' }, theme[0]),
+                    h(
+                      'div',
+                      { className: 'tns-preview-row' },
+                      h('span', { className: 'tns-preview-check' }, '☐'),
+                      h('span', { className: 'tns-preview-prio', style: { color: prioInk(palette[3]) } }, 'T3'),
+                      h('span', null, '未完成的条目'),
+                    ),
+                    h(
+                      'div',
+                      { className: 'tns-preview-row', style: { opacity: doneOpacity / 100 } },
+                      h('span', { className: 'tns-preview-check' }, '☑'),
+                      h('span', { className: 'tns-preview-prio', style: { color: prioInk(palette[1]) } }, 'T1'),
+                      h('span', null, '已完成的条目'),
+                    ),
+                    h(
+                      'div',
+                      { className: 'tns-preview-row', style: { opacity: partialOpacity / 100 } },
+                      h('span', { className: 'tns-preview-check' }, '◐'),
+                      h('span', { className: 'tns-preview-prio', style: { color: prioInk(palette[2]) } }, 'T2'),
+                      h('span', null, '半完成、等待确认的条目'),
+                    ),
+                  )
+                }),
               ),
               h(
                 'section',

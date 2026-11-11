@@ -494,7 +494,8 @@ window.__ModuleLoader__.load({
 }
 .tns-unit { color: var(--dsw-alias-label-secondary, #a3a3ab); }
 .tns-check { width: 16px; height: 16px; margin: 0; accent-color: #4d9cff; }
-.tns-preview { margin: 0 0 20px; padding: 10px 12px; border-radius: 8px; background: var(--dsw-alias-bg-layer-1, #232327); }
+.tns-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 20px; }
+.tns-preview-box { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--dsw-alias-border-l2, rgba(128,128,128,.25)); }
 .tns-preview-label { margin-bottom: 6px; color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 11px; }
 .tns-preview-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
 .tns-preview-check { width: 14px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
@@ -702,14 +703,14 @@ window.__ModuleLoader__.load({
       return typeof source === 'string' && source !== '' && source !== 'user' ? '由智能体创建' : ''
     }
 
-    // 优先级颜色：T0 用主题的 warn 色，T1~T9 用 ColorBrewer 的 YlGnBu 9 档顺序色阶。
-    // T1~T4 保留原始的浅色饱和度，保证四档并列时仍能分出层次；T5~T9 统一到 T5 的亮度与平均饱和度。
+    // 优先级色相：Tailwind 300/400 色相带，T0 暖金 → T9 紫，按暖到冷排列。
+    // 文字明度不写死，而是从主题前景色派生，因此浅色主题自动变深、深色主题自动变亮。
     const PRIO_PALETTE = [
-      'var(--dsw-alias-state-warn-primary, #d9a441)',
-      '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8',
-      '#3ca5d7', '#4b8cd6', '#5a79d6', '#686cd6',
+      '#f59e0b', '#eab308', '#84cc16', '#10b981', '#14b8a6',
+      '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6',
     ]
     let prioOverride = null
+    let prioRelativeSupported = null
 
     // 设置页里的色板用分号分隔，必须是 10 个值；不合法时回退内置色板。
     function applyPriorityPalette(raw) {
@@ -722,10 +723,51 @@ window.__ModuleLoader__.load({
       prioOverride = parts.length === 10 ? parts : null
     }
 
+    // 十六进制 → OKLCH 的色相与彩度；用于把用户选的颜色换算成着色参数。
+    function hexToOklch(hex) {
+      const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex || '').trim())
+      if (match === null) return { hue: 220, chroma: 0.09 }
+      let body = match[1]
+      if (body.length === 3) body = body.split('').map(function (part) { return part + part }).join('')
+      const toLinear = function (value) {
+        const channel = value / 255
+        return channel <= 0.04045 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4)
+      }
+      const r = toLinear(parseInt(body.slice(0, 2), 16))
+      const g = toLinear(parseInt(body.slice(2, 4), 16))
+      const b = toLinear(parseInt(body.slice(4, 6), 16))
+      const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+      const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+      const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+      const aa = 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s
+      const bb = 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s
+      let hue = Math.atan2(bb, aa) * 180 / Math.PI
+      if (hue < 0) hue += 360
+      const chroma = Math.sqrt(aa * aa + bb * bb)
+      return { hue: hue.toFixed(1), chroma: Math.max(0.055, Math.min(0.13, chroma)).toFixed(3) }
+    }
+
+    function relativeColorAvailable() {
+      if (prioRelativeSupported !== null) return prioRelativeSupported
+      try {
+        prioRelativeSupported = typeof CSS !== 'undefined' && typeof CSS.supports === 'function' &&
+          CSS.supports('color', 'oklch(from #ffffff calc(l * 0.9) 0.09 200)')
+      } catch (error) {
+        prioRelativeSupported = false
+      }
+      return prioRelativeSupported
+    }
+
+    function prioInk(hex) {
+      if (!relativeColorAvailable()) return hex
+      const color = hexToOklch(hex)
+      return 'oklch(from var(--dsw-alias-label-primary, #e8e8ea) calc(l * 0.9) ' + color.chroma + ' ' + color.hue + ')'
+    }
+
     function prioColor(priority) {
       const value = typeof priority === 'number' && priority >= 0 ? Math.min(9, Math.floor(priority)) : 1
       const palette = prioOverride === null ? PRIO_PALETTE : prioOverride
-      return palette[value]
+      return prioInk(palette[value])
     }
 
     // 排序口径：未勾选 > 中间态（智能体勾选等人工确认）> 已勾选。
@@ -5096,7 +5138,7 @@ window.__ModuleLoader__.load({
 
     // ------------------------------------------------------------ 设置页（DSH 设置 → 插件 → TODO 便签）
 
-    const UI_DEFAULT_PALETTE = ['#d9a441', '#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#2dc6d8', '#3ca5d7', '#4b8cd6', '#5a79d6', '#686cd6']
+    const UI_DEFAULT_PALETTE = ['#f59e0b', '#eab308', '#84cc16', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6']
 
     function splitPalette(raw) {
       const text = typeof raw === 'string' ? raw.trim() : ''
@@ -5255,29 +5297,35 @@ window.__ModuleLoader__.load({
               ),
               h(
                 'div',
-                { className: 'tns-preview' },
-                h('div', { className: 'tns-preview-label' }, '预览'),
-                h(
-                  'div',
-                  { className: 'tns-preview-row' },
-                  h('span', { className: 'tns-preview-check' }, '☐'),
-                  h('span', { className: 'tns-preview-prio', style: { color: palette[3] } }, 'T3'),
-                  h('span', null, '未完成的条目'),
-                ),
-                h(
-                  'div',
-                  { className: 'tns-preview-row', style: { opacity: doneOpacity / 100 } },
-                  h('span', { className: 'tns-preview-check' }, '☑'),
-                  h('span', { className: 'tns-preview-prio', style: { color: palette[1] } }, 'T1'),
-                  h('span', null, '已完成的条目'),
-                ),
-                h(
-                  'div',
-                  { className: 'tns-preview-row', style: { opacity: partialOpacity / 100 } },
-                  h('span', { className: 'tns-preview-check' }, '◐'),
-                  h('span', { className: 'tns-preview-prio', style: { color: palette[2] } }, 'T2'),
-                  h('span', null, '半完成、等待确认的条目'),
-                ),
+                { className: 'tns-preview-grid' },
+                [['浅色主题', '#ffffff', '#1f1f24'], ['深色主题', '#1a1a1a', '#e8e8ea']].map(function (theme) {
+                  return h(
+                    'div',
+                    { key: theme[0], className: 'tns-preview-box', style: { background: theme[1], color: theme[2], '--dsw-alias-label-primary': theme[2] } },
+                    h('div', { className: 'tns-preview-label' }, theme[0]),
+                    h(
+                      'div',
+                      { className: 'tns-preview-row' },
+                      h('span', { className: 'tns-preview-check' }, '☐'),
+                      h('span', { className: 'tns-preview-prio', style: { color: prioInk(palette[3]) } }, 'T3'),
+                      h('span', null, '未完成的条目'),
+                    ),
+                    h(
+                      'div',
+                      { className: 'tns-preview-row', style: { opacity: doneOpacity / 100 } },
+                      h('span', { className: 'tns-preview-check' }, '☑'),
+                      h('span', { className: 'tns-preview-prio', style: { color: prioInk(palette[1]) } }, 'T1'),
+                      h('span', null, '已完成的条目'),
+                    ),
+                    h(
+                      'div',
+                      { className: 'tns-preview-row', style: { opacity: partialOpacity / 100 } },
+                      h('span', { className: 'tns-preview-check' }, '◐'),
+                      h('span', { className: 'tns-preview-prio', style: { color: prioInk(palette[2]) } }, 'T2'),
+                      h('span', null, '半完成、等待确认的条目'),
+                    ),
+                  )
+                }),
               ),
               h(
                 'section',
