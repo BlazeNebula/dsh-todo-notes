@@ -3775,13 +3775,13 @@ window.__ModuleLoader__.load({
                 { key: 'meta', className: 'dtn-preview-meta' },
                 previewData !== null
                   ? [
-                      h('span', { key: 'status' }, previewData.status === 'done' ? '已完成' : previewData.status === 'partial' ? '中间态（待人工确认）' : '未完成'),
+                      h('span', { key: 'status', className: 'dtn-meta-item' }, icon(previewData.status === 'done' ? 'check' : 'clock', 11), previewData.status === 'done' ? '条目已完成' : previewData.status === 'partial' ? '条目待确认' : '条目未完成'),
+                      h('span', { key: 'priority', className: 'dtn-meta-item', style: { color: prioColor(previewData.priority) } }, icon('flag', 11), '优先级 T' + (typeof previewData.priority === 'number' ? previewData.priority : 1)),
+                      h('span', { key: 'folder', className: 'dtn-meta-item' }, icon('folder', 11), previewFolderLabel(previewData)),
+                      previewData.created !== '' ? h('span', { key: 'created', className: 'dtn-meta-item' }, icon('clock', 11), '创建 ' + formatStamp(previewData.created)) : null,
                       isAiSource(previewData.source)
                         ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13))
                         : null,
-                      h('span', { key: 'folder' }, previewFolderLabel(previewData)),
-                      h('span', { key: 'priority', style: { color: prioColor(previewData.priority) } }, '优先级 T' + (typeof previewData.priority === 'number' ? previewData.priority : 1)),
-                      previewData.created !== '' ? h('span', { key: 'created' }, '创建 ' + formatStamp(previewData.created)) : null,
                     ]
                   : [h('span', { key: 'loading' }, '加载中…')],
               ),
