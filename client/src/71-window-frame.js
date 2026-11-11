@@ -89,7 +89,13 @@
             }
             if (props.onFocus !== undefined) props.onFocus(event)
           },
-          onMouseEnter: props.onHoverEnter,
+          onMouseEnter: function (event) {
+            activeWindowKey = props.windowKey
+            if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
+              window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))
+            }
+            if (props.onHoverEnter !== undefined) props.onHoverEnter(event)
+          },
           onMouseLeave: props.onHoverLeave,
         },
         head,

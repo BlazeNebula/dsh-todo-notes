@@ -178,14 +178,14 @@ window.__ModuleLoader__.load({
 .dtn-group-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dtn-group-count { margin-left: auto; font-size: 11px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
 .dtn-current-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dsw-alias-brand-primary, #4d9cff); flex: none; }
-.dtn-group-body { padding: 2px 4px 6px 12px; }
-/* 组内条目左右边界是 12px/4px；顶层条目与文件夹取它的 1.5 倍。 */
-.dtn-todo.dtn-top-level, .dtn-folder.dtn-top-level { margin-left: 6px; margin-right: 2px; }
+.dtn-group-body { padding: 2px 0 6px 0; }
+/* 条目与文件夹沿用组标题的水平内缩，保证悬停底色与标题边界对齐。 */
+.dtn-todo.dtn-top-level, .dtn-folder.dtn-top-level { margin-left: 0; margin-right: 0; }
 .dtn-folder { margin: 1px 0; }
 .dtn-folder-head {
   position: relative;
   display: flex; align-items: center; gap: 5px;
-  padding: 3px 5px; border-radius: 5px; cursor: pointer;
+  padding: 3px 8px; border-radius: 5px; cursor: pointer;
   color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px;
 }
 .dtn-folder-head:hover { background: var(--dsw-alias-bg-layer-1, #232328); }
@@ -194,7 +194,7 @@ window.__ModuleLoader__.load({
 .dtn-todo {
   position: relative;
   display: flex; align-items: center; gap: 6px;
-  padding: 3px 0 3px 6px; border-radius: 6px; cursor: pointer;
+  padding: 3px 8px 3px 8px; border-radius: 6px; cursor: pointer;
   color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   font-size: 12.5px; line-height: 1.35;
   border-bottom: 1px dashed var(--dsw-alias-border-l1, #2e2e34);
@@ -5705,7 +5705,13 @@ window.__ModuleLoader__.load({
             }
             if (props.onFocus !== undefined) props.onFocus(event)
           },
-          onMouseEnter: props.onHoverEnter,
+          onMouseEnter: function (event) {
+            activeWindowKey = props.windowKey
+            if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
+              window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))
+            }
+            if (props.onHoverEnter !== undefined) props.onHoverEnter(event)
+          },
           onMouseLeave: props.onHoverLeave,
         },
         head,
