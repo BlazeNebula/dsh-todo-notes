@@ -181,6 +181,12 @@ window.__ModuleLoader__.load({
 .dtn-group-body { padding: 2px 0 6px 0; }
 /* 条目与文件夹沿用组标题的水平内缩，保证悬停底色与标题边界对齐。 */
 .dtn-todo.dtn-top-level, .dtn-folder.dtn-top-level { margin-left: 0; margin-right: 0; }
+.dtn-folder.dtn-nested, .dtn-todo.dtn-indented { position: relative; }
+.dtn-folder.dtn-nested::before, .dtn-todo.dtn-indented::before {
+  content: ''; position: absolute; left: -4px; top: 2px; bottom: 2px; width: 1px;
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 22%, transparent);
+  pointer-events: none;
+}
 .dtn-folder { margin: 1px 0; }
 .dtn-folder-head {
   position: relative;
@@ -3018,7 +3024,7 @@ window.__ModuleLoader__.load({
             'data-select-group': group.key,
             'data-select-id': todo.id,
             'data-select-folder': rowScope,
-            className: 'dtn-todo' + (rowScope === PRIMARY && rowIndent === 0 ? ' dtn-top-level' : '') + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
+            className: 'dtn-todo' + (rowScope === PRIMARY && rowIndent === 0 ? ' dtn-top-level' : '') + (rowIndent > 0 ? ' dtn-indented' : '') + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
             style: rowIndent > 0 ? { marginLeft: rowIndent + 'px' } : undefined,
             title: todo.title,
             draggable: !renamingTodo,
@@ -3172,7 +3178,7 @@ window.__ModuleLoader__.load({
         const selected = isSelectedKey(folderKey)
         return h(
           'div',
-          { key: folderKey, className: 'dtn-folder' + (depth === 0 ? ' dtn-top-level' : ''), style: depth > 0 ? { marginLeft: '10px' } : undefined },
+          { key: folderKey, className: 'dtn-folder' + (depth === 0 ? ' dtn-top-level' : ' dtn-nested'), style: depth > 0 ? { marginLeft: '8px' } : undefined },
           h(
             'div',
             {
@@ -3319,7 +3325,7 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { className: 'dtn-fold' + (folderOpen ? '' : ' dtn-fold-off') },
-            todos.map(function (todo) { return renderTodoRow(group, todo, folder.id, 24) }),
+            todos.map(function (todo) { return renderTodoRow(group, todo, folder.id, (depth + 1) * 8) }),
             children.map(function (child) { return renderFolder(group, child, depth + 1) }),
           ),
         )

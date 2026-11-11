@@ -144,6 +144,12 @@
 .dtn-group-body { padding: 2px 0 6px 0; }
 /* 条目与文件夹沿用组标题的水平内缩，保证悬停底色与标题边界对齐。 */
 .dtn-todo.dtn-top-level, .dtn-folder.dtn-top-level { margin-left: 0; margin-right: 0; }
+.dtn-folder.dtn-nested, .dtn-todo.dtn-indented { position: relative; }
+.dtn-folder.dtn-nested::before, .dtn-todo.dtn-indented::before {
+  content: ''; position: absolute; left: -4px; top: 2px; bottom: 2px; width: 1px;
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 22%, transparent);
+  pointer-events: none;
+}
 .dtn-folder { margin: 1px 0; }
 .dtn-folder-head {
   position: relative;
