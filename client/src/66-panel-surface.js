@@ -177,7 +177,7 @@
                   left: panelLeftOf(panelPos, panelWidth, panelCollapsed) + 'px',
                   top: panelPos.y + 'px',
                   width: panelCollapsed ? undefined : panelWidth + 'px',
-                  height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
+                  height: panelCollapsed ? '44px' : panelHeight === null ? undefined : panelHeight + 'px',
                 },
           ),
           collapsed: collapsed === true && !embedded,

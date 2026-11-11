@@ -50,6 +50,7 @@ window.__ModuleLoader__.load({
   max-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
+  transition: height 190ms cubic-bezier(.22,.61,.36,1);
   color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   background: var(--dsw-alias-bg-base, #18181a);
   border: 1px solid var(--dsw-alias-border-l2, #3a3a40);
@@ -422,7 +423,7 @@ window.__ModuleLoader__.load({
   box-shadow: 0 16px 48px rgba(0,0,0,.42);
   font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
   overflow: hidden;
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition: opacity 180ms ease, transform 180ms ease, height 190ms cubic-bezier(.22,.61,.36,1);
 }
 .dtn-preview.dtn-preview-off { opacity: 0; transform: translateY(6px); pointer-events: none; }
 .dtn-preview-head {
@@ -3702,7 +3703,7 @@ window.__ModuleLoader__.load({
                   left: panelLeftOf(panelPos, panelWidth, panelCollapsed) + 'px',
                   top: panelPos.y + 'px',
                   width: panelCollapsed ? undefined : panelWidth + 'px',
-                  height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
+                  height: panelCollapsed ? '44px' : panelHeight === null ? undefined : panelHeight + 'px',
                 },
           ),
           collapsed: collapsed === true && !embedded,
@@ -4791,7 +4792,7 @@ window.__ModuleLoader__.load({
             left: win.pos.x + 'px',
             top: win.pos.y + 'px',
             width: win.width ? win.width + 'px' : undefined,
-            height: expanded && win.height ? win.height + 'px' : undefined,
+            height: expanded ? (win.height ? win.height + 'px' : undefined) : '40px',
             zIndex: focusPin === win.id ? 2147482512 : 2147482510,
           },
           collapsed: win.collapsed === true,

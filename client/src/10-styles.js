@@ -13,6 +13,7 @@
   max-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
+  transition: height 190ms cubic-bezier(.22,.61,.36,1);
   color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   background: var(--dsw-alias-bg-base, #18181a);
   border: 1px solid var(--dsw-alias-border-l2, #3a3a40);
@@ -385,7 +386,7 @@
   box-shadow: 0 16px 48px rgba(0,0,0,.42);
   font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
   overflow: hidden;
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition: opacity 180ms ease, transform 180ms ease, height 190ms cubic-bezier(.22,.61,.36,1);
 }
 .dtn-preview.dtn-preview-off { opacity: 0; transform: translateY(6px); pointer-events: none; }
 .dtn-preview-head {

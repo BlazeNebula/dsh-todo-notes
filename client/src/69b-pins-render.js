@@ -64,7 +64,7 @@
             left: win.pos.x + 'px',
             top: win.pos.y + 'px',
             width: win.width ? win.width + 'px' : undefined,
-            height: expanded && win.height ? win.height + 'px' : undefined,
+            height: expanded ? (win.height ? win.height + 'px' : undefined) : '40px',
             zIndex: focusPin === win.id ? 2147482512 : 2147482510,
           },
           collapsed: win.collapsed === true,
