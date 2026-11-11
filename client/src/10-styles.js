@@ -145,7 +145,7 @@
 /* 便签组也持有一条主线，主归属里的条目与文件夹都挂在这条线上。 */
 .dtn-group-body::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 22%, transparent);
+  background: var(--dsw-alias-border-l1, #2e2e34);
   pointer-events: none;
 }
 /* 条目与文件夹沿用组标题的水平内缩，保证悬停底色与标题边界对齐。 */
@@ -155,7 +155,7 @@
 .dtn-folder-children { position: relative; padding-left: 8px; }
 .dtn-folder-children::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 22%, transparent);
+  background: var(--dsw-alias-border-l1, #2e2e34);
   pointer-events: none;
 }
 .dtn-folder { margin: 1px 0; }

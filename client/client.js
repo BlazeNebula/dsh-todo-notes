@@ -182,7 +182,7 @@ window.__ModuleLoader__.load({
 /* 便签组也持有一条主线，主归属里的条目与文件夹都挂在这条线上。 */
 .dtn-group-body::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 22%, transparent);
+  background: var(--dsw-alias-border-l1, #2e2e34);
   pointer-events: none;
 }
 /* 条目与文件夹沿用组标题的水平内缩，保证悬停底色与标题边界对齐。 */
@@ -192,7 +192,7 @@ window.__ModuleLoader__.load({
 .dtn-folder-children { position: relative; padding-left: 8px; }
 .dtn-folder-children::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 22%, transparent);
+  background: var(--dsw-alias-border-l1, #2e2e34);
   pointer-events: none;
 }
 .dtn-folder { margin: 1px 0; }
@@ -5710,6 +5710,7 @@ window.__ModuleLoader__.load({
         {
           ref: props.rootRef !== undefined && props.rootRef !== null ? props.rootRef : localRef,
           'data-dtn-pin': props.pinId,
+          'data-dtn-window': props.windowKey,
           className: props.className + (collapsed ? ' dtn-collapsed' : '') + (focused ? ' dtn-window-focused' : ''),
           style: style,
           onPointerDown: function (event) {
@@ -5720,6 +5721,23 @@ window.__ModuleLoader__.load({
             if (props.onFocus !== undefined) props.onFocus(event)
           },
           onMouseEnter: function (event) {
+            // 前层窗口的阴影范围仍属于前层：从阴影里划过不应把下层窗口抬起来，
+            // 也不应触发下层的悬停展开，这样与收展的 48px 判据保持一致。
+            if (activeWindowKey !== '' && activeWindowKey !== props.windowKey && typeof document !== 'undefined') {
+              const top = document.querySelector('[data-dtn-window="' + activeWindowKey + '"]')
+              if (top !== null && top !== undefined) {
+                const rect = top.getBoundingClientRect()
+                const margin = 48
+                const x = event.clientX
+                const y = event.clientY
+                if (
+                  x >= rect.left - margin &&
+                  x <= rect.right + margin &&
+                  y >= rect.top - margin &&
+                  y <= rect.bottom + margin
+                ) return
+              }
+            }
             activeWindowKey = props.windowKey
             if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
               window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))

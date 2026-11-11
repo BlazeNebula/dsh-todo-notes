@@ -80,6 +80,7 @@
         {
           ref: props.rootRef !== undefined && props.rootRef !== null ? props.rootRef : localRef,
           'data-dtn-pin': props.pinId,
+          'data-dtn-window': props.windowKey,
           className: props.className + (collapsed ? ' dtn-collapsed' : '') + (focused ? ' dtn-window-focused' : ''),
           style: style,
           onPointerDown: function (event) {
@@ -90,6 +91,23 @@
             if (props.onFocus !== undefined) props.onFocus(event)
           },
           onMouseEnter: function (event) {
+            // 前层窗口的阴影范围仍属于前层：从阴影里划过不应把下层窗口抬起来，
+            // 也不应触发下层的悬停展开，这样与收展的 48px 判据保持一致。
+            if (activeWindowKey !== '' && activeWindowKey !== props.windowKey && typeof document !== 'undefined') {
+              const top = document.querySelector('[data-dtn-window="' + activeWindowKey + '"]')
+              if (top !== null && top !== undefined) {
+                const rect = top.getBoundingClientRect()
+                const margin = 48
+                const x = event.clientX
+                const y = event.clientY
+                if (
+                  x >= rect.left - margin &&
+                  x <= rect.right + margin &&
+                  y >= rect.top - margin &&
+                  y <= rect.bottom + margin
+                ) return
+              }
+            }
             activeWindowKey = props.windowKey
             if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
               window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))
