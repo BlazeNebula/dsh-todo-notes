@@ -270,6 +270,25 @@
         const lists = group.folderTodos !== null && typeof group.folderTodos === 'object' ? group.folderTodos : {}
         const list = Array.isArray(lists[folderId]) ? lists[folderId] : []
         const joined = list.indexOf(todo.id) >= 0
+        if (joined && folderId === PRIMARY) {
+          // 「无文件夹」是主归属的兜底位：它本身不能单独删除，只能把主归属挪到另一个已收录的文件夹。
+          const others = Object.keys(lists).filter(function (key) {
+            return key !== PRIMARY && Array.isArray(lists[key]) && lists[key].indexOf(todo.id) >= 0
+          })
+          if (others.length === 0) {
+            showBubble('至少保留一个收录位置', event)
+            return
+          }
+          const target = others[0]
+          postApi({ action: 'moveTodo', key: group.key, id: todo.id, folder: target })
+            .then(function () {
+              showBubble('已取消无文件夹收录，主归属改为' + folderLabel(target), event)
+              animatePendingRef.current = true
+              refresh()
+            })
+            .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          return
+        }
         postApi({ action: joined ? 'removeReference' : 'reference', key: group.key, id: todo.id, folder: folderId })
           .then(function () {
             showBubble(joined ? '已取消收录到' + folderLabel(folderId) : '已收录到' + folderLabel(folderId), event)

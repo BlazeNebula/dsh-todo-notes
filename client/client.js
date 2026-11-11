@@ -2843,6 +2843,25 @@ window.__ModuleLoader__.load({
         const lists = group.folderTodos !== null && typeof group.folderTodos === 'object' ? group.folderTodos : {}
         const list = Array.isArray(lists[folderId]) ? lists[folderId] : []
         const joined = list.indexOf(todo.id) >= 0
+        if (joined && folderId === PRIMARY) {
+          // 「无文件夹」是主归属的兜底位：它本身不能单独删除，只能把主归属挪到另一个已收录的文件夹。
+          const others = Object.keys(lists).filter(function (key) {
+            return key !== PRIMARY && Array.isArray(lists[key]) && lists[key].indexOf(todo.id) >= 0
+          })
+          if (others.length === 0) {
+            showBubble('至少保留一个收录位置', event)
+            return
+          }
+          const target = others[0]
+          postApi({ action: 'moveTodo', key: group.key, id: todo.id, folder: target })
+            .then(function () {
+              showBubble('已取消无文件夹收录，主归属改为' + folderLabel(target), event)
+              animatePendingRef.current = true
+              refresh()
+            })
+            .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          return
+        }
         postApi({ action: joined ? 'removeReference' : 'reference', key: group.key, id: todo.id, folder: folderId })
           .then(function () {
             showBubble(joined ? '已取消收录到' + folderLabel(folderId) : '已收录到' + folderLabel(folderId), event)
@@ -5791,6 +5810,20 @@ window.__ModuleLoader__.load({
             if (props.onFocus !== undefined) props.onFocus(event)
           },
           onMouseEnter: function (event) {
+            // 阴影仍算前层：从这里进入下层时先不展开，等指针真正离开阴影后由 pointermove 接管。
+            if (activeWindowKey !== '' && activeWindowKey !== props.windowKey && typeof document !== 'undefined') {
+              const top = document.querySelector('[data-dtn-window="' + activeWindowKey + '"]')
+              if (top !== null && top !== undefined) {
+                const rect = top.getBoundingClientRect()
+                const margin = 48
+                if (
+                  event.clientX >= rect.left - margin &&
+                  event.clientX <= rect.right + margin &&
+                  event.clientY >= rect.top - margin &&
+                  event.clientY <= rect.bottom + margin
+                ) return
+              }
+            }
             if (props.onHoverEnter !== undefined) props.onHoverEnter(event)
           },
           onMouseLeave: props.onHoverLeave,

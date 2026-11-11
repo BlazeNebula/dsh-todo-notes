@@ -120,6 +120,20 @@
             if (props.onFocus !== undefined) props.onFocus(event)
           },
           onMouseEnter: function (event) {
+            // 阴影仍算前层：从这里进入下层时先不展开，等指针真正离开阴影后由 pointermove 接管。
+            if (activeWindowKey !== '' && activeWindowKey !== props.windowKey && typeof document !== 'undefined') {
+              const top = document.querySelector('[data-dtn-window="' + activeWindowKey + '"]')
+              if (top !== null && top !== undefined) {
+                const rect = top.getBoundingClientRect()
+                const margin = 48
+                if (
+                  event.clientX >= rect.left - margin &&
+                  event.clientX <= rect.right + margin &&
+                  event.clientY >= rect.top - margin &&
+                  event.clientY <= rect.bottom + margin
+                ) return
+              }
+            }
             if (props.onHoverEnter !== undefined) props.onHoverEnter(event)
           },
           onMouseLeave: props.onHoverLeave,
