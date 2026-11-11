@@ -122,8 +122,12 @@
           h('button', {
             type: 'button',
             className: 'dtn-btn',
-            title: '关闭',
-            onClick: function (event) { event.stopPropagation(); closePin(win) },
+            title: win.editing ? '取消编辑并还原内容' : '关闭',
+            onClick: function (event) {
+              event.stopPropagation()
+              if (win.editing === true) cancelPinEditing(win.id)
+              else closePin(win)
+            },
           }, icon('close')),
           pinHeadCommon(win),
         ),

@@ -419,7 +419,44 @@
         updatePin(id, { editing: false })
         return
       }
-      updatePin(id, { editing: true, draft: win.markdown, renameDraft: win.title })
+      updatePin(id, { editing: true, draft: win.markdown, renameDraft: win.title, editBaseMarkdown: win.markdown, editBaseTitle: win.title })
+    }
+
+    function cancelPinEditing(id) {
+      const win = pinnedRef.current.find(function (item) { return item.id === id })
+      if (win === undefined || win.editing !== true) return
+      if (pinSaveTimers.current[id] !== undefined) {
+        window.clearTimeout(pinSaveTimers.current[id])
+        delete pinSaveTimers.current[id]
+      }
+      if (pinTitleTimers.current[id] !== undefined) {
+        window.clearTimeout(pinTitleTimers.current[id])
+        delete pinTitleTimers.current[id]
+      }
+      const baseMarkdown = typeof win.editBaseMarkdown === 'string' ? win.editBaseMarkdown : win.markdown
+      const baseTitle = typeof win.editBaseTitle === 'string' ? win.editBaseTitle : win.title
+      const bodyChanged = baseMarkdown !== win.markdown
+      const titleChanged = baseTitle !== win.title
+      updatePin(id, {
+        editing: false,
+        draft: undefined,
+        renameDraft: undefined,
+        markdown: baseMarkdown,
+        title: baseTitle,
+        editBaseMarkdown: undefined,
+        editBaseTitle: undefined,
+      })
+      if (bodyChanged) {
+        postApi({ action: 'saveTodoBody', key: win.groupKey, id: win.todoId, body: baseMarkdown })
+          .then(function () { refresh(true) })
+          .catch(function (error) { showBubble('撤销失败：' + (error && error.message ? error.message : String(error)), { clientX: win.pos.x + 40, clientY: win.pos.y + 16 }) })
+      }
+      if (titleChanged) {
+        postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: baseTitle })
+          .then(function () { syncTodoTitle(win.groupKey, win.todoId, baseTitle); refresh(true) })
+          .catch(function () {})
+      }
+      showBubble('已撤销编辑', { clientX: win.pos.x + 40, clientY: win.pos.y + 16 })
     }
 
     function confirmPinBatchCreate(id) {

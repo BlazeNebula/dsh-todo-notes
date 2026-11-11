@@ -33,6 +33,35 @@
       }, [props.expanded])
       React.useEffect(function () {
         if (typeof window === 'undefined') return undefined
+        const onMove = function (event) {
+          const node = props.rootRef !== undefined && props.rootRef !== null ? props.rootRef.current : localRef.current
+          if (node === null || node === undefined || !node.contains(event.target)) return
+          if (activeWindowKey === props.windowKey) return
+          // 前层窗口的阴影范围仍属于前层，指针在阴影内划过时不抢焦点。
+          if (activeWindowKey !== '' && typeof document !== 'undefined') {
+            const top = document.querySelector('[data-dtn-window="' + activeWindowKey + '"]')
+            if (top !== null && top !== undefined) {
+              const rect = top.getBoundingClientRect()
+              const margin = 48
+              if (
+                event.clientX >= rect.left - margin &&
+                event.clientX <= rect.right + margin &&
+                event.clientY >= rect.top - margin &&
+                event.clientY <= rect.bottom + margin
+              ) return
+            }
+          }
+          activeWindowKey = props.windowKey
+          if (typeof CustomEvent === 'function') {
+            window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))
+          }
+          if (props.onHoverEnter !== undefined) props.onHoverEnter(event)
+        }
+        window.addEventListener('pointermove', onMove)
+        return function () { window.removeEventListener('pointermove', onMove) }
+      }, [props.windowKey])
+      React.useEffect(function () {
+        if (typeof window === 'undefined') return undefined
         const onFocus = function (event) {
           setFocused(event.detail === props.windowKey)
         }
@@ -91,27 +120,6 @@
             if (props.onFocus !== undefined) props.onFocus(event)
           },
           onMouseEnter: function (event) {
-            // 前层窗口的阴影范围仍属于前层：从阴影里划过不应把下层窗口抬起来，
-            // 也不应触发下层的悬停展开，这样与收展的 48px 判据保持一致。
-            if (activeWindowKey !== '' && activeWindowKey !== props.windowKey && typeof document !== 'undefined') {
-              const top = document.querySelector('[data-dtn-window="' + activeWindowKey + '"]')
-              if (top !== null && top !== undefined) {
-                const rect = top.getBoundingClientRect()
-                const margin = 48
-                const x = event.clientX
-                const y = event.clientY
-                if (
-                  x >= rect.left - margin &&
-                  x <= rect.right + margin &&
-                  y >= rect.top - margin &&
-                  y <= rect.bottom + margin
-                ) return
-              }
-            }
-            activeWindowKey = props.windowKey
-            if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
-              window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))
-            }
             if (props.onHoverEnter !== undefined) props.onHoverEnter(event)
           },
           onMouseLeave: props.onHoverLeave,

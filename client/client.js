@@ -3769,7 +3769,7 @@ window.__ModuleLoader__.load({
         'div',
         {
           className: 'dtn-preview' + (preview === null ? ' dtn-preview-off' : ''),
-          style: { left: previewPos.x + 'px', top: previewPos.y + 'px' },
+          style: { left: previewPos.x + 'px', top: previewPos.y + 'px', zIndex: 2147482514 },
           ref: previewRef,
           onMouseEnter: cancelClose,
           onMouseLeave: leavePreview,
@@ -4662,7 +4662,44 @@ window.__ModuleLoader__.load({
         updatePin(id, { editing: false })
         return
       }
-      updatePin(id, { editing: true, draft: win.markdown, renameDraft: win.title })
+      updatePin(id, { editing: true, draft: win.markdown, renameDraft: win.title, editBaseMarkdown: win.markdown, editBaseTitle: win.title })
+    }
+
+    function cancelPinEditing(id) {
+      const win = pinnedRef.current.find(function (item) { return item.id === id })
+      if (win === undefined || win.editing !== true) return
+      if (pinSaveTimers.current[id] !== undefined) {
+        window.clearTimeout(pinSaveTimers.current[id])
+        delete pinSaveTimers.current[id]
+      }
+      if (pinTitleTimers.current[id] !== undefined) {
+        window.clearTimeout(pinTitleTimers.current[id])
+        delete pinTitleTimers.current[id]
+      }
+      const baseMarkdown = typeof win.editBaseMarkdown === 'string' ? win.editBaseMarkdown : win.markdown
+      const baseTitle = typeof win.editBaseTitle === 'string' ? win.editBaseTitle : win.title
+      const bodyChanged = baseMarkdown !== win.markdown
+      const titleChanged = baseTitle !== win.title
+      updatePin(id, {
+        editing: false,
+        draft: undefined,
+        renameDraft: undefined,
+        markdown: baseMarkdown,
+        title: baseTitle,
+        editBaseMarkdown: undefined,
+        editBaseTitle: undefined,
+      })
+      if (bodyChanged) {
+        postApi({ action: 'saveTodoBody', key: win.groupKey, id: win.todoId, body: baseMarkdown })
+          .then(function () { refresh(true) })
+          .catch(function (error) { showBubble('撤销失败：' + (error && error.message ? error.message : String(error)), { clientX: win.pos.x + 40, clientY: win.pos.y + 16 }) })
+      }
+      if (titleChanged) {
+        postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: baseTitle })
+          .then(function () { syncTodoTitle(win.groupKey, win.todoId, baseTitle); refresh(true) })
+          .catch(function () {})
+      }
+      showBubble('已撤销编辑', { clientX: win.pos.x + 40, clientY: win.pos.y + 16 })
     }
 
     function confirmPinBatchCreate(id) {
@@ -4866,8 +4903,12 @@ window.__ModuleLoader__.load({
           h('button', {
             type: 'button',
             className: 'dtn-btn',
-            title: '关闭',
-            onClick: function (event) { event.stopPropagation(); closePin(win) },
+            title: win.editing ? '取消编辑并还原内容' : '关闭',
+            onClick: function (event) {
+              event.stopPropagation()
+              if (win.editing === true) cancelPinEditing(win.id)
+              else closePin(win)
+            },
           }, icon('close')),
           pinHeadCommon(win),
         ),
@@ -5663,6 +5704,35 @@ window.__ModuleLoader__.load({
       }, [props.expanded])
       React.useEffect(function () {
         if (typeof window === 'undefined') return undefined
+        const onMove = function (event) {
+          const node = props.rootRef !== undefined && props.rootRef !== null ? props.rootRef.current : localRef.current
+          if (node === null || node === undefined || !node.contains(event.target)) return
+          if (activeWindowKey === props.windowKey) return
+          // 前层窗口的阴影范围仍属于前层，指针在阴影内划过时不抢焦点。
+          if (activeWindowKey !== '' && typeof document !== 'undefined') {
+            const top = document.querySelector('[data-dtn-window="' + activeWindowKey + '"]')
+            if (top !== null && top !== undefined) {
+              const rect = top.getBoundingClientRect()
+              const margin = 48
+              if (
+                event.clientX >= rect.left - margin &&
+                event.clientX <= rect.right + margin &&
+                event.clientY >= rect.top - margin &&
+                event.clientY <= rect.bottom + margin
+              ) return
+            }
+          }
+          activeWindowKey = props.windowKey
+          if (typeof CustomEvent === 'function') {
+            window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))
+          }
+          if (props.onHoverEnter !== undefined) props.onHoverEnter(event)
+        }
+        window.addEventListener('pointermove', onMove)
+        return function () { window.removeEventListener('pointermove', onMove) }
+      }, [props.windowKey])
+      React.useEffect(function () {
+        if (typeof window === 'undefined') return undefined
         const onFocus = function (event) {
           setFocused(event.detail === props.windowKey)
         }
@@ -5721,27 +5791,6 @@ window.__ModuleLoader__.load({
             if (props.onFocus !== undefined) props.onFocus(event)
           },
           onMouseEnter: function (event) {
-            // 前层窗口的阴影范围仍属于前层：从阴影里划过不应把下层窗口抬起来，
-            // 也不应触发下层的悬停展开，这样与收展的 48px 判据保持一致。
-            if (activeWindowKey !== '' && activeWindowKey !== props.windowKey && typeof document !== 'undefined') {
-              const top = document.querySelector('[data-dtn-window="' + activeWindowKey + '"]')
-              if (top !== null && top !== undefined) {
-                const rect = top.getBoundingClientRect()
-                const margin = 48
-                const x = event.clientX
-                const y = event.clientY
-                if (
-                  x >= rect.left - margin &&
-                  x <= rect.right + margin &&
-                  y >= rect.top - margin &&
-                  y <= rect.bottom + margin
-                ) return
-              }
-            }
-            activeWindowKey = props.windowKey
-            if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
-              window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))
-            }
             if (props.onHoverEnter !== undefined) props.onHoverEnter(event)
           },
           onMouseLeave: props.onHoverLeave,

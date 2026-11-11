@@ -240,7 +240,7 @@
         'div',
         {
           className: 'dtn-preview' + (preview === null ? ' dtn-preview-off' : ''),
-          style: { left: previewPos.x + 'px', top: previewPos.y + 'px' },
+          style: { left: previewPos.x + 'px', top: previewPos.y + 'px', zIndex: 2147482514 },
           ref: previewRef,
           onMouseEnter: cancelClose,
           onMouseLeave: leavePreview,
