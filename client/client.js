@@ -178,7 +178,9 @@ window.__ModuleLoader__.load({
 .dtn-group-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dtn-group-count { margin-left: auto; font-size: 11px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
 .dtn-current-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dsw-alias-brand-primary, #4d9cff); flex: none; }
-.dtn-group-body { padding: 2px 6px 6px 18px; }
+.dtn-group-body { padding: 2px 4px 6px 12px; }
+/* 组内条目左右边界是 12px/4px；顶层条目与文件夹取它的 1.5 倍。 */
+.dtn-todo.dtn-top-level, .dtn-folder.dtn-top-level { margin-left: 6px; margin-right: 2px; }
 .dtn-folder { margin: 1px 0; }
 .dtn-folder-head {
   position: relative;
@@ -226,10 +228,11 @@ window.__ModuleLoader__.load({
 .dtn-todo.dtn-partial { opacity: var(--dtn-partial-opacity, .67); }
 .dtn-todo-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .dtn-grip {
-  flex: none; width: 28px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
-  color: var(--dsw-alias-label-secondary, #a3a3ab); opacity: 0; cursor: grab;
+  flex: none; width: 0; height: 18px; display: inline-flex; align-items: center; justify-content: center;
+  overflow: hidden; color: var(--dsw-alias-label-secondary, #a3a3ab); opacity: 0; cursor: grab;
+  transition: width 120ms ease, opacity 120ms ease;
 }
-.dtn-todo:hover .dtn-grip, .dtn-folder-head:hover .dtn-grip { opacity: .8; }
+.dtn-todo:hover .dtn-grip, .dtn-folder-head:hover .dtn-grip { width: 24px; opacity: .8; }
 .dtn-grip:active { cursor: grabbing; }
 .dtn-selected,
 .dtn-selected:hover {
@@ -343,12 +346,12 @@ window.__ModuleLoader__.load({
   -webkit-appearance: none; appearance: none;
 }
 .dtn-prio:hover { color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); border-color: var(--dsw-alias-label-secondary, #a3a3ab); }
-.dtn-prio option { background: var(--dsw-alias-bg-overlay, #242429); color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); }
+.dtn-prio option { background: var(--dsw-alias-bg-base, #18181a); color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); }
 .dtn-prio-menu {
   position: fixed; z-index: 2147482530; display: flex; flex-direction: column;
   padding: 4px; border-radius: 8px;
-  background: var(--dsw-alias-bg-overlay, #242429);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--dsw-alias-bg-base, #18181a);
+  border: 1px solid var(--dsw-alias-border-l2, #3a3a40);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 .dtn-prio-row { display: flex; gap: 2px; }
@@ -1104,6 +1107,11 @@ window.__ModuleLoader__.load({
       const [focusPin, setFocusPin] = React.useState('')
       const [hoverPin, setHoverPin] = React.useState('')
       const pinDragMoved = React.useRef(false)
+
+      // 焦点层级统一交给窗口壳管理；这里只把“新建/复用某个窗”转成一次焦点事件。
+      React.useEffect(function () {
+        if (focusPin !== '') focusWindowFrame(focusPin)
+      }, [focusPin])
 
       // 与主面板一致：收起后的临时展开以窗口外 48px 为边界，鼠标进入阴影区也不收起。
       React.useEffect(function () {
@@ -3029,7 +3037,7 @@ window.__ModuleLoader__.load({
             'data-select-group': group.key,
             'data-select-id': todo.id,
             'data-select-folder': rowScope,
-            className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
+            className: 'dtn-todo' + (rowScope === PRIMARY && rowIndent === 0 ? ' dtn-top-level' : '') + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
             style: rowIndent > 0 ? { marginLeft: rowIndent + 'px' } : undefined,
             title: todo.title,
             draggable: !renamingTodo,
@@ -3183,7 +3191,7 @@ window.__ModuleLoader__.load({
         const selected = isSelectedKey(folderKey)
         return h(
           'div',
-          { key: folderKey, className: 'dtn-folder', style: depth > 0 ? { marginLeft: '10px' } : undefined },
+          { key: folderKey, className: 'dtn-folder' + (depth === 0 ? ' dtn-top-level' : ''), style: depth > 0 ? { marginLeft: '10px' } : undefined },
           h(
             'div',
             {
@@ -3684,6 +3692,9 @@ window.__ModuleLoader__.load({
         WindowFrame,
         {
           rootRef: panelRef,
+          windowKey: 'main',
+          zIndex: 2147482500,
+          zIndexActive: 2147482515,
           className:
             'dtn-root' +
             (resizing ? ' dtn-resizing' : '') +
@@ -3860,9 +3871,24 @@ window.__ModuleLoader__.load({
         const id = typeof folderId === 'string' && folderId !== '' ? folderId : PRIMARY
         if (id === PRIMARY) return '无文件夹'
         const group = findLiveGroup(groupKey)
-        const folder = group === null || group === undefined ? null : findFolder(group.folders || [], id)
-        if (folder === null || folder === undefined) return id
-        return typeof folder.name === 'string' && folder.name !== '' ? folder.name : id
+        const nodes = group === null || group === undefined || !Array.isArray(group.folders) ? [] : group.folders
+        const trail = []
+        const walk = function (list, path) {
+          for (let index = 0; index < list.length; index += 1) {
+            const node = list[index]
+            if (node === null || node === undefined) continue
+            const name = typeof node.name === 'string' && node.name !== '' ? node.name : node.id
+            const next = path.concat(name)
+            if (node.id === id) {
+              trail.push.apply(trail, next)
+              return true
+            }
+            if (Array.isArray(node.children) && walk(node.children, next)) return true
+          }
+          return false
+        }
+        walk(nodes, [])
+        return trail.length > 0 ? trail.join(' / ') : id
       }
 
       const menuFolder = folderMenu === null ? null : findFolder((findLiveGroup(folderMenu.group.key) || folderMenu.group).folders, folderMenu.folderId)
@@ -4785,6 +4811,9 @@ window.__ModuleLoader__.load({
         {
           key: win.id,
           pinId: win.id,
+          windowKey: win.id,
+          zIndex: 2147482510,
+          zIndexActive: 2147482512,
           className: options.className + (pulsePin === win.id && win.kind === 'preview' ? ' dtn-pin-pulse' : ''),
           headClassName: options.headClassName,
           bodyClassName: 'dtn-pin-content',
@@ -4793,11 +4822,9 @@ window.__ModuleLoader__.load({
             top: win.pos.y + 'px',
             width: win.width ? win.width + 'px' : undefined,
             height: expanded ? (win.height ? win.height + 'px' : undefined) : '40px',
-            zIndex: focusPin === win.id ? 2147482512 : 2147482510,
           },
           collapsed: win.collapsed === true,
           expanded: hoverPin === win.id,
-          onFocus: function () { setFocusPin(win.id) },
           onHoverEnter: function () { if (win.collapsed) setHoverPin(win.id) },
           onHoverLeave: function () { if (hoverPin === win.id) setHoverPin('') },
           onDragStart: function (event) { dragPinWindow(event, win.id) },
@@ -5612,9 +5639,28 @@ window.__ModuleLoader__.load({
     }
 
     // 共用窗口壳：主面板与保留浮窗共用同一套头部拖拽、点击收展、悬停临时展开、
-    // 四边缩放与收展过渡，避免两边各写一份行为。
+    // 四边缩放、收展过渡与“被交互就置顶”的焦点层级。
+    const WINDOW_FOCUS_EVENT = 'dtn-window-focus'
+    let activeWindowKey = 'main'
+
+    function focusWindowFrame(key) {
+      activeWindowKey = key
+      if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: key }))
+      }
+    }
+
     function WindowFrame(props) {
       const collapsed = props.collapsed === true && props.expanded !== true
+      const [focused, setFocused] = React.useState(activeWindowKey === props.windowKey)
+      React.useEffect(function () {
+        if (typeof window === 'undefined') return undefined
+        const onFocus = function (event) {
+          setFocused(event.detail === props.windowKey)
+        }
+        window.addEventListener(WINDOW_FOCUS_EVENT, onFocus)
+        return function () { window.removeEventListener(WINDOW_FOCUS_EVENT, onFocus) }
+      }, [props.windowKey])
       const head = h(
         'div',
         {
@@ -5646,14 +5692,25 @@ window.__ModuleLoader__.load({
               onPointerDown: function (event) { props.onResize(event, dir) },
             })
           })
+      const style = Object.assign({}, props.style, {
+        zIndex: focused
+          ? props.zIndexActive !== undefined ? props.zIndexActive : 2147482512
+          : props.zIndex !== undefined ? props.zIndex : 2147482510,
+      })
       return h(
         'div',
         {
           ref: props.rootRef,
           'data-dtn-pin': props.pinId,
-          className: props.className + (collapsed ? ' dtn-collapsed' : ''),
-          style: props.style,
-          onPointerDown: props.onFocus,
+          className: props.className + (collapsed ? ' dtn-collapsed' : '') + (focused ? ' dtn-window-focused' : ''),
+          style: style,
+          onPointerDown: function (event) {
+            activeWindowKey = props.windowKey
+            if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
+              window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))
+            }
+            if (props.onFocus !== undefined) props.onFocus(event)
+          },
           onMouseEnter: props.onHoverEnter,
           onMouseLeave: props.onHoverLeave,
         },

@@ -141,7 +141,9 @@
 .dtn-group-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dtn-group-count { margin-left: auto; font-size: 11px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
 .dtn-current-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dsw-alias-brand-primary, #4d9cff); flex: none; }
-.dtn-group-body { padding: 2px 6px 6px 18px; }
+.dtn-group-body { padding: 2px 4px 6px 12px; }
+/* 组内条目左右边界是 12px/4px；顶层条目与文件夹取它的 1.5 倍。 */
+.dtn-todo.dtn-top-level, .dtn-folder.dtn-top-level { margin-left: 6px; margin-right: 2px; }
 .dtn-folder { margin: 1px 0; }
 .dtn-folder-head {
   position: relative;
@@ -189,10 +191,11 @@
 .dtn-todo.dtn-partial { opacity: var(--dtn-partial-opacity, .67); }
 .dtn-todo-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .dtn-grip {
-  flex: none; width: 28px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
-  color: var(--dsw-alias-label-secondary, #a3a3ab); opacity: 0; cursor: grab;
+  flex: none; width: 0; height: 18px; display: inline-flex; align-items: center; justify-content: center;
+  overflow: hidden; color: var(--dsw-alias-label-secondary, #a3a3ab); opacity: 0; cursor: grab;
+  transition: width 120ms ease, opacity 120ms ease;
 }
-.dtn-todo:hover .dtn-grip, .dtn-folder-head:hover .dtn-grip { opacity: .8; }
+.dtn-todo:hover .dtn-grip, .dtn-folder-head:hover .dtn-grip { width: 24px; opacity: .8; }
 .dtn-grip:active { cursor: grabbing; }
 .dtn-selected,
 .dtn-selected:hover {
@@ -306,12 +309,12 @@
   -webkit-appearance: none; appearance: none;
 }
 .dtn-prio:hover { color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); border-color: var(--dsw-alias-label-secondary, #a3a3ab); }
-.dtn-prio option { background: var(--dsw-alias-bg-overlay, #242429); color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); }
+.dtn-prio option { background: var(--dsw-alias-bg-base, #18181a); color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); }
 .dtn-prio-menu {
   position: fixed; z-index: 2147482530; display: flex; flex-direction: column;
   padding: 4px; border-radius: 8px;
-  background: var(--dsw-alias-bg-overlay, #242429);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--dsw-alias-bg-base, #18181a);
+  border: 1px solid var(--dsw-alias-border-l2, #3a3a40);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 .dtn-prio-row { display: flex; gap: 2px; }

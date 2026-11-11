@@ -17,7 +17,7 @@
             'data-select-group': group.key,
             'data-select-id': todo.id,
             'data-select-folder': rowScope,
-            className: 'dtn-todo' + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
+            className: 'dtn-todo' + (rowScope === PRIMARY && rowIndent === 0 ? ' dtn-top-level' : '') + (isDone ? ' dtn-done' : '') + (isPartial ? ' dtn-partial' : '') + (selected ? ' dtn-selected' : '') + (flashKey === rowKey ? ' dtn-drop' : '') + (dropKey === rowKey ? ' dtn-drop-target' : ''),
             style: rowIndent > 0 ? { marginLeft: rowIndent + 'px' } : undefined,
             title: todo.title,
             draggable: !renamingTodo,
@@ -171,7 +171,7 @@
         const selected = isSelectedKey(folderKey)
         return h(
           'div',
-          { key: folderKey, className: 'dtn-folder', style: depth > 0 ? { marginLeft: '10px' } : undefined },
+          { key: folderKey, className: 'dtn-folder' + (depth === 0 ? ' dtn-top-level' : ''), style: depth > 0 ? { marginLeft: '10px' } : undefined },
           h(
             'div',
             {

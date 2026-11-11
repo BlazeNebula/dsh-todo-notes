@@ -139,6 +139,11 @@
       const [hoverPin, setHoverPin] = React.useState('')
       const pinDragMoved = React.useRef(false)
 
+      // 焦点层级统一交给窗口壳管理；这里只把“新建/复用某个窗”转成一次焦点事件。
+      React.useEffect(function () {
+        if (focusPin !== '') focusWindowFrame(focusPin)
+      }, [focusPin])
+
       // 与主面板一致：收起后的临时展开以窗口外 48px 为边界，鼠标进入阴影区也不收起。
       React.useEffect(function () {
         if (hoverPin === '') return undefined

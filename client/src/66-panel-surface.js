@@ -158,6 +158,9 @@
         WindowFrame,
         {
           rootRef: panelRef,
+          windowKey: 'main',
+          zIndex: 2147482500,
+          zIndexActive: 2147482515,
           className:
             'dtn-root' +
             (resizing ? ' dtn-resizing' : '') +
@@ -334,7 +337,22 @@
         const id = typeof folderId === 'string' && folderId !== '' ? folderId : PRIMARY
         if (id === PRIMARY) return '无文件夹'
         const group = findLiveGroup(groupKey)
-        const folder = group === null || group === undefined ? null : findFolder(group.folders || [], id)
-        if (folder === null || folder === undefined) return id
-        return typeof folder.name === 'string' && folder.name !== '' ? folder.name : id
+        const nodes = group === null || group === undefined || !Array.isArray(group.folders) ? [] : group.folders
+        const trail = []
+        const walk = function (list, path) {
+          for (let index = 0; index < list.length; index += 1) {
+            const node = list[index]
+            if (node === null || node === undefined) continue
+            const name = typeof node.name === 'string' && node.name !== '' ? node.name : node.id
+            const next = path.concat(name)
+            if (node.id === id) {
+              trail.push.apply(trail, next)
+              return true
+            }
+            if (Array.isArray(node.children) && walk(node.children, next)) return true
+          }
+          return false
+        }
+        walk(nodes, [])
+        return trail.length > 0 ? trail.join(' / ') : id
       }

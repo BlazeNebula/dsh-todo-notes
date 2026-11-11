@@ -1,7 +1,26 @@
     // 共用窗口壳：主面板与保留浮窗共用同一套头部拖拽、点击收展、悬停临时展开、
-    // 四边缩放与收展过渡，避免两边各写一份行为。
+    // 四边缩放、收展过渡与“被交互就置顶”的焦点层级。
+    const WINDOW_FOCUS_EVENT = 'dtn-window-focus'
+    let activeWindowKey = 'main'
+
+    function focusWindowFrame(key) {
+      activeWindowKey = key
+      if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: key }))
+      }
+    }
+
     function WindowFrame(props) {
       const collapsed = props.collapsed === true && props.expanded !== true
+      const [focused, setFocused] = React.useState(activeWindowKey === props.windowKey)
+      React.useEffect(function () {
+        if (typeof window === 'undefined') return undefined
+        const onFocus = function (event) {
+          setFocused(event.detail === props.windowKey)
+        }
+        window.addEventListener(WINDOW_FOCUS_EVENT, onFocus)
+        return function () { window.removeEventListener(WINDOW_FOCUS_EVENT, onFocus) }
+      }, [props.windowKey])
       const head = h(
         'div',
         {
@@ -33,14 +52,25 @@
               onPointerDown: function (event) { props.onResize(event, dir) },
             })
           })
+      const style = Object.assign({}, props.style, {
+        zIndex: focused
+          ? props.zIndexActive !== undefined ? props.zIndexActive : 2147482512
+          : props.zIndex !== undefined ? props.zIndex : 2147482510,
+      })
       return h(
         'div',
         {
           ref: props.rootRef,
           'data-dtn-pin': props.pinId,
-          className: props.className + (collapsed ? ' dtn-collapsed' : ''),
-          style: props.style,
-          onPointerDown: props.onFocus,
+          className: props.className + (collapsed ? ' dtn-collapsed' : '') + (focused ? ' dtn-window-focused' : ''),
+          style: style,
+          onPointerDown: function (event) {
+            activeWindowKey = props.windowKey
+            if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
+              window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))
+            }
+            if (props.onFocus !== undefined) props.onFocus(event)
+          },
           onMouseEnter: props.onHoverEnter,
           onMouseLeave: props.onHoverLeave,
         },
