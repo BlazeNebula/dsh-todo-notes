@@ -427,7 +427,8 @@ window.__ModuleLoader__.load({
 }
 .dtn-preview-body { overflow: auto; padding: 10px 14px 16px; }
 .dtn-preview.dtn-batch { width: 440px; height: 320px; }
-.dtn-preview.dtn-pin { z-index: 2147482510; }
+.dtn-pin-type { display: inline-flex; align-items: center; color: var(--dsw-alias-label-secondary, #a3a3ab); }
+.dtn-meta-item { display: inline-flex; align-items: center; gap: 4px; }
 .dtn-preview.dtn-collapsed { height: auto; }
 .dtn-pin-resize {
   position: absolute; right: 0; bottom: 0; width: 14px; height: 14px;
@@ -576,7 +577,7 @@ window.__ModuleLoader__.load({
       const top = typeof minY === 'number' ? minY : 8
       return {
         x: Math.min(Math.max(8, pos.x), Math.max(8, viewWidth - width - 8)),
-        y: Math.min(Math.max(top, pos.y), Math.max(top, viewHeight - Math.min(height, 80))),
+        y: Math.min(Math.max(top, pos.y), Math.max(top, viewHeight - height - 8)),
       }
     }
 
@@ -835,6 +836,28 @@ window.__ModuleLoader__.load({
       chevronDown: { box: 512, paths: [{ d: 'M112 184l144 144 144-144', width: 48 }] },
       chevronRight: { box: 512, paths: [{ d: 'M184 112l144 144-144 144', width: 48 }] },
       chevronUp: { box: 512, paths: [{ d: 'M112 328l144-144 144 144', width: 48 }] },
+      // 面板类型与元信息图标：清单、文档、时钟。
+      list: {
+        box: 24,
+        paths: [
+          { d: 'M8 6h13M8 12h13M8 18h13', width: 2 },
+          { d: 'M3 6h.01M3 12h.01M3 18h.01', width: 2 },
+        ],
+      },
+      fileText: {
+        box: 24,
+        paths: [
+          { d: 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z', width: 2 },
+          { d: 'M14 2v6h6M8 13h8M8 17h8', width: 2 },
+        ],
+      },
+      clock: {
+        box: 24,
+        paths: [
+          { d: 'M21 12a9 9 0 11-18 0 9 9 0 0118 0z', width: 2 },
+          { d: 'M12 7v5l3 2', width: 2 },
+        ],
+      },
       // 优先级：旗杆 + 旗面，线性。
       flag: { box: 24, paths: [{ d: 'M6 3v18M6 4h11l-2 4 2 4H6', width: 2 }] },
       check: { box: 512, paths: [{ d: 'M416 128L192 384l-96-96', width: 48 }] },
@@ -1468,13 +1491,14 @@ window.__ModuleLoader__.load({
           : kind === 'batch' ? (batchPos || (batchCreate !== null && batchCreate.pos) || { x: 12, y: 64 }) : previewPos
         const setter = kind === 'main' ? setPanelPos : kind === 'batch' ? setBatchPos : setPreviewPos
         const widthOf = kind === 'main' ? (mainCollapsed ? MIN_PANEL_WIDTH : panelWidth) : 440
+        const heightOf = kind === 'main' && panelRef.current !== null ? panelRef.current.offsetHeight : 200
         if (kind === 'main') setDragging(true)
         const move = function (moveEvent) {
           if (Math.abs(moveEvent.clientX - startX) > 3 || Math.abs(moveEvent.clientY - startY) > 3) dragMoved.current = true
           const next = clampPos(
             { x: base.x + moveEvent.clientX - startX, y: base.y + moveEvent.clientY - startY },
             widthOf,
-            200,
+            heightOf,
             kind === 'main' ? 56 : undefined,
           )
           if (mainCollapsed) next.x = next.x - centerOffset
@@ -3661,7 +3685,7 @@ window.__ModuleLoader__.load({
                   toggleCollapsed()
                 },
           },
-          h('span', { className: 'dtn-logo' }, '▤'),
+          h('span', { className: 'dtn-logo' }, icon('list', 14)),
           h('span', { className: 'dtn-title' }, 'TODO 便签'),
           h('span', { className: 'dtn-count' }, data === null ? '加载中…' : totalOpen + ' 条未完成'),
           embedded
@@ -4493,7 +4517,7 @@ window.__ModuleLoader__.load({
         const pos = clampPos({
           x: origin.x + (next.clientX - startX),
           y: origin.y + (next.clientY - startY),
-        }, 440, 200)
+        }, win.width || 440, win.height || 320)
         updatePin(id, { pos: pos })
       }
       const up = function () {
@@ -4727,6 +4751,7 @@ window.__ModuleLoader__.load({
             title: win.collapsed ? '展开' : '收起',
             onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
           }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
+          h('span', { className: 'dtn-pin-type', title: '预览' }, icon('fileText', 13)),
           win.editing
             ? h('input', {
                 className: 'dtn-pin-title-input',
@@ -4773,11 +4798,11 @@ window.__ModuleLoader__.load({
           meta === null || meta === undefined
             ? [h('span', { key: 'loading' }, win.loading ? '加载中…' : '')]
             : [
-                h('span', { key: 'status' }, meta.status === 'done' ? '已完成' : meta.status === 'partial' ? '中间态（待人工确认）' : '未完成'),
+                h('span', { key: 'status', className: 'dtn-meta-item' }, icon(meta.status === 'done' ? 'check' : 'clock', 11), meta.status === 'done' ? '已完成' : meta.status === 'partial' ? '中间态（待人工确认）' : '未完成'),
                 isAiSource(meta.source) ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13)) : null,
-                h('span', { key: 'folder' }, pinFolderLabel(win)),
-                h('span', { key: 'priority', style: { color: prioColor(meta.priority) } }, '优先级 T' + (typeof meta.priority === 'number' ? meta.priority : 1)),
-                meta.created !== '' ? h('span', { key: 'created' }, '创建 ' + formatStamp(meta.created)) : null,
+                h('span', { key: 'folder', className: 'dtn-meta-item' }, icon('folder', 11), pinFolderLabel(win)),
+                h('span', { key: 'priority', className: 'dtn-meta-item', style: { color: prioColor(meta.priority) } }, icon('flag', 11), '优先级 T' + (typeof meta.priority === 'number' ? meta.priority : 1)),
+                meta.created !== '' ? h('span', { key: 'created', className: 'dtn-meta-item' }, icon('clock', 11), '创建 ' + formatStamp(meta.created)) : null,
               ],
         ),
         win.collapsed ? null : win.editing
@@ -4861,6 +4886,7 @@ window.__ModuleLoader__.load({
             title: win.collapsed ? '展开' : '收起',
             onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
           }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
+          h('span', { className: 'dtn-pin-type', title: '批量新建' }, icon('addBatch', 13)),
           h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
           h(
             'div',
@@ -4924,6 +4950,7 @@ window.__ModuleLoader__.load({
             title: win.collapsed ? '展开' : '收起',
             onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
           }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
+          h('span', { className: 'dtn-pin-type', title: '批量重命名' }, icon('edit', 13)),
           h('span', { className: 'dtn-preview-title' }, '批量重命名'),
           h(
             'div',

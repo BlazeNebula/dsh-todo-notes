@@ -34,7 +34,7 @@
       const top = typeof minY === 'number' ? minY : 8
       return {
         x: Math.min(Math.max(8, pos.x), Math.max(8, viewWidth - width - 8)),
-        y: Math.min(Math.max(top, pos.y), Math.max(top, viewHeight - Math.min(height, 80))),
+        y: Math.min(Math.max(top, pos.y), Math.max(top, viewHeight - height - 8)),
       }
     }
 

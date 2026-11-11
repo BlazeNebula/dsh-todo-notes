@@ -397,7 +397,8 @@
 }
 .dtn-preview-body { overflow: auto; padding: 10px 14px 16px; }
 .dtn-preview.dtn-batch { width: 440px; height: 320px; }
-.dtn-preview.dtn-pin { z-index: 2147482510; }
+.dtn-pin-type { display: inline-flex; align-items: center; color: var(--dsw-alias-label-secondary, #a3a3ab); }
+.dtn-meta-item { display: inline-flex; align-items: center; gap: 4px; }
 .dtn-preview.dtn-collapsed { height: auto; }
 .dtn-pin-resize {
   position: absolute; right: 0; bottom: 0; width: 14px; height: 14px;

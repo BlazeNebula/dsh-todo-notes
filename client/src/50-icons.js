@@ -3,6 +3,28 @@
       chevronDown: { box: 512, paths: [{ d: 'M112 184l144 144 144-144', width: 48 }] },
       chevronRight: { box: 512, paths: [{ d: 'M184 112l144 144-144 144', width: 48 }] },
       chevronUp: { box: 512, paths: [{ d: 'M112 328l144-144 144 144', width: 48 }] },
+      // 面板类型与元信息图标：清单、文档、时钟。
+      list: {
+        box: 24,
+        paths: [
+          { d: 'M8 6h13M8 12h13M8 18h13', width: 2 },
+          { d: 'M3 6h.01M3 12h.01M3 18h.01', width: 2 },
+        ],
+      },
+      fileText: {
+        box: 24,
+        paths: [
+          { d: 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z', width: 2 },
+          { d: 'M14 2v6h6M8 13h8M8 17h8', width: 2 },
+        ],
+      },
+      clock: {
+        box: 24,
+        paths: [
+          { d: 'M21 12a9 9 0 11-18 0 9 9 0 0118 0z', width: 2 },
+          { d: 'M12 7v5l3 2', width: 2 },
+        ],
+      },
       // 优先级：旗杆 + 旗面，线性。
       flag: { box: 24, paths: [{ d: 'M6 3v18M6 4h11l-2 4 2 4H6', width: 2 }] },
       check: { box: 512, paths: [{ d: 'M416 128L192 384l-96-96', width: 48 }] },

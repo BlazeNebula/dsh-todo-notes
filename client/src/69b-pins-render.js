@@ -53,6 +53,7 @@
             title: win.collapsed ? '展开' : '收起',
             onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
           }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
+          h('span', { className: 'dtn-pin-type', title: '预览' }, icon('fileText', 13)),
           win.editing
             ? h('input', {
                 className: 'dtn-pin-title-input',
@@ -99,11 +100,11 @@
           meta === null || meta === undefined
             ? [h('span', { key: 'loading' }, win.loading ? '加载中…' : '')]
             : [
-                h('span', { key: 'status' }, meta.status === 'done' ? '已完成' : meta.status === 'partial' ? '中间态（待人工确认）' : '未完成'),
+                h('span', { key: 'status', className: 'dtn-meta-item' }, icon(meta.status === 'done' ? 'check' : 'clock', 11), meta.status === 'done' ? '已完成' : meta.status === 'partial' ? '中间态（待人工确认）' : '未完成'),
                 isAiSource(meta.source) ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13)) : null,
-                h('span', { key: 'folder' }, pinFolderLabel(win)),
-                h('span', { key: 'priority', style: { color: prioColor(meta.priority) } }, '优先级 T' + (typeof meta.priority === 'number' ? meta.priority : 1)),
-                meta.created !== '' ? h('span', { key: 'created' }, '创建 ' + formatStamp(meta.created)) : null,
+                h('span', { key: 'folder', className: 'dtn-meta-item' }, icon('folder', 11), pinFolderLabel(win)),
+                h('span', { key: 'priority', className: 'dtn-meta-item', style: { color: prioColor(meta.priority) } }, icon('flag', 11), '优先级 T' + (typeof meta.priority === 'number' ? meta.priority : 1)),
+                meta.created !== '' ? h('span', { key: 'created', className: 'dtn-meta-item' }, icon('clock', 11), '创建 ' + formatStamp(meta.created)) : null,
               ],
         ),
         win.collapsed ? null : win.editing
@@ -187,6 +188,7 @@
             title: win.collapsed ? '展开' : '收起',
             onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
           }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
+          h('span', { className: 'dtn-pin-type', title: '批量新建' }, icon('addBatch', 13)),
           h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
           h(
             'div',
@@ -250,6 +252,7 @@
             title: win.collapsed ? '展开' : '收起',
             onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
           }, icon(win.collapsed ? 'chevronRight' : 'chevronDown')),
+          h('span', { className: 'dtn-pin-type', title: '批量重命名' }, icon('edit', 13)),
           h('span', { className: 'dtn-preview-title' }, '批量重命名'),
           h(
             'div',

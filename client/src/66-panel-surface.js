@@ -200,7 +200,7 @@
                   toggleCollapsed()
                 },
           },
-          h('span', { className: 'dtn-logo' }, '▤'),
+          h('span', { className: 'dtn-logo' }, icon('list', 14)),
           h('span', { className: 'dtn-title' }, 'TODO 便签'),
           h('span', { className: 'dtn-count' }, data === null ? '加载中…' : totalOpen + ' 条未完成'),
           embedded

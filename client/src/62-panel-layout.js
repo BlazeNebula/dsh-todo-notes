@@ -21,13 +21,14 @@
           : kind === 'batch' ? (batchPos || (batchCreate !== null && batchCreate.pos) || { x: 12, y: 64 }) : previewPos
         const setter = kind === 'main' ? setPanelPos : kind === 'batch' ? setBatchPos : setPreviewPos
         const widthOf = kind === 'main' ? (mainCollapsed ? MIN_PANEL_WIDTH : panelWidth) : 440
+        const heightOf = kind === 'main' && panelRef.current !== null ? panelRef.current.offsetHeight : 200
         if (kind === 'main') setDragging(true)
         const move = function (moveEvent) {
           if (Math.abs(moveEvent.clientX - startX) > 3 || Math.abs(moveEvent.clientY - startY) > 3) dragMoved.current = true
           const next = clampPos(
             { x: base.x + moveEvent.clientX - startX, y: base.y + moveEvent.clientY - startY },
             widthOf,
-            200,
+            heightOf,
             kind === 'main' ? 56 : undefined,
           )
           if (mainCollapsed) next.x = next.x - centerOffset

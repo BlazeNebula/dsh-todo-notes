@@ -318,7 +318,7 @@
         const pos = clampPos({
           x: origin.x + (next.clientX - startX),
           y: origin.y + (next.clientY - startY),
-        }, 440, 200)
+        }, win.width || 440, win.height || 320)
         updatePin(id, { pos: pos })
       }
       const up = function () {
