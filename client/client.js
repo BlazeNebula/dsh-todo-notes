@@ -178,7 +178,13 @@ window.__ModuleLoader__.load({
 .dtn-group-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dtn-group-count { margin-left: auto; font-size: 11px; color: var(--dsw-alias-label-secondary, #a3a3ab); }
 .dtn-current-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dsw-alias-brand-primary, #4d9cff); flex: none; }
-.dtn-group-body { padding: 2px 0 6px 0; }
+.dtn-group-body { position: relative; padding: 2px 0 6px 8px; }
+/* 便签组也持有一条主线，主归属里的条目与文件夹都挂在这条线上。 */
+.dtn-group-body::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
+  background: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 22%, transparent);
+  pointer-events: none;
+}
 /* 条目与文件夹沿用组标题的水平内缩，保证悬停底色与标题边界对齐。 */
 .dtn-todo.dtn-top-level, .dtn-folder.dtn-top-level { margin-left: 0; margin-right: 0; }
 .dtn-folder.dtn-nested, .dtn-todo.dtn-indented { position: relative; }
