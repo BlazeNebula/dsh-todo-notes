@@ -3646,16 +3646,17 @@ window.__ModuleLoader__.load({
       const donePercent = typeof uiSettings.doneOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.doneOpacity)) : 35
       const partialPercent = typeof uiSettings.partialOpacity === 'number' ? Math.max(0, Math.min(100, uiSettings.partialOpacity)) : 67
       const panel = h(
-        'div',
+        WindowFrame,
         {
-          ref: panelRef,
+          rootRef: panelRef,
           className:
             'dtn-root' +
-            (panelCollapsed && !embedded ? ' dtn-collapsed' : '') +
             (resizing ? ' dtn-resizing' : '') +
             (dragging ? ' dtn-dragging' : '') +
             (embedded ? ' dtn-embedded' : '') +
             (embedded && mode !== 'sidebar' ? ' dtn-hidden' : ''),
+          headClassName: 'dtn-head',
+          bodyClassName: 'dtn-body',
           style: Object.assign(
             {
               '--dtn-done-opacity': String(donePercent / 100),
@@ -3670,73 +3671,57 @@ window.__ModuleLoader__.load({
                   height: panelCollapsed || panelHeight === null ? undefined : panelHeight + 'px',
                 },
           ),
-          onMouseEnter: embedded
+          collapsed: collapsed === true && !embedded,
+          expanded: hoverOpen === true && !embedded,
+          onHoverEnter: embedded
             ? undefined
             : function () { if (collapsed) setHoverOpen(true) },
+          onDragStart: embedded ? undefined : function (event) { startDrag(event, 'main') },
+          onHeadClick: embedded
+            ? undefined
+            : function (event) {
+                // 拖动结束后的 click 不算收展。
+                if (dragMoved.current) {
+                  dragMoved.current = false
+                  return
+                }
+                if (event.target !== null && typeof event.target.closest === 'function' && event.target.closest('button') !== null) return
+                toggleCollapsed()
+              },
+          onBodyPointerDown: beginMarquee,
+          onResize: beginResize,
+          resizeDirs: panelCollapsed || embedded ? null : ['r', 'l', 't', 'b', 'br'],
+          head: [
+            h('span', { key: 'logo', className: 'dtn-logo' }, icon('list', 14)),
+            h('span', { key: 'title', className: 'dtn-title' }, 'TODO 便签'),
+            h('span', { key: 'count', className: 'dtn-count' }, data === null ? '加载中…' : totalOpen + ' 条未完成'),
+            embedded
+              ? null
+              : h(
+                  'div',
+                  { key: 'actions', className: 'dtn-actions' },
+                  h(
+                    'button',
+                    { type: 'button', className: 'dtn-btn', title: '显示到右侧栏', onClick: function (event) { event.stopPropagation(); showInSidebar() } },
+                    icon('panelRight'),
+                  ),
+                  h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'dtn-btn',
+                      title: collapsed ? '展开面板' : '折叠面板',
+                      onClick: toggleCollapsed,
+                    },
+                    collapsed ? icon('chevronDown') : icon('chevronUp'),
+                  ),
+                ),
+          ],
         },
-        h(
-          'div',
-          {
-            className: 'dtn-head',
-            onPointerDown: embedded ? undefined : function (event) { startDrag(event, 'main') },
-            onClick: embedded
-              ? undefined
-              : function (event) {
-                  // 拖动结束后的 click 不算收展。
-                  if (dragMoved.current) {
-                    dragMoved.current = false
-                    return
-                  }
-                  if (event.target !== null && typeof event.target.closest === 'function' && event.target.closest('button') !== null) return
-                  toggleCollapsed()
-                },
-          },
-          h('span', { className: 'dtn-logo' }, icon('list', 14)),
-          h('span', { className: 'dtn-title' }, 'TODO 便签'),
-          h('span', { className: 'dtn-count' }, data === null ? '加载中…' : totalOpen + ' 条未完成'),
-          embedded
-            ? null
-            : h(
-                'div',
-                { className: 'dtn-actions' },
-                h(
-                  'button',
-                  { type: 'button', className: 'dtn-btn', title: '显示到右侧栏', onClick: function (event) { event.stopPropagation(); showInSidebar() } },
-                  icon('panelRight'),
-                ),
-                h(
-                  'button',
-                  {
-                    type: 'button',
-                    className: 'dtn-btn',
-                    title: collapsed ? '展开面板' : '折叠面板',
-                    onClick: toggleCollapsed,
-                  },
-                  collapsed ? icon('chevronDown') : icon('chevronUp'),
-                ),
-              ),
-        ),
-        h(
-          'div',
-          { className: 'dtn-body-wrap' },
-          h(
-            'div',
-            { className: 'dtn-body', onPointerDown: beginMarquee },
-            error !== '' ? h('div', { className: 'dtn-error' }, '读取失败：' + error) : null,
-            renderSection('user', '用户级TODO', userGroups),
-            renderSection('workspace', '工作区级TODO', workspaceGroups),
-            renderSection('session', '会话级TODO', sessionGroups),
-          ),
-        ),
-        panelCollapsed || embedded
-          ? null
-          : [
-              h('div', { key: 'r-r', className: 'dtn-resize dtn-resize-r', title: '拖动调整宽度', onPointerDown: function (event) { beginResize(event, 'r') } }),
-              h('div', { key: 'r-l', className: 'dtn-resize dtn-resize-l', title: '拖动调整宽度', onPointerDown: function (event) { beginResize(event, 'l') } }),
-              h('div', { key: 'r-t', className: 'dtn-resize dtn-resize-t', title: '拖动调整高度', onPointerDown: function (event) { beginResize(event, 't') } }),
-              h('div', { key: 'r-b', className: 'dtn-resize dtn-resize-b', title: '拖动调整高度', onPointerDown: function (event) { beginResize(event, 'b') } }),
-              h('div', { key: 'r-br', className: 'dtn-resize dtn-resize-br', title: '拖动调整大小', onPointerDown: function (event) { beginResize(event, 'br') } }),
-            ],
+        error !== '' ? h('div', { className: 'dtn-error' }, '读取失败：' + error) : null,
+        renderSection('user', '用户级TODO', userGroups),
+        renderSection('workspace', '工作区级TODO', workspaceGroups),
+        renderSection('session', '会话级TODO', sessionGroups),
       )
 
       function previewFolderLabel(data) {
