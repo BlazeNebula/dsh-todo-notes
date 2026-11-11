@@ -38,7 +38,7 @@
           style: {
             left: win.pos.x + 'px',
             top: win.pos.y + 'px',
-            zIndex: focusPin === win.id ? 2147482402 : 2147482400,
+            zIndex: focusPin === win.id ? 2147482512 : 2147482510,
           },
           onPointerDown: function (event) { event.stopPropagation() },
         },

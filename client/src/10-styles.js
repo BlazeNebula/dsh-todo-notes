@@ -3,11 +3,8 @@
   position: fixed; inset: 0; margin: 0; padding: 0; border: 0;
   background: transparent; color: inherit; overflow: visible; pointer-events: none;
 }
-.dtn-layer .dtn-root,
-.dtn-layer .dtn-preview,
-.dtn-layer .dtn-menu,
-.dtn-layer .dtn-bubble,
-.dtn-layer .dtn-marquee { pointer-events: auto; }
+.dtn-layer > * { pointer-events: auto; }
+.dtn-layer .dtn-bubble { pointer-events: none; }
 .dtn-root {
   position: fixed;
   z-index: 2147482500;
@@ -245,7 +242,7 @@
   border-radius: 4px; outline: none;
 }
 .dtn-menu {
-  position: fixed; z-index: 2147482502; min-width: 148px; padding: 5px;
+  position: fixed; z-index: 2147482530; min-width: 148px; padding: 5px;
   background: var(--dsw-alias-bg-overlay, #242429);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
@@ -304,7 +301,7 @@
 .dtn-prio:hover { color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); border-color: var(--dsw-alias-label-secondary, #a3a3ab); }
 .dtn-prio option { background: var(--dsw-alias-bg-overlay, #242429); color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent); }
 .dtn-prio-menu {
-  position: fixed; z-index: 2147482502; display: flex; flex-direction: column;
+  position: fixed; z-index: 2147482530; display: flex; flex-direction: column;
   padding: 4px; border-radius: 8px;
   background: var(--dsw-alias-bg-overlay, #242429);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -320,7 +317,7 @@
 .dtn-prio-item.dtn-prio-on { background: var(--dsw-alias-bg-layer-2, #2c2c31); }
 .dtn-rename-todo { flex: 1 1 auto; min-width: 0; margin-left: 6px; }
 .dtn-bubble {
-  position: fixed; z-index: 2147482501; pointer-events: none;
+  position: fixed; z-index: 2147482540; pointer-events: none;
   padding: 3px 8px; border-radius: 999px; font-size: 11px; white-space: nowrap;
   color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
   background: var(--dsw-alias-bg-overlay, #303036);
@@ -372,7 +369,7 @@
 .dtn-preview-btn-primary:hover { filter: brightness(1.08); }
 
 .dtn-preview {
-  position: fixed; z-index: 2147482499; width: 440px;
+  position: fixed; z-index: 2147482510; width: 440px;
   max-width: calc(100vw - 24px); max-height: 72vh;
   display: flex; flex-direction: column;
   color: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 80%, transparent);
@@ -400,7 +397,7 @@
 }
 .dtn-preview-body { overflow: auto; padding: 10px 14px 16px; }
 .dtn-preview.dtn-batch { width: 440px; height: 320px; }
-.dtn-preview.dtn-pin { z-index: 2147482400; }
+.dtn-preview.dtn-pin { z-index: 2147482510; }
 .dtn-pin-pulse { animation: dtn-pin-pulse 360ms cubic-bezier(0.22, 0.61, 0.36, 1) 1; }
 @keyframes dtn-pin-pulse {
   0% { filter: brightness(1); }
