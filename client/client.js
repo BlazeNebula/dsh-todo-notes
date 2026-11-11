@@ -182,8 +182,10 @@ window.__ModuleLoader__.load({
 /* 条目与文件夹沿用组标题的水平内缩，保证悬停底色与标题边界对齐。 */
 .dtn-todo.dtn-top-level, .dtn-folder.dtn-top-level { margin-left: 0; margin-right: 0; }
 .dtn-folder.dtn-nested, .dtn-todo.dtn-indented { position: relative; }
-.dtn-folder.dtn-nested::before, .dtn-todo.dtn-indented::before {
-  content: ''; position: absolute; left: -4px; top: 2px; bottom: 2px; width: 1px;
+/* 层级竖线由“子内容容器”整段绘制，跨条目连续；8px 缩进在容器内，不额外撑开。 */
+.dtn-folder-children { position: relative; padding-left: 8px; }
+.dtn-folder-children::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
   background: color-mix(in srgb, var(--dsw-alias-label-primary, #e8e8ea) 22%, transparent);
   pointer-events: none;
 }
@@ -3178,7 +3180,7 @@ window.__ModuleLoader__.load({
         const selected = isSelectedKey(folderKey)
         return h(
           'div',
-          { key: folderKey, className: 'dtn-folder' + (depth === 0 ? ' dtn-top-level' : ' dtn-nested'), style: depth > 0 ? { marginLeft: '8px' } : undefined },
+          { key: folderKey, className: 'dtn-folder' + (depth === 0 ? ' dtn-top-level' : ' dtn-nested') },
           h(
             'div',
             {
@@ -3324,8 +3326,8 @@ window.__ModuleLoader__.load({
           ),
           h(
             'div',
-            { className: 'dtn-fold' + (folderOpen ? '' : ' dtn-fold-off') },
-            todos.map(function (todo) { return renderTodoRow(group, todo, folder.id, (depth + 1) * 8) }),
+            { className: 'dtn-fold dtn-folder-children' + (folderOpen ? '' : ' dtn-fold-off') },
+            todos.map(function (todo) { return renderTodoRow(group, todo, folder.id, 0) }),
             children.map(function (child) { return renderFolder(group, child, depth + 1) }),
           ),
         )

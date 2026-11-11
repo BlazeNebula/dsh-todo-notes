@@ -171,7 +171,7 @@
         const selected = isSelectedKey(folderKey)
         return h(
           'div',
-          { key: folderKey, className: 'dtn-folder' + (depth === 0 ? ' dtn-top-level' : ' dtn-nested'), style: depth > 0 ? { marginLeft: '8px' } : undefined },
+          { key: folderKey, className: 'dtn-folder' + (depth === 0 ? ' dtn-top-level' : ' dtn-nested') },
           h(
             'div',
             {
@@ -317,8 +317,8 @@
           ),
           h(
             'div',
-            { className: 'dtn-fold' + (folderOpen ? '' : ' dtn-fold-off') },
-            todos.map(function (todo) { return renderTodoRow(group, todo, folder.id, (depth + 1) * 8) }),
+            { className: 'dtn-fold dtn-folder-children' + (folderOpen ? '' : ' dtn-fold-off') },
+            todos.map(function (todo) { return renderTodoRow(group, todo, folder.id, 0) }),
             children.map(function (child) { return renderFolder(group, child, depth + 1) }),
           ),
         )
