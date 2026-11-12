@@ -48,6 +48,7 @@
               icon('edit'),
               '重命名',
             ),
+            h('div', { className: 'dtn-menu-sep' }),
             h(
               'button',
               {
@@ -231,6 +232,7 @@
               icon('edit'),
               '重命名',
             ),
+            h('div', { className: 'dtn-menu-sep' }),
             h(
               'button',
               {

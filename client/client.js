@@ -4017,6 +4017,7 @@ window.__ModuleLoader__.load({
               icon('edit'),
               '重命名',
             ),
+            h('div', { className: 'dtn-menu-sep' }),
             h(
               'button',
               {
@@ -4200,6 +4201,7 @@ window.__ModuleLoader__.load({
               icon('edit'),
               '重命名',
             ),
+            h('div', { className: 'dtn-menu-sep' }),
             h(
               'button',
               {
@@ -5322,6 +5324,7 @@ window.__ModuleLoader__.load({
               icon('edit'),
               '批量重命名',
             ),
+            h('div', { className: 'dtn-menu-sep' }),
             h(
               'button',
               {
