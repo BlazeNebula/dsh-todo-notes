@@ -122,7 +122,7 @@
             .concat(folders.map(function (item) {
               return function () { return postApi({ action: 'deleteFolderTree', key: item.groupKey, folder: item.id }) }
             }))
-          runSequential(tasks)
+          Promise.all(tasks.map(function (task) { return task() }))
             .then(function () {
               setSelectionNow([])
               animatePendingRef.current = true

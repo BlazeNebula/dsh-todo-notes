@@ -2717,7 +2717,7 @@ window.__ModuleLoader__.load({
             .concat(folders.map(function (item) {
               return function () { return postApi({ action: 'deleteFolderTree', key: item.groupKey, folder: item.id }) }
             }))
-          runSequential(tasks)
+          Promise.all(tasks.map(function (task) { return task() }))
             .then(function () {
               setSelectionNow([])
               animatePendingRef.current = true
@@ -3971,6 +3971,29 @@ window.__ModuleLoader__.load({
               },
               icon('edit'),
               '重命名',
+            ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
+                onClick: function (event) {
+                  event.stopPropagation()
+                  const liveGroup = findLiveGroup(folderMenu.group.key) || folderMenu.group
+                  const scope = liveGroup.kind === 'user'
+                    ? '用户级'
+                    : liveGroup.kind === 'workspace'
+                      ? '工作区级 ' + (liveGroup.title || '')
+                      : '会话级 ' + (liveGroup.subtitle || liveGroup.title || '')
+                  const chain = scope + ' / ' + folderDisplayName(liveGroup.key, folderMenu.folderId)
+                  copyText(chain).then(function () {
+                    showBubble('已复制文件夹链', event)
+                    setFolderMenu(null)
+                  })
+                },
+              },
+              icon('copy'),
+              '复制文件夹链',
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
