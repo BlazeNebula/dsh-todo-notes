@@ -124,6 +124,10 @@ window.__ModuleLoader__.load({
 .dtn-anim-off .dtn-btn.dtn-head-collapse,
 .dtn-anim-off .dtn-logo,
 .dtn-anim-off .dtn-pin-type { transition: none; }
+.dtn-btn.dtn-head-collapse svg { transition: transform 160ms ease; }
+.dtn-btn.dtn-collapse-main[data-open="true"] svg { transform: rotate(180deg); }
+.dtn-btn.dtn-collapse-pin[data-open="false"] svg { transform: rotate(-90deg); }
+.dtn-anim-off .dtn-btn.dtn-head-collapse svg { transition: none; }
 .dtn-btn {
   appearance: none; border: none; background: transparent;
   color: var(--dsw-alias-label-secondary, #a3a3ab);
@@ -3840,11 +3844,12 @@ window.__ModuleLoader__.load({
                   {
                     key: 'collapse',
                     type: 'button',
-                    className: 'dtn-btn dtn-head-collapse',
+                    className: 'dtn-btn dtn-head-collapse dtn-collapse-main',
                     title: collapsed ? '展开面板' : '折叠面板',
+                    'data-open': collapsed ? 'false' : 'true',
                     onClick: function (event) { event.stopPropagation(); toggleCollapsed() },
                   },
-                  collapsed ? icon('chevronDown') : icon('chevronUp'),
+                  icon('chevronDown'),
                 ),
             h('span', { key: 'logo', className: 'dtn-logo' }, icon('list', 14)),
             h('span', { key: 'title', className: 'dtn-title' }, 'TODO 便签'),
@@ -5001,10 +5006,11 @@ window.__ModuleLoader__.load({
     function pinHeadCommon(win) {
       return h('button', {
         type: 'button',
-        className: 'dtn-btn dtn-head-collapse',
+        className: 'dtn-btn dtn-head-collapse dtn-collapse-pin',
         title: win.collapsed ? '展开' : '收起',
+        'data-open': win.collapsed ? 'false' : 'true',
         onClick: function (event) { event.stopPropagation(); setHoverPin(''); updatePin(win.id, { collapsed: !win.collapsed }) },
-      }, icon(win.collapsed ? 'chevronRight' : 'chevronDown'))
+      }, icon('chevronDown'))
     }
 
     function pinHeadClick(win) {

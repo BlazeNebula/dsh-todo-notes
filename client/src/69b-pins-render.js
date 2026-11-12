@@ -31,10 +31,11 @@
     function pinHeadCommon(win) {
       return h('button', {
         type: 'button',
-        className: 'dtn-btn dtn-head-collapse',
+        className: 'dtn-btn dtn-head-collapse dtn-collapse-pin',
         title: win.collapsed ? '展开' : '收起',
+        'data-open': win.collapsed ? 'false' : 'true',
         onClick: function (event) { event.stopPropagation(); setHoverPin(''); updatePin(win.id, { collapsed: !win.collapsed }) },
-      }, icon(win.collapsed ? 'chevronRight' : 'chevronDown'))
+      }, icon('chevronDown'))
     }
 
     function pinHeadClick(win) {

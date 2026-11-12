@@ -87,6 +87,10 @@
 .dtn-anim-off .dtn-btn.dtn-head-collapse,
 .dtn-anim-off .dtn-logo,
 .dtn-anim-off .dtn-pin-type { transition: none; }
+.dtn-btn.dtn-head-collapse svg { transition: transform 160ms ease; }
+.dtn-btn.dtn-collapse-main[data-open="true"] svg { transform: rotate(180deg); }
+.dtn-btn.dtn-collapse-pin[data-open="false"] svg { transform: rotate(-90deg); }
+.dtn-anim-off .dtn-btn.dtn-head-collapse svg { transition: none; }
 .dtn-btn {
   appearance: none; border: none; background: transparent;
   color: var(--dsw-alias-label-secondary, #a3a3ab);
