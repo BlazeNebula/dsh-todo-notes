@@ -55,6 +55,22 @@
                 className: 'dtn-menu-item',
                 onClick: function (event) {
                   event.stopPropagation()
+                  copyText(menuFolder.name || folderLabel(menuFolder.id)).then(function () {
+                    showBubble('已复制标题文本', event)
+                    setFolderMenu(null)
+                  })
+                },
+              },
+              icon('fileText'),
+              '复制标题文本',
+            ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
+                onClick: function (event) {
+                  event.stopPropagation()
                   const liveGroup = findLiveGroup(folderMenu.group.key) || folderMenu.group
                   const scope = liveGroup.kind === 'user'
                     ? '用户级'
