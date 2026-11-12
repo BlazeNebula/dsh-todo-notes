@@ -199,6 +199,19 @@
           onResize: beginResize,
           resizeDirs: panelCollapsed || embedded ? null : ['r', 'l', 't', 'b', 'br'],
           head: [
+            embedded
+              ? null
+              : h(
+                  'button',
+                  {
+                    key: 'collapse',
+                    type: 'button',
+                    className: 'dtn-btn dtn-head-collapse',
+                    title: collapsed ? '展开面板' : '折叠面板',
+                    onClick: function (event) { event.stopPropagation(); toggleCollapsed() },
+                  },
+                  collapsed ? icon('chevronDown') : icon('chevronUp'),
+                ),
             h('span', { key: 'logo', className: 'dtn-logo' }, icon('list', 14)),
             h('span', { key: 'title', className: 'dtn-title' }, 'TODO 便签'),
             h('span', { key: 'count', className: 'dtn-count' }, data === null ? '加载中…' : totalOpen + ' 条未完成'),
@@ -211,16 +224,6 @@
                     'button',
                     { type: 'button', className: 'dtn-btn', title: '显示到右侧栏', onClick: function (event) { event.stopPropagation(); showInSidebar() } },
                     icon('panelRight'),
-                  ),
-                  h(
-                    'button',
-                    {
-                      type: 'button',
-                      className: 'dtn-btn',
-                      title: collapsed ? '展开面板' : '折叠面板',
-                      onClick: toggleCollapsed,
-                    },
-                    collapsed ? icon('chevronDown') : icon('chevronUp'),
                   ),
                 ),
           ],

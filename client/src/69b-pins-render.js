@@ -31,7 +31,7 @@
     function pinHeadCommon(win) {
       return h('button', {
         type: 'button',
-        className: 'dtn-btn',
+        className: 'dtn-btn dtn-head-collapse',
         title: win.collapsed ? '展开' : '收起',
         onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
       }, icon(win.collapsed ? 'chevronRight' : 'chevronDown'))

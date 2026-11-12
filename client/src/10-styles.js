@@ -68,6 +68,14 @@
 .dtn-title { font-weight: 600; letter-spacing: .02em; }
 .dtn-count { color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px; }
 .dtn-actions { display: flex; gap: 4px; margin-left: auto; }
+.dtn-window-head { position: relative; }
+.dtn-head-collapse {
+  position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+  opacity: 0; pointer-events: none; transition: opacity 120ms ease;
+}
+.dtn-window-head:hover .dtn-head-collapse { opacity: 1; pointer-events: auto; }
+.dtn-window-head:hover .dtn-logo,
+.dtn-window-head:hover .dtn-pin-type { opacity: 0; }
 .dtn-btn {
   appearance: none; border: none; background: transparent;
   color: var(--dsw-alias-label-secondary, #a3a3ab);
