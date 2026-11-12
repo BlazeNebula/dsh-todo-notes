@@ -489,7 +489,7 @@ window.__ModuleLoader__.load({
   cursor: nwse-resize; z-index: 2; border-bottom-right-radius: 10px;
   background: linear-gradient(135deg, transparent 50%, var(--dsw-alias-border-l2, #3a3a41) 50%);
 }
-.dtn-pin-pulse { animation: dtn-pin-pulse 400ms cubic-bezier(0.22, 0.61, 0.36, 1) 1; }
+.dtn-pin-pulse { animation: dtn-pin-pulse 360ms cubic-bezier(0.22, 0.61, 0.36, 1) 1; }
 @keyframes dtn-pin-pulse {
   0% { filter: brightness(1) saturate(1); }
   45% { filter: brightness(1.42) saturate(1.18); }
@@ -6070,13 +6070,13 @@ window.__ModuleLoader__.load({
         node.style.transition = 'none'
         node.style.height = base + 'px'
         void node.offsetHeight
-        node.style.transition = 'height 150ms cubic-bezier(0.22, 0.61, 0.36, 1)'
+        node.style.transition = 'height 180ms cubic-bezier(0.22, 0.61, 0.36, 1)'
         node.style.height = base + 40 + 'px'
-        const back = window.setTimeout(function () { node.style.height = base + 'px' }, 150)
+        const back = window.setTimeout(function () { node.style.height = base + 'px' }, 180)
         const clear = window.setTimeout(function () {
           node.style.height = prevHeight
           node.style.transition = prevTransition
-        }, 320)
+        }, 360)
         return function () {
           window.clearTimeout(back)
           window.clearTimeout(clear)

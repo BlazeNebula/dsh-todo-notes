@@ -452,7 +452,7 @@
   cursor: nwse-resize; z-index: 2; border-bottom-right-radius: 10px;
   background: linear-gradient(135deg, transparent 50%, var(--dsw-alias-border-l2, #3a3a41) 50%);
 }
-.dtn-pin-pulse { animation: dtn-pin-pulse 400ms cubic-bezier(0.22, 0.61, 0.36, 1) 1; }
+.dtn-pin-pulse { animation: dtn-pin-pulse 360ms cubic-bezier(0.22, 0.61, 0.36, 1) 1; }
 @keyframes dtn-pin-pulse {
   0% { filter: brightness(1) saturate(1); }
   45% { filter: brightness(1.42) saturate(1.18); }

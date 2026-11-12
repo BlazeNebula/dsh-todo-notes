@@ -41,13 +41,13 @@
         node.style.transition = 'none'
         node.style.height = base + 'px'
         void node.offsetHeight
-        node.style.transition = 'height 150ms cubic-bezier(0.22, 0.61, 0.36, 1)'
+        node.style.transition = 'height 180ms cubic-bezier(0.22, 0.61, 0.36, 1)'
         node.style.height = base + 40 + 'px'
-        const back = window.setTimeout(function () { node.style.height = base + 'px' }, 150)
+        const back = window.setTimeout(function () { node.style.height = base + 'px' }, 180)
         const clear = window.setTimeout(function () {
           node.style.height = prevHeight
           node.style.transition = prevTransition
-        }, 320)
+        }, 360)
         return function () {
           window.clearTimeout(back)
           window.clearTimeout(clear)
