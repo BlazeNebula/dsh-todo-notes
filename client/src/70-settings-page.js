@@ -305,9 +305,9 @@
                       className: 'tns-select', value: injectDetail,
                       onChange: function (event) { setInjectDetail(event.target.value) },
                     },
-                    h('option', { value: 'title' }, '仅标题'),
-                    h('option', { value: 'headings' }, '标题 + 正文中的所有 Markdown 标题'),
-                    h('option', { value: 'body200' }, '标题 + 所有标题 + 正文前 200 行'),
+                    h('option', { value: 'title' }, '仅TODO条目标题'),
+                    h('option', { value: 'headings' }, 'TODO条目标题 + 所有正文 Markdown 标题'),
+                    h('option', { value: 'body200' }, '条目标题 + 正文标题 + 正文前200行'),
                   ),
                 ),
                 h(
