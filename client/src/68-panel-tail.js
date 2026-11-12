@@ -73,6 +73,26 @@
               icon('edit'),
               '批量重命名',
             ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
+                onClick: function (event) { event.stopPropagation(); batchCopyTitles(event) },
+              },
+              icon('fileText'),
+              '复制标题文本',
+            ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
+                onClick: function (event) { event.stopPropagation(); batchCopyChains(event) },
+              },
+              icon('copy'),
+              '复制层级链文本',
+            ),
             h('div', { className: 'dtn-menu-sep' + (batchTodoTotal === 0 ? ' dtn-menu-hide' : '') }),
             h(
               'div',

@@ -25,6 +25,51 @@
         return null
       }
 
+      function scopeLabelOf(group) {
+        if (group.kind === 'user') return '用户级'
+        if (group.kind === 'workspace') return '工作区级 ' + (group.title || '')
+        return '会话级 ' + (group.subtitle || group.title || '')
+      }
+
+      function batchCopyTitles(event) {
+        const lines = []
+        batchTodos().forEach(function (item) {
+          const live = liveTodoOf(item)
+          if (live !== null) lines.push(String(live.todo.title || ''))
+        })
+        batchFolders().forEach(function (item) {
+          const group = findLiveGroup(item.groupKey)
+          if (group === null || group === undefined) return
+          const folder = findFolder(Array.isArray(group.folders) ? group.folders : [], item.id)
+          if (folder !== null) lines.push(String(folder.name || folderLabel(item.id)))
+        })
+        if (lines.length === 0) return
+        copyText(lines.join('\n')).then(function () {
+          showBubble('已复制标题文本', event)
+          setBatchMenu(null)
+        })
+      }
+
+      function batchCopyChains(event) {
+        const lines = []
+        batchTodos().forEach(function (item) {
+          const live = liveTodoOf(item)
+          if (live === null) return
+          const folderId = item.folder !== undefined && item.folder !== null ? item.folder : live.todo.primaryFolder
+          lines.push(scopeLabelOf(live.group) + ' / ' + folderDisplayName(live.group.key, folderId) + ' / ' + String(live.todo.title || ''))
+        })
+        batchFolders().forEach(function (item) {
+          const group = findLiveGroup(item.groupKey)
+          if (group === null || group === undefined) return
+          lines.push(scopeLabelOf(group) + ' / ' + folderDisplayName(group.key, item.id))
+        })
+        if (lines.length === 0) return
+        copyText(lines.join('\n')).then(function () {
+          showBubble('已复制层级链文本', event)
+          setBatchMenu(null)
+        })
+      }
+
       function batchFolderCount(folderId) {
         let count = 0
         batchTodos().forEach(function (item) {
