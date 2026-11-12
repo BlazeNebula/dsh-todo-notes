@@ -496,6 +496,16 @@ window.__ModuleLoader__.load({
   100% { filter: brightness(1) saturate(1); }
 }
 .dtn-anim-off .dtn-pin-pulse { animation: none; }
+.dtn-window-bump {
+  animation: dtn-window-bump 320ms cubic-bezier(0.22, 0.61, 0.36, 1) 1;
+  transform-origin: top center;
+}
+@keyframes dtn-window-bump {
+  0% { transform: scaleY(1); }
+  38% { transform: scaleY(1.1); }
+  100% { transform: scaleY(1); }
+}
+.dtn-anim-off .dtn-window-bump { animation: none; }
 .dtn-edit-body { display: flex; flex-direction: column; gap: 8px; }
 .dtn-edit-body .dtn-batch-field { flex: 1 1 auto; min-height: 160px; overflow: visible; }
 .dtn-edit-input {
@@ -1164,7 +1174,8 @@ window.__ModuleLoader__.load({
         return sanitizePinnedWindows(readStored(LS_WINDOWS, []))
       })
       const [pulsePin, setPulsePin] = React.useState('')
-      const [pulsePanel, setPulsePanel] = React.useState(false)
+      const [bumpPin, setBumpPin] = React.useState('')
+      const [bumpPanel, setBumpPanel] = React.useState(false)
       const [focusPin, setFocusPin] = React.useState('')
       const [hoverPin, setHoverPin] = React.useState('')
       const pinDragMoved = React.useRef(false)
@@ -1846,8 +1857,8 @@ window.__ModuleLoader__.load({
         writeStored(LS_COLLAPSED, next)
         // 从「悬停预览」点成「确认展开」时，给一次整块高亮反馈。
         if (wasPeek && next === false) {
-          setPulsePanel(true)
-          window.setTimeout(function () { setPulsePanel(false) }, 420)
+          setBumpPanel(true)
+          window.setTimeout(function () { setBumpPanel(false) }, 360)
         }
       }
 
@@ -3803,7 +3814,7 @@ window.__ModuleLoader__.load({
           zIndexActive: 2147482515,
           className:
             'dtn-root' +
-            (pulsePanel ? ' dtn-pin-pulse' : '') +
+            (bumpPanel ? ' dtn-window-bump' : '') +
             (resizing ? ' dtn-resizing' : '') +
             (dragging ? ' dtn-dragging' : '') +
             (embedded ? ' dtn-embedded' : '') +
@@ -5024,8 +5035,8 @@ window.__ModuleLoader__.load({
           setHoverPin('')
           updatePin(win.id, { collapsed: !win.collapsed })
           if (wasPeek) {
-            setPulsePin(win.id)
-            window.setTimeout(function () { setPulsePin(function (value) { return value === win.id ? '' : value }) }, 420)
+            setBumpPin(win.id)
+            window.setTimeout(function () { setBumpPin(function (value) { return value === win.id ? '' : value }) }, 360)
           }
         },
       }, icon('chevronDown'))
@@ -5044,8 +5055,8 @@ window.__ModuleLoader__.load({
         setHoverPin('')
         updatePin(win.id, { collapsed: !win.collapsed })
         if (wasPeek) {
-          setPulsePin(win.id)
-          window.setTimeout(function () { setPulsePin(function (value) { return value === win.id ? '' : value }) }, 420)
+          setBumpPin(win.id)
+          window.setTimeout(function () { setBumpPin(function (value) { return value === win.id ? '' : value }) }, 360)
         }
       }
     }
@@ -5060,7 +5071,7 @@ window.__ModuleLoader__.load({
           windowKey: win.id,
           zIndex: 2147482510,
           zIndexActive: 2147482512,
-          className: options.className + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
+          className: options.className + (pulsePin === win.id ? ' dtn-pin-pulse' : '') + (bumpPin === win.id ? ' dtn-window-bump' : ''),
           headClassName: options.headClassName,
           bodyClassName: 'dtn-pin-content',
           style: {

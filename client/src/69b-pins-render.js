@@ -40,8 +40,8 @@
           setHoverPin('')
           updatePin(win.id, { collapsed: !win.collapsed })
           if (wasPeek) {
-            setPulsePin(win.id)
-            window.setTimeout(function () { setPulsePin(function (value) { return value === win.id ? '' : value }) }, 420)
+            setBumpPin(win.id)
+            window.setTimeout(function () { setBumpPin(function (value) { return value === win.id ? '' : value }) }, 360)
           }
         },
       }, icon('chevronDown'))
@@ -60,8 +60,8 @@
         setHoverPin('')
         updatePin(win.id, { collapsed: !win.collapsed })
         if (wasPeek) {
-          setPulsePin(win.id)
-          window.setTimeout(function () { setPulsePin(function (value) { return value === win.id ? '' : value }) }, 420)
+          setBumpPin(win.id)
+          window.setTimeout(function () { setBumpPin(function (value) { return value === win.id ? '' : value }) }, 360)
         }
       }
     }
@@ -76,7 +76,7 @@
           windowKey: win.id,
           zIndex: 2147482510,
           zIndexActive: 2147482512,
-          className: options.className + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
+          className: options.className + (pulsePin === win.id ? ' dtn-pin-pulse' : '') + (bumpPin === win.id ? ' dtn-window-bump' : ''),
           headClassName: options.headClassName,
           bodyClassName: 'dtn-pin-content',
           style: {

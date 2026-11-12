@@ -291,8 +291,8 @@
         writeStored(LS_COLLAPSED, next)
         // 从「悬停预览」点成「确认展开」时，给一次整块高亮反馈。
         if (wasPeek && next === false) {
-          setPulsePanel(true)
-          window.setTimeout(function () { setPulsePanel(false) }, 420)
+          setBumpPanel(true)
+          window.setTimeout(function () { setBumpPanel(false) }, 360)
         }
       }
 

@@ -459,6 +459,16 @@
   100% { filter: brightness(1) saturate(1); }
 }
 .dtn-anim-off .dtn-pin-pulse { animation: none; }
+.dtn-window-bump {
+  animation: dtn-window-bump 320ms cubic-bezier(0.22, 0.61, 0.36, 1) 1;
+  transform-origin: top center;
+}
+@keyframes dtn-window-bump {
+  0% { transform: scaleY(1); }
+  38% { transform: scaleY(1.1); }
+  100% { transform: scaleY(1); }
+}
+.dtn-anim-off .dtn-window-bump { animation: none; }
 .dtn-edit-body { display: flex; flex-direction: column; gap: 8px; }
 .dtn-edit-body .dtn-batch-field { flex: 1 1 auto; min-height: 160px; overflow: visible; }
 .dtn-edit-input {
