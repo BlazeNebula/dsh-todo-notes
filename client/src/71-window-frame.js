@@ -37,22 +37,27 @@
         if (node === null || node === undefined) return undefined
         const base = node.getBoundingClientRect().height
         const prevHeight = node.style.height
-        const prevTransition = node.style.transition
-        node.style.transition = 'none'
         node.style.height = base + 'px'
-        void node.offsetHeight
-        node.style.transition = 'height 180ms cubic-bezier(0.22, 0.61, 0.36, 1)'
-        node.style.height = base + 40 + 'px'
-        const back = window.setTimeout(function () { node.style.height = base + 'px' }, 180)
-        const clear = window.setTimeout(function () {
+        // 一次动画内完成「长高 40px 再回弹」，不再拆成两段计时。
+        const anim = node.animate(
+          [
+            { height: base + 'px' },
+            { height: base + 40 + 'px' },
+            { height: base + 'px' },
+          ],
+          { duration: 360, easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)' },
+        )
+        let done = false
+        const restore = function () {
+          if (done) return
+          done = true
           node.style.height = prevHeight
-          node.style.transition = prevTransition
-        }, 360)
+        }
+        anim.onfinish = restore
+        anim.oncancel = restore
         return function () {
-          window.clearTimeout(back)
-          window.clearTimeout(clear)
-          node.style.height = prevHeight
-          node.style.transition = prevTransition
+          anim.cancel()
+          restore()
         }
       }, [props.bump])
       React.useEffect(function () {

@@ -36,10 +36,10 @@
         'data-open': win.collapsed ? 'false' : 'true',
         onClick: function (event) {
           event.stopPropagation()
-          const wasPeek = win.collapsed === true && hoverPin === win.id
+          const expanding = win.collapsed === true
           setHoverPin('')
           updatePin(win.id, { collapsed: !win.collapsed })
-          if (wasPeek) {
+          if (expanding) {
             setBumpPin(win.id)
             window.setTimeout(function () { setBumpPin(function (value) { return value === win.id ? '' : value }) }, 360)
           }
@@ -56,10 +56,10 @@
         if (event.target !== null && event.target !== undefined && event.target.closest !== undefined) {
           if (event.target.closest('button') !== null || event.target.closest('input') !== null) return
         }
-        const wasPeek = win.collapsed === true && hoverPin === win.id
+        const expanding = win.collapsed === true
         setHoverPin('')
         updatePin(win.id, { collapsed: !win.collapsed })
-        if (wasPeek) {
+        if (expanding) {
           setBumpPin(win.id)
           window.setTimeout(function () { setBumpPin(function (value) { return value === win.id ? '' : value }) }, 360)
         }

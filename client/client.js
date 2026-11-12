@@ -1840,15 +1840,14 @@ window.__ModuleLoader__.load({
       }
 
       function toggleCollapsed() {
-        const wasPeek = collapsed === true && hoverOpen === true
         setHoverOpen(false)
         const next = collapsed !== true
         setCollapsed(next)
         writeStored(LS_COLLAPSED, next)
-        // 从「悬停预览」点成「确认展开」时，给一次整块高亮反馈。
-        if (wasPeek && next === false) {
+        // 任何一次主动展开都给一次高度回弹，与悬停自动展开区分。
+        if (next === false) {
           setBumpPanel(true)
-          window.setTimeout(function () { setBumpPanel(false) }, 360)
+          window.setTimeout(function () { setBumpPanel(false) }, 380)
         }
       }
 
@@ -5021,10 +5020,10 @@ window.__ModuleLoader__.load({
         'data-open': win.collapsed ? 'false' : 'true',
         onClick: function (event) {
           event.stopPropagation()
-          const wasPeek = win.collapsed === true && hoverPin === win.id
+          const expanding = win.collapsed === true
           setHoverPin('')
           updatePin(win.id, { collapsed: !win.collapsed })
-          if (wasPeek) {
+          if (expanding) {
             setBumpPin(win.id)
             window.setTimeout(function () { setBumpPin(function (value) { return value === win.id ? '' : value }) }, 360)
           }
@@ -5041,10 +5040,10 @@ window.__ModuleLoader__.load({
         if (event.target !== null && event.target !== undefined && event.target.closest !== undefined) {
           if (event.target.closest('button') !== null || event.target.closest('input') !== null) return
         }
-        const wasPeek = win.collapsed === true && hoverPin === win.id
+        const expanding = win.collapsed === true
         setHoverPin('')
         updatePin(win.id, { collapsed: !win.collapsed })
-        if (wasPeek) {
+        if (expanding) {
           setBumpPin(win.id)
           window.setTimeout(function () { setBumpPin(function (value) { return value === win.id ? '' : value }) }, 360)
         }
@@ -6066,22 +6065,27 @@ window.__ModuleLoader__.load({
         if (node === null || node === undefined) return undefined
         const base = node.getBoundingClientRect().height
         const prevHeight = node.style.height
-        const prevTransition = node.style.transition
-        node.style.transition = 'none'
         node.style.height = base + 'px'
-        void node.offsetHeight
-        node.style.transition = 'height 180ms cubic-bezier(0.22, 0.61, 0.36, 1)'
-        node.style.height = base + 40 + 'px'
-        const back = window.setTimeout(function () { node.style.height = base + 'px' }, 180)
-        const clear = window.setTimeout(function () {
+        // 一次动画内完成「长高 40px 再回弹」，不再拆成两段计时。
+        const anim = node.animate(
+          [
+            { height: base + 'px' },
+            { height: base + 40 + 'px' },
+            { height: base + 'px' },
+          ],
+          { duration: 360, easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)' },
+        )
+        let done = false
+        const restore = function () {
+          if (done) return
+          done = true
           node.style.height = prevHeight
-          node.style.transition = prevTransition
-        }, 360)
+        }
+        anim.onfinish = restore
+        anim.oncancel = restore
         return function () {
-          window.clearTimeout(back)
-          window.clearTimeout(clear)
-          node.style.height = prevHeight
-          node.style.transition = prevTransition
+          anim.cancel()
+          restore()
         }
       }, [props.bump])
       React.useEffect(function () {

@@ -284,15 +284,14 @@
       }
 
       function toggleCollapsed() {
-        const wasPeek = collapsed === true && hoverOpen === true
         setHoverOpen(false)
         const next = collapsed !== true
         setCollapsed(next)
         writeStored(LS_COLLAPSED, next)
-        // 从「悬停预览」点成「确认展开」时，给一次整块高亮反馈。
-        if (wasPeek && next === false) {
+        // 任何一次主动展开都给一次高度回弹，与悬停自动展开区分。
+        if (next === false) {
           setBumpPanel(true)
-          window.setTimeout(function () { setBumpPanel(false) }, 360)
+          window.setTimeout(function () { setBumpPanel(false) }, 380)
         }
       }
 
