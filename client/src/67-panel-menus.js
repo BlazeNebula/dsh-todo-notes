@@ -239,6 +239,22 @@
               icon('copy'),
               '复制层级链文本',
             ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
+                onClick: function (event) {
+                  event.stopPropagation()
+                  copyText(menuTodo.title || '').then(function () {
+                    showBubble('已复制标题文本', event)
+                    setTodoMenu(null)
+                  })
+                },
+              },
+              icon('fileText'),
+              '复制标题文本',
+            ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
               'div',
