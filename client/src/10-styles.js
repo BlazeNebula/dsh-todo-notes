@@ -69,15 +69,24 @@
 .dtn-count { color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px; }
 .dtn-actions { display: flex; gap: 4px; margin-left: auto; }
 .dtn-window-head { position: relative; }
+.dtn-logo,
+.dtn-pin-type { transition: opacity 120ms ease, transform 120ms ease; }
 .dtn-btn.dtn-head-collapse {
-  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%) scale(.82);
   width: 14px; height: 20px; padding: 0;
   display: inline-flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none; transition: opacity 120ms ease;
+  opacity: 0; pointer-events: none;
+  transition: opacity 120ms ease, transform 120ms ease;
 }
-.dtn-window-head:hover .dtn-head-collapse { opacity: 1; pointer-events: auto; }
+.dtn-window-head:hover .dtn-head-collapse {
+  opacity: 1; pointer-events: auto;
+  transform: translateY(-50%) scale(1);
+}
 .dtn-window-head:hover .dtn-logo,
-.dtn-window-head:hover .dtn-pin-type { opacity: 0; }
+.dtn-window-head:hover .dtn-pin-type { opacity: 0; transform: scale(.82); }
+.dtn-anim-off .dtn-btn.dtn-head-collapse,
+.dtn-anim-off .dtn-logo,
+.dtn-anim-off .dtn-pin-type { transition: none; }
 .dtn-btn {
   appearance: none; border: none; background: transparent;
   color: var(--dsw-alias-label-secondary, #a3a3ab);
