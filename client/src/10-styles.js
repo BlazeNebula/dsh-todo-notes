@@ -69,8 +69,10 @@
 .dtn-count { color: var(--dsw-alias-label-secondary, #a3a3ab); font-size: 12px; }
 .dtn-actions { display: flex; gap: 4px; margin-left: auto; }
 .dtn-window-head { position: relative; }
-.dtn-head-collapse {
-  position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+.dtn-btn.dtn-head-collapse {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  width: 14px; height: 20px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
   opacity: 0; pointer-events: none; transition: opacity 120ms ease;
 }
 .dtn-window-head:hover .dtn-head-collapse { opacity: 1; pointer-events: auto; }
