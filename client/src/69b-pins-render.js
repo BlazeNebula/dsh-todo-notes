@@ -34,7 +34,16 @@
         className: 'dtn-btn dtn-head-collapse dtn-collapse-pin',
         title: win.collapsed ? '展开' : '收起',
         'data-open': win.collapsed ? 'false' : 'true',
-        onClick: function (event) { event.stopPropagation(); setHoverPin(''); updatePin(win.id, { collapsed: !win.collapsed }) },
+        onClick: function (event) {
+          event.stopPropagation()
+          const wasPeek = win.collapsed === true && hoverPin === win.id
+          setHoverPin('')
+          updatePin(win.id, { collapsed: !win.collapsed })
+          if (wasPeek) {
+            setPulsePin(win.id)
+            window.setTimeout(function () { setPulsePin(function (value) { return value === win.id ? '' : value }) }, 420)
+          }
+        },
       }, icon('chevronDown'))
     }
 
@@ -47,8 +56,13 @@
         if (event.target !== null && event.target !== undefined && event.target.closest !== undefined) {
           if (event.target.closest('button') !== null || event.target.closest('input') !== null) return
         }
+        const wasPeek = win.collapsed === true && hoverPin === win.id
         setHoverPin('')
         updatePin(win.id, { collapsed: !win.collapsed })
+        if (wasPeek) {
+          setPulsePin(win.id)
+          window.setTimeout(function () { setPulsePin(function (value) { return value === win.id ? '' : value }) }, 420)
+        }
       }
     }
 
@@ -62,7 +76,7 @@
           windowKey: win.id,
           zIndex: 2147482510,
           zIndexActive: 2147482512,
-          className: options.className + (pulsePin === win.id && win.kind === 'preview' ? ' dtn-pin-pulse' : ''),
+          className: options.className + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
           headClassName: options.headClassName,
           bodyClassName: 'dtn-pin-content',
           style: {

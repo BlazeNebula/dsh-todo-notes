@@ -284,10 +284,16 @@
       }
 
       function toggleCollapsed() {
+        const wasPeek = collapsed === true && hoverOpen === true
         setHoverOpen(false)
         const next = collapsed !== true
         setCollapsed(next)
         writeStored(LS_COLLAPSED, next)
+        // 从「悬停预览」点成「确认展开」时，给一次整块高亮反馈。
+        if (wasPeek && next === false) {
+          setPulsePanel(true)
+          window.setTimeout(function () { setPulsePanel(false) }, 420)
+        }
       }
 
       // 面板 → 右侧栏：只打开右侧栏里的 TODO 页签，浮动面板保持原状。

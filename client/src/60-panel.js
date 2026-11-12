@@ -146,6 +146,7 @@
         return sanitizePinnedWindows(readStored(LS_WINDOWS, []))
       })
       const [pulsePin, setPulsePin] = React.useState('')
+      const [pulsePanel, setPulsePanel] = React.useState(false)
       const [focusPin, setFocusPin] = React.useState('')
       const [hoverPin, setHoverPin] = React.useState('')
       const pinDragMoved = React.useRef(false)

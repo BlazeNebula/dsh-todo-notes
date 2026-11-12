@@ -1163,6 +1163,7 @@ window.__ModuleLoader__.load({
         return sanitizePinnedWindows(readStored(LS_WINDOWS, []))
       })
       const [pulsePin, setPulsePin] = React.useState('')
+      const [pulsePanel, setPulsePanel] = React.useState(false)
       const [focusPin, setFocusPin] = React.useState('')
       const [hoverPin, setHoverPin] = React.useState('')
       const pinDragMoved = React.useRef(false)
@@ -1837,10 +1838,16 @@ window.__ModuleLoader__.load({
       }
 
       function toggleCollapsed() {
+        const wasPeek = collapsed === true && hoverOpen === true
         setHoverOpen(false)
         const next = collapsed !== true
         setCollapsed(next)
         writeStored(LS_COLLAPSED, next)
+        // 从「悬停预览」点成「确认展开」时，给一次整块高亮反馈。
+        if (wasPeek && next === false) {
+          setPulsePanel(true)
+          window.setTimeout(function () { setPulsePanel(false) }, 420)
+        }
       }
 
       // 面板 → 右侧栏：只打开右侧栏里的 TODO 页签，浮动面板保持原状。
@@ -3795,6 +3802,7 @@ window.__ModuleLoader__.load({
           zIndexActive: 2147482515,
           className:
             'dtn-root' +
+            (pulsePanel ? ' dtn-pin-pulse' : '') +
             (resizing ? ' dtn-resizing' : '') +
             (dragging ? ' dtn-dragging' : '') +
             (embedded ? ' dtn-embedded' : '') +
@@ -5009,7 +5017,16 @@ window.__ModuleLoader__.load({
         className: 'dtn-btn dtn-head-collapse dtn-collapse-pin',
         title: win.collapsed ? '展开' : '收起',
         'data-open': win.collapsed ? 'false' : 'true',
-        onClick: function (event) { event.stopPropagation(); setHoverPin(''); updatePin(win.id, { collapsed: !win.collapsed }) },
+        onClick: function (event) {
+          event.stopPropagation()
+          const wasPeek = win.collapsed === true && hoverPin === win.id
+          setHoverPin('')
+          updatePin(win.id, { collapsed: !win.collapsed })
+          if (wasPeek) {
+            setPulsePin(win.id)
+            window.setTimeout(function () { setPulsePin(function (value) { return value === win.id ? '' : value }) }, 420)
+          }
+        },
       }, icon('chevronDown'))
     }
 
@@ -5022,8 +5039,13 @@ window.__ModuleLoader__.load({
         if (event.target !== null && event.target !== undefined && event.target.closest !== undefined) {
           if (event.target.closest('button') !== null || event.target.closest('input') !== null) return
         }
+        const wasPeek = win.collapsed === true && hoverPin === win.id
         setHoverPin('')
         updatePin(win.id, { collapsed: !win.collapsed })
+        if (wasPeek) {
+          setPulsePin(win.id)
+          window.setTimeout(function () { setPulsePin(function (value) { return value === win.id ? '' : value }) }, 420)
+        }
       }
     }
 
@@ -5037,7 +5059,7 @@ window.__ModuleLoader__.load({
           windowKey: win.id,
           zIndex: 2147482510,
           zIndexActive: 2147482512,
-          className: options.className + (pulsePin === win.id && win.kind === 'preview' ? ' dtn-pin-pulse' : ''),
+          className: options.className + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
           headClassName: options.headClassName,
           bodyClassName: 'dtn-pin-content',
           style: {

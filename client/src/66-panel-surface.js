@@ -157,6 +157,7 @@
           zIndexActive: 2147482515,
           className:
             'dtn-root' +
+            (pulsePanel ? ' dtn-pin-pulse' : '') +
             (resizing ? ' dtn-resizing' : '') +
             (dragging ? ' dtn-dragging' : '') +
             (embedded ? ' dtn-embedded' : '') +
