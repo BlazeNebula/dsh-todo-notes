@@ -33,7 +33,7 @@
         type: 'button',
         className: 'dtn-btn dtn-head-collapse',
         title: win.collapsed ? '展开' : '收起',
-        onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
+        onClick: function (event) { event.stopPropagation(); setHoverPin(''); updatePin(win.id, { collapsed: !win.collapsed }) },
       }, icon(win.collapsed ? 'chevronRight' : 'chevronDown'))
     }
 
@@ -46,6 +46,7 @@
         if (event.target !== null && event.target !== undefined && event.target.closest !== undefined) {
           if (event.target.closest('button') !== null || event.target.closest('input') !== null) return
         }
+        setHoverPin('')
         updatePin(win.id, { collapsed: !win.collapsed })
       }
     }

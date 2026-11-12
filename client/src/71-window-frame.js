@@ -55,7 +55,6 @@
           if (typeof CustomEvent === 'function') {
             window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))
           }
-          if (props.onHoverEnter !== undefined) props.onHoverEnter(event)
         }
         window.addEventListener('pointermove', onMove)
         return function () { window.removeEventListener('pointermove', onMove) }

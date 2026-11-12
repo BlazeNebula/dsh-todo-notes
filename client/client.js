@@ -4994,7 +4994,7 @@ window.__ModuleLoader__.load({
         type: 'button',
         className: 'dtn-btn dtn-head-collapse',
         title: win.collapsed ? '展开' : '收起',
-        onClick: function (event) { event.stopPropagation(); updatePin(win.id, { collapsed: !win.collapsed }) },
+        onClick: function (event) { event.stopPropagation(); setHoverPin(''); updatePin(win.id, { collapsed: !win.collapsed }) },
       }, icon(win.collapsed ? 'chevronRight' : 'chevronDown'))
     }
 
@@ -5007,6 +5007,7 @@ window.__ModuleLoader__.load({
         if (event.target !== null && event.target !== undefined && event.target.closest !== undefined) {
           if (event.target.closest('button') !== null || event.target.closest('input') !== null) return
         }
+        setHoverPin('')
         updatePin(win.id, { collapsed: !win.collapsed })
       }
     }
@@ -6043,7 +6044,6 @@ window.__ModuleLoader__.load({
           if (typeof CustomEvent === 'function') {
             window.dispatchEvent(new CustomEvent(WINDOW_FOCUS_EVENT, { detail: props.windowKey }))
           }
-          if (props.onHoverEnter !== undefined) props.onHoverEnter(event)
         }
         window.addEventListener('pointermove', onMove)
         return function () { window.removeEventListener('pointermove', onMove) }
