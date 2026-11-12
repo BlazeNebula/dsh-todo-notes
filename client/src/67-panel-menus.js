@@ -63,13 +63,13 @@
                       : '会话级 ' + (liveGroup.subtitle || liveGroup.title || '')
                   const chain = scope + ' / ' + folderDisplayName(liveGroup.key, folderMenu.folderId)
                   copyText(chain).then(function () {
-                    showBubble('已复制文件夹链', event)
+                    showBubble('已复制层级链文本', event)
                     setFolderMenu(null)
                   })
                 },
               },
               icon('copy'),
-              '复制文件夹链',
+              '复制层级链文本',
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -214,6 +214,30 @@
               },
               icon('edit'),
               '重命名',
+            ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
+                onClick: function (event) {
+                  event.stopPropagation()
+                  const liveGroup = todoMenuGroup
+                  const folderId = todoMenu.folderId !== undefined && todoMenu.folderId !== null ? todoMenu.folderId : menuTodo.primaryFolder
+                  const scope = liveGroup.kind === 'user'
+                    ? '用户级'
+                    : liveGroup.kind === 'workspace'
+                      ? '工作区级 ' + (liveGroup.title || '')
+                      : '会话级 ' + (liveGroup.subtitle || liveGroup.title || '')
+                  const chain = scope + ' / ' + folderDisplayName(liveGroup.key, folderId) + ' / ' + (menuTodo.title || '')
+                  copyText(chain).then(function () {
+                    showBubble('已复制层级链文本', event)
+                    setTodoMenu(null)
+                  })
+                },
+              },
+              icon('copy'),
+              '复制层级链文本',
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(

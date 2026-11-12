@@ -47,7 +47,7 @@
               const multi = selectionRef.current.length > 1 && selectionRef.current.some(function (value) { return value.key === rowKey })
               if (multi) { openBatchMenu(event, selectionRef.current); return }
               clickSelect(selectItem, event)
-              openTodoMenu(event, group, todo)
+              openTodoMenu(event, group, todo, folderId)
             },
             onClick: function (event) {
               if (marqueeMovedRef.current === true) { marqueeMovedRef.current = false; return }

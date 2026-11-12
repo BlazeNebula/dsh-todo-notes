@@ -2824,11 +2824,11 @@ window.__ModuleLoader__.load({
           .catch(function (err) { failWith(event, err) })
       }
 
-      function openTodoMenu(event, group, todo) {
+      function openTodoMenu(event, group, todo, folderId) {
         event.preventDefault()
         event.stopPropagation()
         setSubOpen('')
-        setTodoMenu({ x: event.clientX, y: event.clientY, groupKey: group.key, group: group, todoId: todo.id })
+        setTodoMenu({ x: event.clientX, y: event.clientY, groupKey: group.key, group: group, todoId: todo.id, folderId: folderId })
       }
 
       // 组内可选文件夹（用于右键「移动到」子菜单）。主归属的子文件夹按顶层列出。
@@ -3103,7 +3103,7 @@ window.__ModuleLoader__.load({
               const multi = selectionRef.current.length > 1 && selectionRef.current.some(function (value) { return value.key === rowKey })
               if (multi) { openBatchMenu(event, selectionRef.current); return }
               clickSelect(selectItem, event)
-              openTodoMenu(event, group, todo)
+              openTodoMenu(event, group, todo, folderId)
             },
             onClick: function (event) {
               if (marqueeMovedRef.current === true) { marqueeMovedRef.current = false; return }
@@ -3987,13 +3987,13 @@ window.__ModuleLoader__.load({
                       : '会话级 ' + (liveGroup.subtitle || liveGroup.title || '')
                   const chain = scope + ' / ' + folderDisplayName(liveGroup.key, folderMenu.folderId)
                   copyText(chain).then(function () {
-                    showBubble('已复制文件夹链', event)
+                    showBubble('已复制层级链文本', event)
                     setFolderMenu(null)
                   })
                 },
               },
               icon('copy'),
-              '复制文件夹链',
+              '复制层级链文本',
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -4138,6 +4138,30 @@ window.__ModuleLoader__.load({
               },
               icon('edit'),
               '重命名',
+            ),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'dtn-menu-item',
+                onClick: function (event) {
+                  event.stopPropagation()
+                  const liveGroup = todoMenuGroup
+                  const folderId = todoMenu.folderId !== undefined && todoMenu.folderId !== null ? todoMenu.folderId : menuTodo.primaryFolder
+                  const scope = liveGroup.kind === 'user'
+                    ? '用户级'
+                    : liveGroup.kind === 'workspace'
+                      ? '工作区级 ' + (liveGroup.title || '')
+                      : '会话级 ' + (liveGroup.subtitle || liveGroup.title || '')
+                  const chain = scope + ' / ' + folderDisplayName(liveGroup.key, folderId) + ' / ' + (menuTodo.title || '')
+                  copyText(chain).then(function () {
+                    showBubble('已复制层级链文本', event)
+                    setTodoMenu(null)
+                  })
+                },
+              },
+              icon('copy'),
+              '复制层级链文本',
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(

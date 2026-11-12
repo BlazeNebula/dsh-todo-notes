@@ -229,11 +229,11 @@
           .catch(function (err) { failWith(event, err) })
       }
 
-      function openTodoMenu(event, group, todo) {
+      function openTodoMenu(event, group, todo, folderId) {
         event.preventDefault()
         event.stopPropagation()
         setSubOpen('')
-        setTodoMenu({ x: event.clientX, y: event.clientY, groupKey: group.key, group: group, todoId: todo.id })
+        setTodoMenu({ x: event.clientX, y: event.clientY, groupKey: group.key, group: group, todoId: todo.id, folderId: folderId })
       }
 
       // 组内可选文件夹（用于右键「移动到」子菜单）。主归属的子文件夹按顶层列出。
