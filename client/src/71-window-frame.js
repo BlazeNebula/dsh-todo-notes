@@ -32,6 +32,30 @@
         return function () { window.removeEventListener('pointermove', onMove) }
       }, [props.expanded])
       React.useEffect(function () {
+        if (props.bump !== true || typeof window === 'undefined') return undefined
+        const node = props.rootRef !== undefined && props.rootRef !== null ? props.rootRef.current : localRef.current
+        if (node === null || node === undefined) return undefined
+        const base = node.getBoundingClientRect().height
+        const prevHeight = node.style.height
+        const prevTransition = node.style.transition
+        node.style.transition = 'none'
+        node.style.height = base + 'px'
+        void node.offsetHeight
+        node.style.transition = 'height 150ms cubic-bezier(0.22, 0.61, 0.36, 1)'
+        node.style.height = base + 40 + 'px'
+        const back = window.setTimeout(function () { node.style.height = base + 'px' }, 150)
+        const clear = window.setTimeout(function () {
+          node.style.height = prevHeight
+          node.style.transition = prevTransition
+        }, 320)
+        return function () {
+          window.clearTimeout(back)
+          window.clearTimeout(clear)
+          node.style.height = prevHeight
+          node.style.transition = prevTransition
+        }
+      }, [props.bump])
+      React.useEffect(function () {
         if (typeof window === 'undefined') return undefined
         const onMove = function (event) {
           const node = props.rootRef !== undefined && props.rootRef !== null ? props.rootRef.current : localRef.current

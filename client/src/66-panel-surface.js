@@ -157,7 +157,6 @@
           zIndexActive: 2147482515,
           className:
             'dtn-root' +
-            (bumpPanel ? ' dtn-window-bump' : '') +
             (resizing ? ' dtn-resizing' : '') +
             (dragging ? ' dtn-dragging' : '') +
             (embedded ? ' dtn-embedded' : '') +
@@ -180,6 +179,7 @@
           ),
           collapsed: collapsed === true && !embedded,
           expanded: hoverOpen === true && !embedded,
+          bump: embedded ? false : bumpPanel,
           onHoverEnter: embedded
             ? undefined
             : function () { if (collapsed) setHoverOpen(true) },

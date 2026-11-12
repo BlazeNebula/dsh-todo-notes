@@ -76,7 +76,7 @@
           windowKey: win.id,
           zIndex: 2147482510,
           zIndexActive: 2147482512,
-          className: options.className + (pulsePin === win.id ? ' dtn-pin-pulse' : '') + (bumpPin === win.id ? ' dtn-window-bump' : ''),
+          className: options.className + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
           headClassName: options.headClassName,
           bodyClassName: 'dtn-pin-content',
           style: {
@@ -87,6 +87,7 @@
           },
           collapsed: win.collapsed === true,
           expanded: hoverPin === win.id,
+          bump: bumpPin === win.id,
           onHoverEnter: function () { if (win.collapsed) setHoverPin(win.id) },
           onHoverLeave: function () { if (hoverPin === win.id) setHoverPin('') },
           onDragStart: function (event) { dragPinWindow(event, win.id) },

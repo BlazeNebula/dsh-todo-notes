@@ -496,16 +496,6 @@ window.__ModuleLoader__.load({
   100% { filter: brightness(1) saturate(1); }
 }
 .dtn-anim-off .dtn-pin-pulse { animation: none; }
-.dtn-window-bump {
-  animation: dtn-window-bump 320ms cubic-bezier(0.22, 0.61, 0.36, 1) 1;
-  transform-origin: top center;
-}
-@keyframes dtn-window-bump {
-  0% { transform: scaleY(1); }
-  38% { transform: scaleY(1.1); }
-  100% { transform: scaleY(1); }
-}
-.dtn-anim-off .dtn-window-bump { animation: none; }
 .dtn-edit-body { display: flex; flex-direction: column; gap: 8px; }
 .dtn-edit-body .dtn-batch-field { flex: 1 1 auto; min-height: 160px; overflow: visible; }
 .dtn-edit-input {
@@ -3814,7 +3804,6 @@ window.__ModuleLoader__.load({
           zIndexActive: 2147482515,
           className:
             'dtn-root' +
-            (bumpPanel ? ' dtn-window-bump' : '') +
             (resizing ? ' dtn-resizing' : '') +
             (dragging ? ' dtn-dragging' : '') +
             (embedded ? ' dtn-embedded' : '') +
@@ -3837,6 +3826,7 @@ window.__ModuleLoader__.load({
           ),
           collapsed: collapsed === true && !embedded,
           expanded: hoverOpen === true && !embedded,
+          bump: embedded ? false : bumpPanel,
           onHoverEnter: embedded
             ? undefined
             : function () { if (collapsed) setHoverOpen(true) },
@@ -5071,7 +5061,7 @@ window.__ModuleLoader__.load({
           windowKey: win.id,
           zIndex: 2147482510,
           zIndexActive: 2147482512,
-          className: options.className + (pulsePin === win.id ? ' dtn-pin-pulse' : '') + (bumpPin === win.id ? ' dtn-window-bump' : ''),
+          className: options.className + (pulsePin === win.id ? ' dtn-pin-pulse' : ''),
           headClassName: options.headClassName,
           bodyClassName: 'dtn-pin-content',
           style: {
@@ -5082,6 +5072,7 @@ window.__ModuleLoader__.load({
           },
           collapsed: win.collapsed === true,
           expanded: hoverPin === win.id,
+          bump: bumpPin === win.id,
           onHoverEnter: function () { if (win.collapsed) setHoverPin(win.id) },
           onHoverLeave: function () { if (hoverPin === win.id) setHoverPin('') },
           onDragStart: function (event) { dragPinWindow(event, win.id) },
@@ -6069,6 +6060,30 @@ window.__ModuleLoader__.load({
         window.addEventListener('pointermove', onMove)
         return function () { window.removeEventListener('pointermove', onMove) }
       }, [props.expanded])
+      React.useEffect(function () {
+        if (props.bump !== true || typeof window === 'undefined') return undefined
+        const node = props.rootRef !== undefined && props.rootRef !== null ? props.rootRef.current : localRef.current
+        if (node === null || node === undefined) return undefined
+        const base = node.getBoundingClientRect().height
+        const prevHeight = node.style.height
+        const prevTransition = node.style.transition
+        node.style.transition = 'none'
+        node.style.height = base + 'px'
+        void node.offsetHeight
+        node.style.transition = 'height 150ms cubic-bezier(0.22, 0.61, 0.36, 1)'
+        node.style.height = base + 40 + 'px'
+        const back = window.setTimeout(function () { node.style.height = base + 'px' }, 150)
+        const clear = window.setTimeout(function () {
+          node.style.height = prevHeight
+          node.style.transition = prevTransition
+        }, 320)
+        return function () {
+          window.clearTimeout(back)
+          window.clearTimeout(clear)
+          node.style.height = prevHeight
+          node.style.transition = prevTransition
+        }
+      }, [props.bump])
       React.useEffect(function () {
         if (typeof window === 'undefined') return undefined
         const onMove = function (event) {
