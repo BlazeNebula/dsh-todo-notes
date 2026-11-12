@@ -5485,7 +5485,7 @@ window.__ModuleLoader__.load({
       const [palette, setPalette] = React.useState(UI_DEFAULT_PALETTE.slice())
       const [autosaveSec, setAutosaveSec] = React.useState('5')
       const [titleMax, setTitleMax] = React.useState('30')
-      const [agentAllow, setAgentAllow] = React.useState(false)
+      const [writePolicy, setWritePolicy] = React.useState('ask')
       const [injectAgentTodos, setInjectAgentTodos] = React.useState(true)
       const [injectMinPriority, setInjectMinPriority] = React.useState(2)
       const [injectDetail, setInjectDetail] = React.useState('headings')
@@ -5502,9 +5502,11 @@ window.__ModuleLoader__.load({
           : (config !== null && config !== undefined && typeof config.bodyAutosaveMs === 'number' ? config.bodyAutosaveMs : 5000)
         setAutosaveSec(String(Math.max(1, Math.round(delay / 1000))))
         setTitleMax(String(typeof ui.titleMaxLength === 'number' ? ui.titleMaxLength : 30))
-        if (ui.agentWriteUserTodos === true) setAgentAllow(true)
-        else if (ui.agentWriteUserTodos === false) setAgentAllow(false)
-        else setAgentAllow(config !== null && config !== undefined && config.agentWriteUserTodos === true)
+        if (ui.agentWritePolicy === 'deny' || ui.agentWritePolicy === 'ask' || ui.agentWritePolicy === 'agent-only' || ui.agentWritePolicy === 'allow-all') {
+          setWritePolicy(ui.agentWritePolicy)
+        } else {
+          setWritePolicy('ask')
+        }
         setInjectAgentTodos(ui.injectAgentTodos !== false)
         setInjectMinPriority(typeof ui.injectMinPriority === 'number' ? ui.injectMinPriority : 2)
         setInjectDetail(ui.injectDetail === 'title' || ui.injectDetail === 'body200' ? ui.injectDetail : 'headings')
@@ -5564,7 +5566,7 @@ window.__ModuleLoader__.load({
             partialOpacity: partialOpacity,
             priorityPalette: palette.join(';'),
             bodyAutosaveMs: seconds * 1000,
-            agentWriteUserTodos: agentAllow,
+            agentWritePolicy: writePolicy,
             titleMaxLength: maxTitle,
             injectAgentTodos: injectAgentTodos,
             injectMinPriority: injectMinPriority,
@@ -5788,25 +5790,32 @@ window.__ModuleLoader__.load({
                     h('span', { className: 'tns-unit' }, '条'),
                   ),
                 ),
-              ),
-              h(
-                'section',
-                { className: 'tns-section' },
-                h('h3', { className: 'tns-section-title' }, '编辑与保存'),
                 h(
                   'div',
                   { className: 'tns-row' },
                   h(
                     'div',
                     { className: 'tns-row-text' },
-                    h('div', { className: 'tns-label' }, '允许智能体修改你手写的条目'),
-                    h('div', { className: 'tns-hint' }, '关闭时智能体只能动自己创建的条目；打开后每次写入仍需 DSH 审批'),
+                    h('div', { className: 'tns-label' }, '智能体存写（写入、修改、勾选、删除）行为'),
+                    h('div', { className: 'tns-hint' }, '决定智能体调用工具时是否放行、是否先进入 DSH 审批'),
                   ),
-                  h('input', {
-                    type: 'checkbox', className: 'tns-check', checked: agentAllow,
-                    onChange: function (event) { setAgentAllow(event.target.checked === true) },
-                  }),
+                  h(
+                    'select',
+                    {
+                      className: 'tns-select', value: writePolicy,
+                      onChange: function (event) { setWritePolicy(event.target.value) },
+                    },
+                    h('option', { value: 'deny' }, '完全拒绝'),
+                    h('option', { value: 'ask' }, '需要审批'),
+                    h('option', { value: 'agent-only' }, '仅放行由智能体创建的条目'),
+                    h('option', { value: 'allow-all' }, '放行所有条目'),
+                  ),
                 ),
+              ),
+              h(
+                'section',
+                { className: 'tns-section' },
+                h('h3', { className: 'tns-section-title' }, '编辑与保存'),
                 h(
                   'div',
                   { className: 'tns-row' },
