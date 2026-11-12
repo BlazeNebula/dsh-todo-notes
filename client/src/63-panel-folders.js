@@ -224,10 +224,24 @@
           .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
       }
 
+      function folderIsEmpty(group, folder) {
+        if (folder === null || folder === undefined) return false
+        const children = Array.isArray(folder.children) ? folder.children : []
+        if (children.length > 0) return false
+        const map = group.folderTodos && typeof group.folderTodos === 'object' ? group.folderTodos : {}
+        const refs = Array.isArray(map[folder.id]) ? map[folder.id] : []
+        if (refs.length > 0) return false
+        const todos = Array.isArray(group.todos) ? group.todos : []
+        return !todos.some(function (todo) { return todo.primaryFolder === folder.id })
+      }
+
       async function deleteFolderTree(group, folderId, event) {
         setFolderMenu(null)
         if (folderId === PRIMARY) return
-        const ok = await confirmDelete(event, '会连同子文件夹里的全部 TODO 一起删除，且不可恢复，确认删除整个文件夹？')
+        const live = findLiveGroup(group.key) || group
+        const folder = findFolder(Array.isArray(live.folders) ? live.folders : [], folderId)
+        // 空文件夹没有可丢的内容，直接删，不再二次确认。
+        const ok = folderIsEmpty(live, folder) ? true : await confirmDelete(event, '会连同子文件夹里的全部 TODO 一起删除，且不可恢复，确认删除整个文件夹？')
         if (ok !== true) return
         postApi({ action: 'deleteFolderTree', key: group.key, folder: folderId })
           .then(function (result) {

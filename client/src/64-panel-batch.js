@@ -158,8 +158,12 @@
         const folders = batchFolders()
         if (todos.length + folders.length === 0) return
         closeBatchMenu()
-        confirmDelete(event, '确定删除选中的 ' + (todos.length + folders.length) + ' 项？删除后不可恢复。').then(function (ok) {
-          if (ok !== true) return
+        const allEmptyFolders = todos.length === 0 && folders.length > 0 && folders.every(function (item) {
+          const group = findLiveGroup(item.groupKey)
+          if (group === null || group === undefined) return false
+          return folderIsEmpty(group, findFolder(Array.isArray(group.folders) ? group.folders : [], item.id))
+        })
+        const run = function () {
           const tasks = todos
             .map(function (item) {
               return function () { return postApi({ action: 'deleteTodo', key: item.groupKey, id: item.id }) }
@@ -175,6 +179,10 @@
               showBubble('已删除 ' + tasks.length + ' 项', null)
             })
             .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+        }
+        if (allEmptyFolders) { run(); return }
+        confirmDelete(event, '确定删除选中的 ' + (todos.length + folders.length) + ' 项？删除后不可恢复。').then(function (ok) {
+          if (ok === true) run()
         })
       }
 
