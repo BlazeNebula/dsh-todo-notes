@@ -21,7 +21,7 @@
                 },
               },
               icon('chevronUp'),
-              '全部收起',
+              tr('menuCollapseAll'),
             ),
             h(
               'button',
@@ -35,7 +35,7 @@
                 },
               },
               icon('chevronDown'),
-              '全部展开',
+              tr('menuExpandAll'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -46,7 +46,7 @@
                 onClick: function (event) { event.stopPropagation(); startRenameFolder(folderMenu.group, menuFolder) },
               },
               icon('edit'),
-              '重命名',
+              tr('menuRename'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -57,13 +57,13 @@
                 onClick: function (event) {
                   event.stopPropagation()
                   copyText(menuFolder.name || folderLabel(menuFolder.id)).then(function () {
-                    showBubble('已复制标题文本', event)
+                    showBubble(tr('copiedTitleText'), event)
                     setFolderMenu(null)
                   })
                 },
               },
               icon('fileText'),
-              '复制标题文本',
+              tr('copyTitleText'),
             ),
             h(
               'button',
@@ -74,19 +74,19 @@
                   event.stopPropagation()
                   const liveGroup = findLiveGroup(folderMenu.group.key) || folderMenu.group
                   const scope = liveGroup.kind === 'user'
-                    ? '用户级'
+                    ? tr('levelUser')
                     : liveGroup.kind === 'workspace'
-                      ? '工作区级 ' + (liveGroup.title || '')
-                      : '会话级 ' + (liveGroup.subtitle || liveGroup.title || '')
+                      ? tr('levelWorkspace', { title: liveGroup.title || '' })
+                      : tr('levelSession', { title: liveGroup.subtitle || liveGroup.title || '' })
                   const chain = scope + ' / ' + folderDisplayName(liveGroup.key, folderMenu.folderId)
                   copyText(chain).then(function () {
-                    showBubble('已复制层级链文本', event)
+                    showBubble(tr('copiedChainText'), event)
                     setFolderMenu(null)
                   })
                 },
               },
               icon('copy'),
-              '复制层级链文本',
+              tr('copyChainText'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -99,7 +99,7 @@
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'folder-move' ? '' : 'folder-move') },
               },
               icon('folder'),
-              '移动到',
+              tr('menuMoveTo'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -145,7 +145,7 @@
                 onClick: function (event) { event.stopPropagation(); deleteFolder(folderMenu.group, menuFolder.id, event) },
               },
               icon('folder'),
-              '解除文件夹',
+              tr('menuUnlinkFolder'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -156,7 +156,7 @@
                 onClick: function (event) { event.stopPropagation(); deleteFolderTree(folderMenu.group, menuFolder.id, event) },
               },
               icon('trash'),
-              '删除整个文件夹',
+              tr('menuDeleteFolder'),
             ),
           )
 
@@ -178,7 +178,7 @@
                 onClick: function (event) { event.stopPropagation(); toggleTree(treeMenu.target, false) },
               },
               icon('chevronUp'),
-              '全部收起',
+              tr('menuCollapseAll'),
             ),
             h(
               'button',
@@ -188,7 +188,7 @@
                 onClick: function (event) { event.stopPropagation(); toggleTree(treeMenu.target, true) },
               },
               icon('chevronDown'),
-              '全部展开',
+              tr('menuExpandAll'),
             ),
           )
 
@@ -214,7 +214,7 @@
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'todo-prio' ? '' : 'todo-prio') },
               },
               icon('flag'),
-              '设置优先级',
+              tr('menuSetPriority'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -230,7 +230,7 @@
                 onClick: function (event) { event.stopPropagation(); startRenameTodo(todoMenuGroup, menuTodo) },
               },
               icon('edit'),
-              '重命名',
+              tr('menuRename'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -241,13 +241,13 @@
                 onClick: function (event) {
                   event.stopPropagation()
                   copyText(menuTodo.title || '').then(function () {
-                    showBubble('已复制标题文本', event)
+                    showBubble(tr('copiedTitleText'), event)
                     setTodoMenu(null)
                   })
                 },
               },
               icon('fileText'),
-              '复制标题文本',
+              tr('copyTitleText'),
             ),
             h(
               'button',
@@ -259,19 +259,19 @@
                   const liveGroup = todoMenuGroup
                   const folderId = todoMenu.folderId !== undefined && todoMenu.folderId !== null ? todoMenu.folderId : menuTodo.primaryFolder
                   const scope = liveGroup.kind === 'user'
-                    ? '用户级'
+                    ? tr('levelUser')
                     : liveGroup.kind === 'workspace'
-                      ? '工作区级 ' + (liveGroup.title || '')
-                      : '会话级 ' + (liveGroup.subtitle || liveGroup.title || '')
+                      ? tr('levelWorkspace', { title: liveGroup.title || '' })
+                      : tr('levelSession', { title: liveGroup.subtitle || liveGroup.title || '' })
                   const chain = scope + ' / ' + folderDisplayName(liveGroup.key, folderId) + ' / ' + (menuTodo.title || '')
                   copyText(chain).then(function () {
-                    showBubble('已复制层级链文本', event)
+                    showBubble(tr('copiedChainText'), event)
                     setTodoMenu(null)
                   })
                 },
               },
               icon('copy'),
-              '复制层级链文本',
+              tr('copyChainText'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -284,7 +284,7 @@
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'todo-move' ? '' : 'todo-move') },
               },
               icon('folder'),
-              '移动到',
+              tr('menuMoveTo'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -327,7 +327,7 @@
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'todo-collect' ? '' : 'todo-collect') },
               },
               icon('folder'),
-              '管理收录',
+              tr('menuManageRefs'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -374,7 +374,7 @@
                 onClick: function (event) { event.stopPropagation(); deleteTodo(todoMenuGroup, menuTodo.id, event) },
               },
               icon('trash'),
-              '删除',
+              tr('menuDelete'),
             ),
           )
 
@@ -393,17 +393,17 @@
               h(
                 'div',
                 { key: 'head', className: 'dtn-preview-head', onPointerDown: function (event) { startWindowMove(event, 'batchCreate') } },
-                h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
+                h('span', { className: 'dtn-preview-title' }, tr('batchNewTodo')),
                 h(
                   'div',
                   { className: 'dtn-actions' },
-                  h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { closeBatchCreate() } }, icon('close')),
+                  h('button', { type: 'button', className: 'dtn-btn', title: tr('close'), onClick: function () { closeBatchCreate() } }, icon('close')),
                 ),
               ),
               h(
                 'div',
                 { key: 'body', className: 'dtn-preview-body' },
-                h('div', { className: 'dtn-batch-hint' }, '每行一条，确认后按行创建'),
+                h('div', { className: 'dtn-batch-hint' }, tr('batchCreateHint')),
                 h(
                   'div',
                   { className: 'dtn-batch-field' },
@@ -419,7 +419,7 @@
                     value: batchCreate.value,
                     autoFocus: true,
                     wrap: 'off',
-                    placeholder: '第一件事\n第二件事',
+                    placeholder: tr('batchCreatePlaceholder'),
                     onScroll: function (event) {
                       if (batchGutterRef.current !== null) batchGutterRef.current.scrollTop = event.currentTarget.scrollTop
                     },
@@ -432,8 +432,8 @@
                 h(
                   'div',
                   { className: 'dtn-batch-actions' },
-                  h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { closeBatchCreate() } }, '取消'),
-                  h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmBatchCreate() } }, '确认'),
+                  h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { closeBatchCreate() } }, tr('cancel')),
+                  h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmBatchCreate() } }, tr('confirm')),
                 ),
               ),
             ],

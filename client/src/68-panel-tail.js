@@ -11,7 +11,7 @@
                 type: 'button',
                 className: 'dtn-prio-item' + (on ? ' dtn-prio-on' : ''),
                 style: { color: prioColor(value) },
-                title: '优先级 T' + value,
+                title: tr('priorityLabel', { level: value }),
                 onClick: function (event) { choosePriority(value, event) },
               },
               'T' + value,
@@ -55,7 +55,7 @@
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'batch-prio' ? '' : 'batch-prio') },
               },
               icon('flag'),
-              '批量设置优先级',
+              tr('batchPriorityMenu'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -71,7 +71,7 @@
                 onClick: function (event) { event.stopPropagation(); openBatchRename() },
               },
               icon('edit'),
-              '批量重命名',
+              tr('batchRename'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -82,7 +82,7 @@
                 onClick: function (event) { event.stopPropagation(); batchCopyTitles(event) },
               },
               icon('fileText'),
-              '复制标题文本',
+              tr('copyTitleText'),
             ),
             h(
               'button',
@@ -92,7 +92,7 @@
                 onClick: function (event) { event.stopPropagation(); batchCopyChains(event) },
               },
               icon('copy'),
-              '复制层级链文本',
+              tr('copyChainText'),
             ),
             h('div', { className: 'dtn-menu-sep' + (batchTodoTotal === 0 ? ' dtn-menu-hide' : '') }),
             h(
@@ -105,7 +105,7 @@
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'batch-move' ? '' : 'batch-move') },
               },
               icon('folder'),
-              '批量移动到',
+              tr('batchMoveTo'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -136,7 +136,7 @@
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'batch-collect' ? '' : 'batch-collect') },
               },
               icon('folder'),
-              '批量管理收录',
+              tr('batchManageRefs'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -183,7 +183,7 @@
                 onClick: function (event) { event.stopPropagation(); applyBatchExpand(false) },
               },
               icon('chevronUp'),
-              '批量全部收起',
+              tr('batchCollapseAll'),
             ),
             h(
               'button',
@@ -193,7 +193,7 @@
                 onClick: function (event) { event.stopPropagation(); applyBatchExpand(true) },
               },
               icon('chevronDown'),
-              '批量全部展开',
+              tr('batchExpandAll'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -204,7 +204,7 @@
                 onClick: function (event) { event.stopPropagation(); applyBatchDelete(event) },
               },
               icon('trash'),
-              '批量删除',
+              tr('batchDelete'),
             ),
           )
 
@@ -221,17 +221,17 @@
             h(
               'div',
               { className: 'dtn-preview-head', onPointerDown: function (event) { startWindowMove(event, 'batchRename') } },
-              h('span', { className: 'dtn-preview-title' }, '批量重命名'),
+              h('span', { className: 'dtn-preview-title' }, tr('batchRename')),
               h(
                 'div',
                 { className: 'dtn-actions' },
-                h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { setBatchRename(null) } }, icon('close')),
+                h('button', { type: 'button', className: 'dtn-btn', title: tr('close'), onClick: function () { setBatchRename(null) } }, icon('close')),
               ),
             ),
             h(
               'div',
               { className: 'dtn-preview-body' },
-              h('div', { className: 'dtn-batch-hint' }, '行数固定为选中条目数，不能增加或删除换行；清空的行会被跳过'),
+              h('div', { className: 'dtn-batch-hint' }, tr('batchRenameHint')),
               h(
                 'div',
                 { className: 'dtn-batch-field' },
@@ -265,8 +265,8 @@
               h(
                 'div',
                 { className: 'dtn-batch-actions' },
-                h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { setBatchRename(null) } }, '取消'),
-                h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: confirmBatchRename }, '确认'),
+                h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { setBatchRename(null) } }, tr('cancel')),
+                h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: confirmBatchRename }, tr('confirm')),
               ),
             ),
           )
@@ -296,8 +296,8 @@
             h(
               'div',
               { className: 'dtn-confirm-actions' },
-              h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { settleConfirm(false) } }, '取消'),
-              h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-danger', onClick: function () { settleConfirm(true) } }, '确认删除'),
+              h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { settleConfirm(false) } }, tr('cancel')),
+              h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-danger', onClick: function () { settleConfirm(true) } }, tr('confirmDelete')),
             ),
           )
 

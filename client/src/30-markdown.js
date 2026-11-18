@@ -129,5 +129,5 @@
     }
 
     function sourceLabel(source) {
-      return typeof source === 'string' && source !== '' && source !== 'user' ? '由智能体创建' : ''
+      return typeof source === 'string' && source !== '' && source !== 'user' ? tr('agentCreatedSource') : ''
     }

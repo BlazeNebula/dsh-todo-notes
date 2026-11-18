@@ -478,10 +478,10 @@
             animatePendingRef.current = true
             setFlashKey(flash)
             setTimeout(function () { setFlashKey('') }, 400)
-            if (changed) showBubble('已调整优先级为T' + next, event)
+            if (changed) showBubble(tr('prioritySet', { level: next }), event)
             refresh()
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function onFolderDragStart(event, group, folder) {

@@ -345,10 +345,10 @@
       postApi({ action: 'saveTodoBody', key: win.groupKey, id: win.todoId, body: win.draft })
         .then(function () {
           updatePin(id, { markdown: win.draft })
-          showBubble('正文已保存', { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
+          showBubble(tr('bodySaved'), { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
-          showBubble('保存失败：' + String(failure && failure.message ? failure.message : failure), {
+          showBubble(tr('saveFailed', { detail: String(failure && failure.message ? failure.message : failure) }), {
             clientX: win.pos.x + 160,
             clientY: win.pos.y + 14,
           })
@@ -371,10 +371,10 @@
           updatePin(id, { title: title, renameDraft: undefined })
           syncTodoTitle(win.groupKey, win.todoId, title)
           refresh()
-          showBubble(clamped.truncated ? '标题最多 ' + clamped.limit + ' 个字，已截断并保存' : '标题已保存', { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
+          showBubble(clamped.truncated ? tr('titleTruncatedSaved', { limit: clamped.limit }) : tr('titleSaved'), { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
-          showBubble('标题保存失败：' + String(failure && failure.message ? failure.message : failure), {
+          showBubble(tr('titleSaveFailed', { detail: String(failure && failure.message ? failure.message : failure) }), {
             clientX: win.pos.x + 160,
             clientY: win.pos.y + 14,
           })
@@ -449,14 +449,14 @@
       if (bodyChanged) {
         postApi({ action: 'saveTodoBody', key: win.groupKey, id: win.todoId, body: baseMarkdown })
           .then(function () { refresh(true) })
-          .catch(function (error) { showBubble('撤销失败：' + (error && error.message ? error.message : String(error)), { clientX: win.pos.x + 40, clientY: win.pos.y + 16 }) })
+          .catch(function (error) { showBubble(tr('undoFailed', { detail: error && error.message ? error.message : String(error) }), { clientX: win.pos.x + 40, clientY: win.pos.y + 16 }) })
       }
       if (titleChanged) {
         postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: baseTitle })
           .then(function () { syncTodoTitle(win.groupKey, win.todoId, baseTitle); refresh(true) })
           .catch(function () {})
       }
-      showBubble('已撤销编辑', { clientX: win.pos.x + 40, clientY: win.pos.y + 16 })
+      showBubble(tr('editUndone'), { clientX: win.pos.x + 40, clientY: win.pos.y + 16 })
     }
 
     function confirmPinBatchCreate(id) {
@@ -469,7 +469,7 @@
         return clamped.text
       }).filter(function (line) { return line !== '' })
       if (titles.length === 0) {
-        showBubble('没有可创建的内容', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+        showBubble(tr('nothingToCreate'), { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
         return
       }
       postApi({ action: 'createTodos', key: win.groupKey, folder: win.folderId, titles: titles })
@@ -478,12 +478,12 @@
           animatePendingRef.current = true
           refresh()
           if (truncatedLimit > 0) {
-            showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+            showBubble(tr('titleTruncated', { limit: truncatedLimit }), { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
           }
-          showBubble('已创建 ' + titles.length + ' 条 TODO', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+          showBubble(tr('createdCount', { count: titles.length }), { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
-          showBubble('创建失败：' + String(failure && failure.message ? failure.message : failure), {
+          showBubble(tr('createFailed', { detail: String(failure && failure.message ? failure.message : failure) }), {
             clientX: win.pos.x + 120,
             clientY: win.pos.y + 14,
           })
@@ -526,10 +526,10 @@
           setSelectionNow([])
           animatePendingRef.current = true
           refresh()
-          showBubble('批量重命名已完成', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+          showBubble(tr('batchRenameDone'), { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
-          showBubble('重命名失败：' + String(failure && failure.message ? failure.message : failure), {
+          showBubble(tr('renameFailed', { detail: String(failure && failure.message ? failure.message : failure) }), {
             clientX: win.pos.x + 120,
             clientY: win.pos.y + 14,
           })

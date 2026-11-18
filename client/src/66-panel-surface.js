@@ -15,7 +15,7 @@
             'div',
             { className: 'dtn-folder-head' },
             h('span', { className: 'dtn-folder-toggle', style: { cursor: 'default' } }, icon('folder')),
-            h('span', { className: 'dtn-folder-name' }, '未归类'),
+            h('span', { className: 'dtn-folder-name' }, tr('uncategorized')),
           ),
           loose.map(function (todo) { return renderTodoRow(group, todo, '') }),
         )
@@ -55,8 +55,8 @@
                         return
                       }
                       postApi({ action: 'moveTodo', key: groups[0].key, id: payload.id, folder: PRIMARY })
-                        .then(function () { showBubble('已归入无文件夹', event); refresh() })
-                        .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+                        .then(function () { showBubble(tr('movedToNoFolder'), event); refresh() })
+                        .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
                     },
                   }
                 : {},
@@ -69,7 +69,7 @@
                   {
                     type: 'button',
                     className: 'dtn-copy dtn-sec-add',
-                    title: '新建文件夹',
+                    title: tr('newFolderName'),
                     onClick: function (event) {
                       event.stopPropagation()
                       createFolder(groups[0], event)
@@ -84,7 +84,7 @@
                   {
                     type: 'button',
                     className: 'dtn-copy dtn-sec-add',
-                    title: '新建 TODO',
+                    title: tr('newTodo'),
                     onClick: function (event) {
                       event.stopPropagation()
                       createTodo(groups[0], event)
@@ -99,7 +99,7 @@
                   {
                     type: 'button',
                     className: 'dtn-copy dtn-sec-add',
-                    title: '批量新建 TODO',
+                    title: tr('batchNewTodo'),
                     onClick: function (event) {
                       event.stopPropagation()
                       openBatchCreate(groups[0], event)
@@ -110,7 +110,7 @@
               : null,
             h(
               'span',
-              { className: 'dtn-sec-count', title: '该层级 TODO 总数' },
+              { className: 'dtn-sec-count', title: tr('levelTotalHint') },
               String(groups.reduce(function (total, group) { return total + (Array.isArray(group.todos) ? group.todos.length : 0) }, 0)),
             ),
           ),
@@ -118,7 +118,7 @@
             'div',
             { className: 'dtn-sec-body dtn-fold' + (sectionCollapsed ? ' dtn-fold-off' : '') },
             groups.length === 0
-              ? h('div', { className: 'dtn-empty' }, '暂无便签组')
+              ? h('div', { className: 'dtn-empty' }, tr('noGroups'))
               : groups.map(function (group) { return renderGroup(group, kind === 'user') }),
           ),
         )
@@ -208,15 +208,15 @@
                     key: 'collapse',
                     type: 'button',
                     className: 'dtn-btn dtn-head-collapse dtn-collapse-main',
-                    title: collapsed ? '展开面板' : '折叠面板',
+                    title: collapsed ? tr('expandPanel') : tr('collapsePanel'),
                     'data-open': collapsed ? 'false' : 'true',
                     onClick: function (event) { event.stopPropagation(); toggleCollapsed() },
                   },
                   icon('chevronDown'),
                 ),
             h('span', { key: 'logo', className: 'dtn-logo' }, icon('list', 14)),
-            h('span', { key: 'title', className: 'dtn-title' }, 'TODO 便签'),
-            h('span', { key: 'count', className: 'dtn-count' }, data === null ? '加载中…' : totalOpen + ' 条未完成'),
+            h('span', { key: 'title', className: 'dtn-title' }, tr('appTitle')),
+            h('span', { key: 'count', className: 'dtn-count' }, data === null ? tr('loading') : tr('openCount', { count: totalOpen })),
             embedded
               ? null
               : h(
@@ -224,16 +224,16 @@
                   { key: 'actions', className: 'dtn-actions' },
                   h(
                     'button',
-                    { type: 'button', className: 'dtn-btn', title: '显示到右侧栏', onClick: function (event) { event.stopPropagation(); showInSidebar() } },
+                    { type: 'button', className: 'dtn-btn', title: tr('showInSidebar'), onClick: function (event) { event.stopPropagation(); showInSidebar() } },
                     icon('panelRight'),
                   ),
                 ),
           ],
         },
-        error !== '' ? h('div', { className: 'dtn-error' }, '读取失败：' + error) : null,
-        renderSection('user', '用户级TODO', userGroups),
-        renderSection('workspace', '工作区级TODO', workspaceGroups),
-        renderSection('session', '会话级TODO', sessionGroups),
+        error !== '' ? h('div', { className: 'dtn-error' }, tr('loadFailed', { detail: error })) : null,
+        renderSection('user', tr('sectionUserTodos'), userGroups),
+        renderSection('workspace', tr('sectionWorkspaceTodos'), workspaceGroups),
+        renderSection('session', tr('sectionSessionTodos'), sessionGroups),
       )
 
       function previewFolderLabel(data) {
@@ -265,7 +265,7 @@
                     {
                       type: 'button',
                       className: 'dtn-btn',
-                      title: '编辑正文',
+                      title: tr('editBody'),
                       onClick: function (event) { event.stopPropagation(); pinFromPreview(true) },
                     },
                     icon('edit'),
@@ -275,7 +275,7 @@
                     {
                       type: 'button',
                       className: 'dtn-btn',
-                      title: '关闭预览',
+                      title: tr('closePreview'),
                       onClick: closePreview,
                     },
                     icon('close'),
@@ -287,23 +287,23 @@
                 { key: 'meta', className: 'dtn-preview-meta' },
                 previewData !== null
                   ? [
-                      h('span', { key: 'status', className: 'dtn-meta-item' }, icon(previewData.status === 'done' ? 'check' : 'clock', 11), previewData.status === 'done' ? '条目已完成' : previewData.status === 'partial' ? '条目待确认' : '条目未完成'),
-                      h('span', { key: 'priority', className: 'dtn-meta-item', style: { color: prioColor(previewData.priority) } }, icon('flag', 11), '优先级 T' + (typeof previewData.priority === 'number' ? previewData.priority : 1)),
+                      h('span', { key: 'status', className: 'dtn-meta-item' }, icon(previewData.status === 'done' ? 'check' : 'clock', 11), previewData.status === 'done' ? tr('metaDone') : previewData.status === 'partial' ? tr('metaPartial') : tr('metaOpen')),
+                      h('span', { key: 'priority', className: 'dtn-meta-item', style: { color: prioColor(previewData.priority) } }, icon('flag', 11), tr('priorityLabel', { level: typeof previewData.priority === 'number' ? previewData.priority : 1 })),
                       h('span', { key: 'folder', className: 'dtn-meta-item' }, icon('folder', 11), previewFolderLabel(previewData)),
-                      previewData.created !== '' ? h('span', { key: 'created', className: 'dtn-meta-item' }, icon('clock', 11), '创建 ' + formatStamp(previewData.created)) : null,
+                      previewData.created !== '' ? h('span', { key: 'created', className: 'dtn-meta-item' }, icon('clock', 11), tr('createdAt', { stamp: formatStamp(previewData.created) })) : null,
                       isAiSource(previewData.source)
-                        ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13))
+                        ? h('span', { key: 'source', className: 'dtn-ai-chip', title: tr('agentCreatedChip') }, icon('robot', 13))
                         : null,
                     ]
-                  : [h('span', { key: 'loading' }, '加载中…')],
+                  : [h('span', { key: 'loading' }, tr('loading'))],
               ),
               h(
                 'div',
                 { key: 'body', className: 'dtn-preview-body dtn-md' },
                 previewError !== ''
-                  ? h('div', { className: 'dtn-error' }, '读取失败：' + previewError)
+                  ? h('div', { className: 'dtn-error' }, tr('loadFailed', { detail: previewError }))
                   : previewData === null
-                    ? h('div', { className: 'dtn-empty' }, '加载中…')
+                    ? h('div', { className: 'dtn-empty' }, tr('loading'))
                     : typeof MarkdownText === 'function' || (MarkdownText !== null && typeof MarkdownText === 'object')
                     ? h(MarkdownText, { text: previewData.markdown, variant: 'body' })
                     : renderMarkdown(previewData.markdown),
@@ -335,7 +335,7 @@
       // 预览类窗口统一用这一处解析文件夹显示名，避免临时预览与保留窗口各写一套。
       function folderDisplayName(groupKey, folderId) {
         const id = typeof folderId === 'string' && folderId !== '' ? folderId : PRIMARY
-        if (id === PRIMARY) return '无文件夹'
+        if (id === PRIMARY) return tr('noFolder')
         const group = findLiveGroup(groupKey)
         const nodes = group === null || group === undefined || !Array.isArray(group.folders) ? [] : group.folders
         const trail = []

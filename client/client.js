@@ -101,6 +101,125 @@ window.__ModuleLoader__.load({
       charsUnit: '字',
       animationsLabel: '启用 CSS 动画',
       animationsHint: '关闭后收展、气泡与悬停过渡都不再播放',
+      saveFailed: '保存失败：{detail}',
+      prioritySet: '已调整优先级为 T{level}',
+      movedToFolder: '已移动到 {folder}',
+      addedToFolder: '已加入 {folder}',
+      folderUnlinked: '已解除文件夹',
+      folderDeleteConfirm: '会连同子文件夹里的全部 TODO 一起删除，且不可恢复，确认删除整个文件夹？',
+      folderDeleted: '已删除整个文件夹',
+      folderDeletedCount: '已删除整个文件夹（{count} 条）',
+      movedCountToFolder: '已移动 {count} 条到 {folder}',
+      newFolderName: '新建文件夹',
+      titleTruncated: '标题最多 {limit} 个字，超出部分已截断',
+      newTodoDraft: '新建待办',
+      noFolder: '无文件夹',
+      markDone: '标记完成',
+      markUndone: '取消完成',
+      markPartial: '中间态：点一下确认完成',
+      priorityHint2: '优先级 T0 最高，点开选择',
+      rowHintRename: '双击文字重命名，右键更多',
+      agentCreatedChip: '该 TODO 条目由智能体创建',
+      dragToSort: '按住拖动排序',
+      collapseFolder: '收起文件夹',
+      expandFolder: '展开文件夹',
+      newSubfolder: '在此文件夹新建子文件夹',
+      newTodoHere: '在此文件夹新建 TODO',
+      newTodoBatchHere: '在此文件夹批量新建 TODO',
+      dragFolder: '按住拖动文件夹',
+      movedToNoFolder: '已归入无文件夹',
+      currentWorkspaceSuffix: '（当前工作区）',
+      currentSessionSuffix: '（当前会话）',
+      unnamedGroup: '未命名组',
+      copyWorkspacePath: '复制工作区路径',
+      copySessionId: '复制 Session ID',
+      copiedWorkspacePath: '已复制工作区路径',
+      copiedSessionId: '已复制 Session ID',
+      newTodo: '新建 TODO',
+      batchNewTodo: '批量新建 TODO',
+      agentCreatedSource: '由智能体创建',
+      resizeBoth: '拖动调整大小',
+      resizeWidth: '拖动调整宽度',
+      resizeHeight: '拖动调整高度',
+      levelUser: '用户级',
+      levelWorkspace: '工作区级 {title}',
+      levelSession: '会话级 {title}',
+      copiedTitleText: '已复制标题文本',
+      copiedChainText: '已复制层级链文本',
+      unreferencedCount: '已取消收录 {count} 条',
+      referencedCount: '已收录 {count} 条',
+      movedCount: '已移动 {count} 条',
+      deletedCount: '已删除 {count} 项',
+      batchDeleteConfirm: '确定删除选中的 {count} 项？删除后不可恢复。',
+      renamedCount: '已重命名 {count} 项',
+      titleTruncatedSaved: '标题最多 {limit} 个字，已截断并保存',
+      singleDeleteConfirm: '删除后不可恢复，确认删除这条 TODO？',
+      keepOneReference: '至少保留一个收录位置',
+      primaryReassigned: '已取消无文件夹收录，主归属改为 {folder}',
+      unreferencedFrom: '已取消收录到 {folder}',
+      referencedTo: '已收录到 {folder}',
+      batchPrioritySet: '已调整 {count} 项优先级为 T{level}',
+      uncategorized: '未归类',
+      levelTotalHint: '该层级 TODO 总数',
+      noGroups: '暂无便签组',
+      expandPanel: '展开面板',
+      collapsePanel: '折叠面板',
+      loading: '加载中…',
+      openCount: '{count} 条未完成',
+      showInSidebar: '显示到右侧栏',
+      loadFailed: '读取失败：{detail}',
+      sectionUserTodos: '用户级 TODO',
+      sectionWorkspaceTodos: '工作区级 TODO',
+      sectionSessionTodos: '会话级 TODO',
+      editBody: '编辑正文',
+      closePreview: '关闭预览',
+      metaDone: '条目已完成',
+      metaPartial: '条目待确认',
+      metaOpen: '条目未完成',
+      priorityLabel: '优先级 T{level}',
+      createdAt: '创建 {stamp}',
+      menuCollapseAll: '全部收起',
+      menuExpandAll: '全部展开',
+      menuRename: '重命名',
+      copyTitleText: '复制标题文本',
+      copyChainText: '复制层级链文本',
+      menuMoveTo: '移动到',
+      menuUnlinkFolder: '解除文件夹',
+      menuDeleteFolder: '删除整个文件夹',
+      menuSetPriority: '设置优先级',
+      menuManageRefs: '管理收录',
+      menuDelete: '删除',
+      close: '关闭',
+      batchCreateHint: '每行一条，确认后按行创建',
+      batchCreatePlaceholder: '第一件事\n第二件事',
+      cancel: '取消',
+      confirm: '确认',
+      batchPriorityMenu: '批量设置优先级',
+      batchRename: '批量重命名',
+      batchMoveTo: '批量移动到',
+      batchManageRefs: '批量管理收录',
+      batchCollapseAll: '批量全部收起',
+      batchExpandAll: '批量全部展开',
+      batchDelete: '批量删除',
+      batchRenameHint: '行数固定为选中条目数，不能增加或删除换行；清空的行会被跳过',
+      confirmDelete: '确认删除',
+      bodySaved: '正文已保存',
+      titleSaved: '标题已保存',
+      titleSaveFailed: '标题保存失败：{detail}',
+      undoFailed: '撤销失败：{detail}',
+      editUndone: '已撤销编辑',
+      nothingToCreate: '没有可创建的内容',
+      createdCount: '已创建 {count} 条 TODO',
+      createFailed: '创建失败：{detail}',
+      batchRenameDone: '批量重命名已完成',
+      renameFailed: '重命名失败：{detail}',
+      pinExpand: '展开',
+      pinCollapse: '收起',
+      preview: '预览',
+      saveAndFinishEdit: '保存并完成编辑',
+      cancelEdit: '取消编辑并还原内容',
+      batchNew: '批量新建',
+      batchCreateEmptyHint: '每行一条，空行忽略',
     }
 
     const I18N_EN = {
@@ -162,6 +281,125 @@ window.__ModuleLoader__.load({
       charsUnit: 'chars',
       animationsLabel: 'Enable CSS animations',
       animationsHint: 'When off, expand, collapse, bubble and hover transitions stop playing',
+      saveFailed: 'Could not save: {detail}',
+      prioritySet: 'Priority set to T{level}',
+      movedToFolder: 'Moved to {folder}',
+      addedToFolder: 'Added to {folder}',
+      folderUnlinked: 'Removed from folder',
+      folderDeleteConfirm: 'Every TODO inside it and its subfolders will be deleted, and this cannot be undone. Delete the whole folder?',
+      folderDeleted: 'Deleted the whole folder',
+      folderDeletedCount: 'Deleted the whole folder ({count} items)',
+      movedCountToFolder: 'Moved {count} items to {folder}',
+      newFolderName: 'New folder',
+      titleTruncated: 'Titles are capped at {limit} characters; the rest was cut',
+      newTodoDraft: 'New TODO',
+      noFolder: 'No folder',
+      markDone: 'Mark as done',
+      markUndone: 'Mark as not done',
+      markPartial: 'Half-done: click to confirm',
+      priorityHint2: 'Priority: T0 is highest, click to choose',
+      rowHintRename: 'Double-click the text to rename, right-click for more',
+      agentCreatedChip: 'This TODO was created by an agent',
+      dragToSort: 'Hold and drag to reorder',
+      collapseFolder: 'Collapse folder',
+      expandFolder: 'Expand folder',
+      newSubfolder: 'New subfolder here',
+      newTodoHere: 'New TODO here',
+      newTodoBatchHere: 'New TODOs in bulk here',
+      dragFolder: 'Hold and drag the folder',
+      movedToNoFolder: 'Filed under No folder',
+      currentWorkspaceSuffix: ' (current workspace)',
+      currentSessionSuffix: ' (current session)',
+      unnamedGroup: 'Untitled group',
+      copyWorkspacePath: 'Copy workspace path',
+      copySessionId: 'Copy Session ID',
+      copiedWorkspacePath: 'Workspace path copied',
+      copiedSessionId: 'Session ID copied',
+      newTodo: 'New TODO',
+      batchNewTodo: 'New TODOs',
+      agentCreatedSource: 'Created by an agent',
+      resizeBoth: 'Drag to resize',
+      resizeWidth: 'Drag to resize width',
+      resizeHeight: 'Drag to resize height',
+      levelUser: 'User',
+      levelWorkspace: 'Workspace {title}',
+      levelSession: 'Session {title}',
+      copiedTitleText: 'Title copied',
+      copiedChainText: 'Folder chain copied',
+      unreferencedCount: 'Removed {count} from folders',
+      referencedCount: 'Added {count} to folders',
+      movedCount: 'Moved {count} items',
+      deletedCount: 'Deleted {count} items',
+      batchDeleteConfirm: 'Delete the {count} selected items? This cannot be undone.',
+      renamedCount: 'Renamed {count} items',
+      titleTruncatedSaved: 'Titles are capped at {limit} characters; it was truncated and saved',
+      singleDeleteConfirm: 'This cannot be undone. Delete this TODO?',
+      keepOneReference: 'Keep at least one folder reference',
+      primaryReassigned: 'Removed from No folder; primary folder is now {folder}',
+      unreferencedFrom: 'Removed from {folder}',
+      referencedTo: 'Added to {folder}',
+      batchPrioritySet: 'Set {count} items to T{level}',
+      uncategorized: 'Uncategorized',
+      levelTotalHint: 'Total TODOs in this level',
+      noGroups: 'No note groups yet',
+      expandPanel: 'Expand panel',
+      collapsePanel: 'Collapse panel',
+      loading: 'Loading…',
+      openCount: '{count} open',
+      showInSidebar: 'Show in sidebar',
+      loadFailed: 'Could not load: {detail}',
+      sectionUserTodos: 'User TODOs',
+      sectionWorkspaceTodos: 'Workspace TODOs',
+      sectionSessionTodos: 'Session TODOs',
+      editBody: 'Edit body',
+      closePreview: 'Close preview',
+      metaDone: 'Completed',
+      metaPartial: 'Awaiting confirmation',
+      metaOpen: 'Open',
+      priorityLabel: 'Priority T{level}',
+      createdAt: 'Created {stamp}',
+      menuCollapseAll: 'Collapse all',
+      menuExpandAll: 'Expand all',
+      menuRename: 'Rename',
+      copyTitleText: 'Copy title',
+      copyChainText: 'Copy folder chain',
+      menuMoveTo: 'Move to',
+      menuUnlinkFolder: 'Remove from folder',
+      menuDeleteFolder: 'Delete whole folder',
+      menuSetPriority: 'Set priority',
+      menuManageRefs: 'Manage folder references',
+      menuDelete: 'Delete',
+      close: 'Close',
+      batchCreateHint: 'One per line; they are created in that order after you confirm',
+      batchCreatePlaceholder: 'First thing\nSecond thing',
+      cancel: 'Cancel',
+      confirm: 'Confirm',
+      batchPriorityMenu: 'Set priority in bulk',
+      batchRename: 'Rename in bulk',
+      batchMoveTo: 'Move in bulk',
+      batchManageRefs: 'Manage references in bulk',
+      batchCollapseAll: 'Collapse all',
+      batchExpandAll: 'Expand all',
+      batchDelete: 'Delete in bulk',
+      batchRenameHint: 'The number of lines is fixed to the selected items; empty lines are skipped',
+      confirmDelete: 'Delete',
+      bodySaved: 'Body saved',
+      titleSaved: 'Title saved',
+      titleSaveFailed: 'Could not save the title: {detail}',
+      undoFailed: 'Could not undo: {detail}',
+      editUndone: 'Edit undone',
+      nothingToCreate: 'Nothing to create',
+      createdCount: 'Created {count} TODOs',
+      createFailed: 'Could not create: {detail}',
+      batchRenameDone: 'Bulk rename finished',
+      renameFailed: 'Could not rename: {detail}',
+      pinExpand: 'Expand',
+      pinCollapse: 'Collapse',
+      preview: 'Preview',
+      saveAndFinishEdit: 'Save and finish editing',
+      cancelEdit: 'Cancel editing and restore the text',
+      batchNew: 'New in bulk',
+      batchCreateEmptyHint: 'One per line; empty lines are ignored',
     }
 
     function i18nInterpolate(text, params) {
@@ -922,7 +1160,7 @@ window.__ModuleLoader__.load({
     }
 
     function sourceLabel(source) {
-      return typeof source === 'string' && source !== '' && source !== 'user' ? '由智能体创建' : ''
+      return typeof source === 'string' && source !== '' && source !== 'user' ? tr('agentCreatedSource') : ''
     }
 
     // 优先级色相：Tailwind 300/400 色相带，T0 暖金 → T9 紫，按暖到冷排列。
@@ -1036,7 +1274,7 @@ window.__ModuleLoader__.load({
     }
 
     function folderLabel(folderId) {
-      return folderId === PRIMARY ? '无文件夹' : String(folderId)
+      return folderId === PRIMARY ? tr('noFolder') : String(folderId)
     }
 
     // 图标统一用 NaiveUI 推荐的 vicons 图标库：界面图标取 Ionicons 5（@vicons/ionicons5），
@@ -2177,10 +2415,10 @@ window.__ModuleLoader__.load({
             animatePendingRef.current = true
             setFlashKey(flash)
             setTimeout(function () { setFlashKey('') }, 400)
-            if (changed) showBubble('已调整优先级为T' + next, event)
+            if (changed) showBubble(tr('prioritySet', { level: next }), event)
             refresh()
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function onFolderDragStart(event, group, folder) {
@@ -2246,7 +2484,7 @@ window.__ModuleLoader__.load({
           for (let i = 0; i < tree.length; i += 1) {
             if (tree[i] !== null && typeof tree[i] === 'object' && tree[i].id === PRIMARY) { primary = tree[i]; break }
           }
-          if (primary === null) tree.unshift({ id: PRIMARY, name: '无文件夹', children: [moved] })
+          if (primary === null) tree.unshift({ id: PRIMARY, name: tr('noFolder'), children: [moved] })
           else {
             if (!Array.isArray(primary.children)) primary.children = []
             primary.children.push(moved)
@@ -2258,9 +2496,9 @@ window.__ModuleLoader__.load({
           targetNode.children.push(moved)
         }
         postApi({ action: 'folders', key: group.key, folders: tree }).then(function () {
-          showBubble('已移动到' + folderLabel(targetId), event)
+          showBubble(tr('movedToFolder', { folder: folderLabel(targetId) }), event)
           refresh()
-        }).catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+        }).catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function onFolderDrop(event, group, target, intoChild) {
@@ -2281,7 +2519,7 @@ window.__ModuleLoader__.load({
         } else if (!insertAfterFolder(tree, target.id, moved)) {
           return
         }
-        postApi({ action: 'folders', key: group.key, folders: tree }).then(refresh).catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+        postApi({ action: 'folders', key: group.key, folders: tree }).then(refresh).catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       // 主面板与保留浮窗共用的拖动缩放逻辑：只在各自的状态更新与持久化上不同。
@@ -2364,12 +2602,12 @@ window.__ModuleLoader__.load({
         const hasPrimary = tree.some(function (node) {
           return node !== null && typeof node === 'object' && node.id === PRIMARY
         })
-        if (!hasPrimary) tree.unshift({ id: PRIMARY, name: '无文件夹', children: [] })
+        if (!hasPrimary) tree.unshift({ id: PRIMARY, name: tr('noFolder'), children: [] })
         return tree
       }
 
       function failWith(event, err) {
-        showBubble('保存失败：' + (err && err.message ? err.message : err), event && typeof event.clientX === 'number' ? event : { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+        showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event && typeof event.clientX === 'number' ? event : { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
       }
 
       function saveFolders(group, tree, event) {
@@ -2381,10 +2619,10 @@ window.__ModuleLoader__.load({
       function createFolder(group, event) {
         const tree = ensurePrimary(cloneFolders(group))
         const id = 'f-' + Date.now().toString(36)
-        tree.push({ id: id, name: '新建文件夹', children: [] })
+        tree.push({ id: id, name: tr('newFolderName'), children: [] })
         postApi({ action: 'folders', key: group.key, folders: tree })
           .then(function () {
-            setEditingFolder({ key: group.key, folderId: id, draft: '新建文件夹' })
+            setEditingFolder({ key: group.key, folderId: id, draft: tr('newFolderName') })
             refresh()
           })
           .catch(function (err) { failWith(event, err) })
@@ -2396,7 +2634,7 @@ window.__ModuleLoader__.load({
         if (node === null) return
         if (!Array.isArray(node.children)) node.children = []
         const id = 'f-' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36)
-        node.children.push({ id: id, name: '新建文件夹', children: [] })
+        node.children.push({ id: id, name: tr('newFolderName'), children: [] })
         postApi({ action: 'folders', key: group.key, folders: tree })
           .then(function () {
             setOpenFolders(function (state) {
@@ -2404,7 +2642,7 @@ window.__ModuleLoader__.load({
               next[group.key + '/' + folder.id] = true
               return next
             })
-            setEditingFolder({ key: group.key, folderId: id, draft: '新建文件夹' })
+            setEditingFolder({ key: group.key, folderId: id, draft: tr('newFolderName') })
             refresh()
           })
           .catch(function (err) { failWith(event, err) })
@@ -2457,8 +2695,8 @@ window.__ModuleLoader__.load({
         setFolderMenu(null)
         if (folderId === PRIMARY) return
         postApi({ action: 'detachFolder', key: group.key, folder: folderId })
-          .then(function () { showBubble('已解除文件夹', event); refresh() })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .then(function () { showBubble(tr('folderUnlinked'), event); refresh() })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function folderIsEmpty(group, folder) {
@@ -2478,14 +2716,14 @@ window.__ModuleLoader__.load({
         const live = findLiveGroup(group.key) || group
         const folder = findFolder(Array.isArray(live.folders) ? live.folders : [], folderId)
         // 空文件夹没有可丢的内容，直接删，不再二次确认。
-        const ok = folderIsEmpty(live, folder) ? true : await confirmDelete(event, '会连同子文件夹里的全部 TODO 一起删除，且不可恢复，确认删除整个文件夹？')
+        const ok = folderIsEmpty(live, folder) ? true : await confirmDelete(event, tr('folderDeleteConfirm'))
         if (ok !== true) return
         postApi({ action: 'deleteFolderTree', key: group.key, folder: folderId })
           .then(function (result) {
-            showBubble('已删除整个文件夹' + (result !== null && result !== undefined && result.count !== undefined ? '（' + result.count + ' 条）' : ''), event)
+            showBubble(result !== null && result !== undefined && result.count !== undefined ? tr('folderDeletedCount', { count: result.count }) : tr('folderDeleted'), event)
             refresh()
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       // 批量拖拽：把选中的多条 TODO 一起移动到目标文件夹。
@@ -2503,7 +2741,7 @@ window.__ModuleLoader__.load({
           })
         })
         chain.then(function () {
-          showBubble('已移动 ' + unique.length + ' 条到' + folderLabel(folderId), event)
+          showBubble(tr('movedCountToFolder', { count: unique.length, folder: folderLabel(folderId) }), event)
           refresh()
         }).catch(function (err) { failWith(event, err) })
       }
@@ -2520,7 +2758,7 @@ window.__ModuleLoader__.load({
         dragPayloadKey.current = ''
         const action = event.ctrlKey === true ? 'reference' : 'moveTodo'
         postApi({ action: action, key: group.key, id: payload.id, folder: folder.id })
-          .then(function () { showBubble(action === 'reference' ? '已加入' + folderLabel(folder.id) : '已移动到' + folderLabel(folder.id), event); refresh() })
+          .then(function () { showBubble(tr(action === 'reference' ? 'addedToFolder' : 'movedToFolder', { folder: folderLabel(folder.id) }), event); refresh() })
           .catch(function (err) { failWith(event, err) })
       }
 
@@ -2557,7 +2795,7 @@ window.__ModuleLoader__.load({
       function createTodo(group, event, folderId) {
         postApi({ action: 'createTodo', key: group.key, folder: folderId || PRIMARY })
           .then(function (result) {
-            setEditingTodo({ key: group.key, id: result.id, draft: result.title || '新建待办' })
+            setEditingTodo({ key: group.key, id: result.id, draft: result.title || tr('newTodoDraft') })
             animatePendingRef.current = true
             refresh()
           })
@@ -2596,13 +2834,13 @@ window.__ModuleLoader__.load({
             animatePendingRef.current = true
             refresh()
             if (truncatedLimit > 0) {
-              showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: state.pos.x + 20, clientY: state.pos.y + 14 })
+              showBubble(tr('titleTruncated', { limit: truncatedLimit }), { clientX: state.pos.x + 20, clientY: state.pos.y + 14 })
             }
             if (result !== null && typeof result === 'object' && typeof result.count === 'number') {
               setVersion(function (value) { return value + 1 })
             }
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
       }
 
       // ---------------------------------------------------------- 选择、框选与批量操作
@@ -2809,9 +3047,9 @@ window.__ModuleLoader__.load({
       }
 
       function scopeLabelOf(group) {
-        if (group.kind === 'user') return '用户级'
-        if (group.kind === 'workspace') return '工作区级 ' + (group.title || '')
-        return '会话级 ' + (group.subtitle || group.title || '')
+        if (group.kind === 'user') return tr('levelUser')
+        if (group.kind === 'workspace') return tr('levelWorkspace', { title: group.title || '' })
+        return tr('levelSession', { title: group.subtitle || group.title || '' })
       }
 
       function batchCopyTitles(event) {
@@ -2828,7 +3066,7 @@ window.__ModuleLoader__.load({
         })
         if (lines.length === 0) return
         copyText(lines.join('\n')).then(function () {
-          showBubble('已复制标题文本', event)
+          showBubble(tr('copiedTitleText'), event)
           setBatchMenu(null)
         })
       }
@@ -2848,7 +3086,7 @@ window.__ModuleLoader__.load({
         })
         if (lines.length === 0) return
         copyText(lines.join('\n')).then(function () {
-          showBubble('已复制层级链文本', event)
+          showBubble(tr('copiedChainText'), event)
           setBatchMenu(null)
         })
       }
@@ -2883,9 +3121,9 @@ window.__ModuleLoader__.load({
           .then(function () {
             animatePendingRef.current = true
             refresh()
-            showBubble((checked ? '已取消收录 ' : '已收录 ') + tasks.length + ' 条', { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+            showBubble(checked ? tr('unreferencedCount', { count: tasks.length }) : tr('referencedCount', { count: tasks.length }), { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
       }
 
       function runSequential(tasks) {
@@ -2916,9 +3154,9 @@ window.__ModuleLoader__.load({
             setSelectionNow([])
             animatePendingRef.current = true
             refresh()
-            showBubble('已移动 ' + tasks.length + ' 条', null)
+            showBubble(tr('movedCount', { count: tasks.length }), null)
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
       }
 
       function applyBatchReference(folderId) {
@@ -2931,9 +3169,9 @@ window.__ModuleLoader__.load({
           .then(function () {
             animatePendingRef.current = true
             refresh()
-            showBubble('已收录 ' + tasks.length + ' 条', null)
+            showBubble(tr('referencedCount', { count: tasks.length }), null)
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
       }
 
       function applyBatchDelete(event) {
@@ -2959,12 +3197,12 @@ window.__ModuleLoader__.load({
               setSelectionNow([])
               animatePendingRef.current = true
               refresh()
-              showBubble('已删除 ' + tasks.length + ' 项', null)
+              showBubble(tr('deletedCount', { count: tasks.length }), null)
             })
-            .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+            .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
         }
         if (allEmptyFolders) { run(); return }
-        confirmDelete(event, '确定删除选中的 ' + (todos.length + folders.length) + ' 项？删除后不可恢复。').then(function (ok) {
+        confirmDelete(event, tr('batchDeleteConfirm', { count: todos.length + folders.length })).then(function (ok) {
           if (ok === true) run()
         })
       }
@@ -3018,11 +3256,11 @@ window.__ModuleLoader__.load({
             animatePendingRef.current = true
             refresh()
             if (truncatedLimit > 0) {
-              showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+              showBubble(tr('titleTruncated', { limit: truncatedLimit }), { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
             }
-            showBubble('已重命名 ' + tasks.length + ' 项', null)
+            showBubble(tr('renamedCount', { count: tasks.length }), null)
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
       }
 
       function startRenameTodo(group, todo) {
@@ -3042,7 +3280,7 @@ window.__ModuleLoader__.load({
           .then(function () {
             syncTodoTitle(group.key, state.id, title)
             if (clamped.truncated) {
-              showBubble('标题最多 ' + clamped.limit + ' 个字，已截断并保存', event !== null && event !== undefined && typeof event.clientX === 'number' ? event : { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+              showBubble(tr('titleTruncatedSaved', { limit: clamped.limit }), event !== null && event !== undefined && typeof event.clientX === 'number' ? event : { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
             }
             refresh()
           })
@@ -3055,7 +3293,7 @@ window.__ModuleLoader__.load({
 
       async function deleteTodo(group, todoId, event) {
         setTodoMenu(null)
-        const ok = await confirmDelete(event, '删除后不可恢复，确认删除这条 TODO？')
+        const ok = await confirmDelete(event, tr('singleDeleteConfirm'))
         if (ok !== true) return
         postApi({ action: 'deleteTodo', key: group.key, id: todoId })
           .then(function () {
@@ -3094,11 +3332,11 @@ window.__ModuleLoader__.load({
         setTodoMenu(null)
         postApi({ action: 'moveTodo', key: group.key, id: todoId, folder: folderId })
           .then(function () {
-            showBubble('已移动到' + folderLabel(folderId), event)
+            showBubble(tr('movedToFolder', { folder: folderLabel(folderId) }), event)
             animatePendingRef.current = true
             refresh()
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       // 右键「管理收录」：勾选/取消某条 TODO 与各文件夹的收录关系。
@@ -3112,26 +3350,26 @@ window.__ModuleLoader__.load({
             return key !== PRIMARY && Array.isArray(lists[key]) && lists[key].indexOf(todo.id) >= 0
           })
           if (others.length === 0) {
-            showBubble('至少保留一个收录位置', event)
+            showBubble(tr('keepOneReference'), event)
             return
           }
           const target = others[0]
           postApi({ action: 'moveTodo', key: group.key, id: todo.id, folder: target })
             .then(function () {
-              showBubble('已取消无文件夹收录，主归属改为' + folderLabel(target), event)
+              showBubble(tr('primaryReassigned', { folder: folderLabel(target) }), event)
               animatePendingRef.current = true
               refresh()
             })
-            .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+            .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
           return
         }
         postApi({ action: joined ? 'removeReference' : 'reference', key: group.key, id: todo.id, folder: folderId })
           .then(function () {
-            showBubble(joined ? '已取消收录到' + folderLabel(folderId) : '已收录到' + folderLabel(folderId), event)
+            showBubble(tr(joined ? 'unreferencedFrom' : 'referencedTo', { folder: folderLabel(folderId) }), event)
             animatePendingRef.current = true
             refresh()
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function todoJoined(group, todo, folderId) {
@@ -3171,10 +3409,10 @@ window.__ModuleLoader__.load({
         postApi({ action: 'priority', key: key, id: id, priority: value })
           .then(function () {
             animatePendingRef.current = true
-            showBubble('已调整优先级为T' + value, event)
+            showBubble(tr('prioritySet', { level: value }), event)
             refresh()
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function choosePriority(value, event) {
@@ -3204,9 +3442,9 @@ window.__ModuleLoader__.load({
           .then(function () {
             animatePendingRef.current = true
             refresh()
-            showBubble('已调整 ' + todos.length + ' 项优先级为T' + value, event)
+            showBubble(tr('batchPrioritySet', { count: todos.length, level: value }), event)
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function prioChoiceNodes(action) {
@@ -3365,7 +3603,7 @@ window.__ModuleLoader__.load({
             {
               type: 'button',
               className: 'dtn-check' + (isDone ? ' dtn-check-on' : '') + (isPartial ? ' dtn-check-partial' : ''),
-              title: isDone ? '取消完成' : isPartial ? '中间态：点一下确认完成' : '标记完成',
+              title: isDone ? tr('markUndone') : isPartial ? tr('markPartial') : tr('markDone'),
               onClick: function (event) {
                 event.stopPropagation()
                 const action = isDone ? 'reopen' : 'complete'
@@ -3374,7 +3612,7 @@ window.__ModuleLoader__.load({
                     animatePendingRef.current = true
                     refresh()
                   })
-                  .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+                  .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
               },
             },
             isDone ? '✓' : isPartial ? '–' : '',
@@ -3385,7 +3623,7 @@ window.__ModuleLoader__.load({
               type: 'button',
               className: 'dtn-prio',
               style: { color: prioColor(todo.priority) },
-              title: '优先级 T0 最高，点开选择',
+              title: tr('priorityHint2'),
               onClick: function (event) { openPrioMenu(event, group, todo) },
             },
             'T' + (typeof todo.priority === 'number' ? todo.priority : 1),
@@ -3410,7 +3648,7 @@ window.__ModuleLoader__.load({
             : h('span', {
                 className: 'dtn-todo-title',
                 style: { color: prioColor(todo.priority) },
-                title: '双击文字重命名，右键更多',
+                title: tr('rowHintRename'),
               },
               h('span', {
                 className: 'dtn-todo-text',
@@ -3418,11 +3656,11 @@ window.__ModuleLoader__.load({
               }, todo.title),
               ),
           isAiSource(todo.source)
-            ? h('span', { className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13))
+            ? h('span', { className: 'dtn-ai-chip', title: tr('agentCreatedChip') }, icon('robot', 13))
             : null,
           h('span', {
             className: 'dtn-grip',
-            title: '按住拖动排序',
+            title: tr('dragToSort'),
             onPointerDown: function (event) { event.stopPropagation(); dragArmedRef.current = true },
             onPointerUp: function () { dragArmedRef.current = false },
             onClick: function (event) { event.stopPropagation() },
@@ -3533,7 +3771,7 @@ window.__ModuleLoader__.load({
             },
             h('span', {
               className: 'dtn-folder-toggle',
-              title: folderOpen ? '收起文件夹' : '展开文件夹',
+              title: folderOpen ? tr('collapseFolder') : tr('expandFolder'),
               onClick: function (event) { event.stopPropagation(); toggleFolder(folderKey) },
             },
             folderOpen ? icon('chevronDown') : icon('chevronRight'),
@@ -3559,7 +3797,7 @@ window.__ModuleLoader__.load({
                   'span',
                   {
                     className: 'dtn-folder-name',
-                    title: '双击文字重命名，右键更多',
+                    title: tr('rowHintRename'),
                   },
                   h('span', {
                     className: 'dtn-folder-text',
@@ -3578,7 +3816,7 @@ window.__ModuleLoader__.load({
               {
                 type: 'button',
                 className: 'dtn-copy',
-                title: '在此文件夹新建子文件夹',
+                title: tr('newSubfolder'),
                 onClick: function (event) { event.stopPropagation(); createSubFolder(group, folder, event) },
               },
               icon('folderAdd'),
@@ -3588,7 +3826,7 @@ window.__ModuleLoader__.load({
               {
                 type: 'button',
                 className: 'dtn-copy',
-                title: '在此文件夹新建 TODO',
+                title: tr('newTodoHere'),
                 onClick: function (event) { event.stopPropagation(); createTodo(group, event, folder.id) },
               },
               icon('add'),
@@ -3598,7 +3836,7 @@ window.__ModuleLoader__.load({
               {
                 type: 'button',
                 className: 'dtn-copy',
-                title: '在此文件夹批量新建 TODO',
+                title: tr('newTodoBatchHere'),
                 onClick: function (event) { event.stopPropagation(); openBatchCreate(group, event, folder.id) },
               },
               icon('addBatch'),
@@ -3606,7 +3844,7 @@ window.__ModuleLoader__.load({
             h('span', { className: 'dtn-folder-count' }, String(todos.length)),
             h('span', {
               className: 'dtn-grip',
-              title: '按住拖动文件夹',
+              title: tr('dragFolder'),
               onPointerDown: function (event) { event.stopPropagation(); dragArmedRef.current = true },
               onPointerUp: function () { dragArmedRef.current = false },
               onClick: function (event) { event.stopPropagation() },
@@ -3683,8 +3921,8 @@ window.__ModuleLoader__.load({
                         return
                       }
                       postApi({ action: 'moveTodo', key: group.key, id: payload.id, folder: PRIMARY })
-                        .then(function () { showBubble('已归入无文件夹', event); refresh() })
-                        .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+                        .then(function () { showBubble(tr('movedToNoFolder'), event); refresh() })
+                        .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
                     } else if (payload.kind === 'folder') {
                       moveFolderToPrimary(group, payload.id, event)
                     }
@@ -3721,8 +3959,8 @@ window.__ModuleLoader__.load({
                         return
                       }
                       postApi({ action: 'moveTodo', key: group.key, id: payload.id, folder: PRIMARY })
-                        .then(function () { showBubble('已归入无文件夹', event); refresh() })
-                        .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+                        .then(function () { showBubble(tr('movedToNoFolder'), event); refresh() })
+                        .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
                     } else if (payload.kind === 'folder') {
                       moveFolderToPrimary(group, payload.id, event)
                     }
@@ -3733,18 +3971,18 @@ window.__ModuleLoader__.load({
                   className: 'dtn-group-name',
                   style: group.current === true && (group.kind === 'workspace' || group.kind === 'session') ? { fontStyle: 'italic' } : undefined,
                   title: (group.subtitle || group.title || '') +
-                    (group.current === true && group.kind === 'workspace' ? '（当前工作区）' : group.current === true && group.kind === 'session' ? '（当前会话）' : ''),
-                }, group.title || '未命名组'),
+                    (group.current === true && group.kind === 'workspace' ? tr('currentWorkspaceSuffix') : group.current === true && group.kind === 'session' ? tr('currentSessionSuffix') : ''),
+                }, group.title || tr('unnamedGroup')),
                 group.kind === 'workspace' || group.kind === 'session'
                   ? h(
                       'button',
                       {
                         type: 'button',
                         className: 'dtn-copy',
-                        title: group.kind === 'workspace' ? '复制工作区路径' : '复制 Session ID',
+                        title: group.kind === 'workspace' ? tr('copyWorkspacePath') : tr('copySessionId'),
                         onClick: function (event) {
                           event.stopPropagation()
-                          copyGroup(group, event, group.kind === 'workspace' ? '已复制工作区路径' : '已复制SessionID')
+                          copyGroup(group, event, group.kind === 'workspace' ? tr('copiedWorkspacePath') : tr('copiedSessionId'))
                         },
                       },
                       icon('copy'),
@@ -3756,7 +3994,7 @@ window.__ModuleLoader__.load({
                       {
                         type: 'button',
                         className: 'dtn-copy',
-                        title: '新建文件夹',
+                        title: tr('newFolderName'),
                         onClick: function (event) {
                           event.stopPropagation()
                           createFolder(group, event)
@@ -3771,7 +4009,7 @@ window.__ModuleLoader__.load({
                       {
                         type: 'button',
                         className: 'dtn-copy',
-                        title: '新建 TODO',
+                        title: tr('newTodo'),
                         onClick: function (event) {
                           event.stopPropagation()
                           createTodo(group, event)
@@ -3786,7 +4024,7 @@ window.__ModuleLoader__.load({
                       {
                         type: 'button',
                         className: 'dtn-copy',
-                        title: '批量新建 TODO',
+                        title: tr('batchNewTodo'),
                         onClick: function (event) {
                           event.stopPropagation()
                           openBatchCreate(group, event)
@@ -3826,7 +4064,7 @@ window.__ModuleLoader__.load({
             'div',
             { className: 'dtn-folder-head' },
             h('span', { className: 'dtn-folder-toggle', style: { cursor: 'default' } }, icon('folder')),
-            h('span', { className: 'dtn-folder-name' }, '未归类'),
+            h('span', { className: 'dtn-folder-name' }, tr('uncategorized')),
           ),
           loose.map(function (todo) { return renderTodoRow(group, todo, '') }),
         )
@@ -3866,8 +4104,8 @@ window.__ModuleLoader__.load({
                         return
                       }
                       postApi({ action: 'moveTodo', key: groups[0].key, id: payload.id, folder: PRIMARY })
-                        .then(function () { showBubble('已归入无文件夹', event); refresh() })
-                        .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+                        .then(function () { showBubble(tr('movedToNoFolder'), event); refresh() })
+                        .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
                     },
                   }
                 : {},
@@ -3880,7 +4118,7 @@ window.__ModuleLoader__.load({
                   {
                     type: 'button',
                     className: 'dtn-copy dtn-sec-add',
-                    title: '新建文件夹',
+                    title: tr('newFolderName'),
                     onClick: function (event) {
                       event.stopPropagation()
                       createFolder(groups[0], event)
@@ -3895,7 +4133,7 @@ window.__ModuleLoader__.load({
                   {
                     type: 'button',
                     className: 'dtn-copy dtn-sec-add',
-                    title: '新建 TODO',
+                    title: tr('newTodo'),
                     onClick: function (event) {
                       event.stopPropagation()
                       createTodo(groups[0], event)
@@ -3910,7 +4148,7 @@ window.__ModuleLoader__.load({
                   {
                     type: 'button',
                     className: 'dtn-copy dtn-sec-add',
-                    title: '批量新建 TODO',
+                    title: tr('batchNewTodo'),
                     onClick: function (event) {
                       event.stopPropagation()
                       openBatchCreate(groups[0], event)
@@ -3921,7 +4159,7 @@ window.__ModuleLoader__.load({
               : null,
             h(
               'span',
-              { className: 'dtn-sec-count', title: '该层级 TODO 总数' },
+              { className: 'dtn-sec-count', title: tr('levelTotalHint') },
               String(groups.reduce(function (total, group) { return total + (Array.isArray(group.todos) ? group.todos.length : 0) }, 0)),
             ),
           ),
@@ -3929,7 +4167,7 @@ window.__ModuleLoader__.load({
             'div',
             { className: 'dtn-sec-body dtn-fold' + (sectionCollapsed ? ' dtn-fold-off' : '') },
             groups.length === 0
-              ? h('div', { className: 'dtn-empty' }, '暂无便签组')
+              ? h('div', { className: 'dtn-empty' }, tr('noGroups'))
               : groups.map(function (group) { return renderGroup(group, kind === 'user') }),
           ),
         )
@@ -4019,15 +4257,15 @@ window.__ModuleLoader__.load({
                     key: 'collapse',
                     type: 'button',
                     className: 'dtn-btn dtn-head-collapse dtn-collapse-main',
-                    title: collapsed ? '展开面板' : '折叠面板',
+                    title: collapsed ? tr('expandPanel') : tr('collapsePanel'),
                     'data-open': collapsed ? 'false' : 'true',
                     onClick: function (event) { event.stopPropagation(); toggleCollapsed() },
                   },
                   icon('chevronDown'),
                 ),
             h('span', { key: 'logo', className: 'dtn-logo' }, icon('list', 14)),
-            h('span', { key: 'title', className: 'dtn-title' }, 'TODO 便签'),
-            h('span', { key: 'count', className: 'dtn-count' }, data === null ? '加载中…' : totalOpen + ' 条未完成'),
+            h('span', { key: 'title', className: 'dtn-title' }, tr('appTitle')),
+            h('span', { key: 'count', className: 'dtn-count' }, data === null ? tr('loading') : tr('openCount', { count: totalOpen })),
             embedded
               ? null
               : h(
@@ -4035,16 +4273,16 @@ window.__ModuleLoader__.load({
                   { key: 'actions', className: 'dtn-actions' },
                   h(
                     'button',
-                    { type: 'button', className: 'dtn-btn', title: '显示到右侧栏', onClick: function (event) { event.stopPropagation(); showInSidebar() } },
+                    { type: 'button', className: 'dtn-btn', title: tr('showInSidebar'), onClick: function (event) { event.stopPropagation(); showInSidebar() } },
                     icon('panelRight'),
                   ),
                 ),
           ],
         },
-        error !== '' ? h('div', { className: 'dtn-error' }, '读取失败：' + error) : null,
-        renderSection('user', '用户级TODO', userGroups),
-        renderSection('workspace', '工作区级TODO', workspaceGroups),
-        renderSection('session', '会话级TODO', sessionGroups),
+        error !== '' ? h('div', { className: 'dtn-error' }, tr('loadFailed', { detail: error })) : null,
+        renderSection('user', tr('sectionUserTodos'), userGroups),
+        renderSection('workspace', tr('sectionWorkspaceTodos'), workspaceGroups),
+        renderSection('session', tr('sectionSessionTodos'), sessionGroups),
       )
 
       function previewFolderLabel(data) {
@@ -4076,7 +4314,7 @@ window.__ModuleLoader__.load({
                     {
                       type: 'button',
                       className: 'dtn-btn',
-                      title: '编辑正文',
+                      title: tr('editBody'),
                       onClick: function (event) { event.stopPropagation(); pinFromPreview(true) },
                     },
                     icon('edit'),
@@ -4086,7 +4324,7 @@ window.__ModuleLoader__.load({
                     {
                       type: 'button',
                       className: 'dtn-btn',
-                      title: '关闭预览',
+                      title: tr('closePreview'),
                       onClick: closePreview,
                     },
                     icon('close'),
@@ -4098,23 +4336,23 @@ window.__ModuleLoader__.load({
                 { key: 'meta', className: 'dtn-preview-meta' },
                 previewData !== null
                   ? [
-                      h('span', { key: 'status', className: 'dtn-meta-item' }, icon(previewData.status === 'done' ? 'check' : 'clock', 11), previewData.status === 'done' ? '条目已完成' : previewData.status === 'partial' ? '条目待确认' : '条目未完成'),
-                      h('span', { key: 'priority', className: 'dtn-meta-item', style: { color: prioColor(previewData.priority) } }, icon('flag', 11), '优先级 T' + (typeof previewData.priority === 'number' ? previewData.priority : 1)),
+                      h('span', { key: 'status', className: 'dtn-meta-item' }, icon(previewData.status === 'done' ? 'check' : 'clock', 11), previewData.status === 'done' ? tr('metaDone') : previewData.status === 'partial' ? tr('metaPartial') : tr('metaOpen')),
+                      h('span', { key: 'priority', className: 'dtn-meta-item', style: { color: prioColor(previewData.priority) } }, icon('flag', 11), tr('priorityLabel', { level: typeof previewData.priority === 'number' ? previewData.priority : 1 })),
                       h('span', { key: 'folder', className: 'dtn-meta-item' }, icon('folder', 11), previewFolderLabel(previewData)),
-                      previewData.created !== '' ? h('span', { key: 'created', className: 'dtn-meta-item' }, icon('clock', 11), '创建 ' + formatStamp(previewData.created)) : null,
+                      previewData.created !== '' ? h('span', { key: 'created', className: 'dtn-meta-item' }, icon('clock', 11), tr('createdAt', { stamp: formatStamp(previewData.created) })) : null,
                       isAiSource(previewData.source)
-                        ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13))
+                        ? h('span', { key: 'source', className: 'dtn-ai-chip', title: tr('agentCreatedChip') }, icon('robot', 13))
                         : null,
                     ]
-                  : [h('span', { key: 'loading' }, '加载中…')],
+                  : [h('span', { key: 'loading' }, tr('loading'))],
               ),
               h(
                 'div',
                 { key: 'body', className: 'dtn-preview-body dtn-md' },
                 previewError !== ''
-                  ? h('div', { className: 'dtn-error' }, '读取失败：' + previewError)
+                  ? h('div', { className: 'dtn-error' }, tr('loadFailed', { detail: previewError }))
                   : previewData === null
-                    ? h('div', { className: 'dtn-empty' }, '加载中…')
+                    ? h('div', { className: 'dtn-empty' }, tr('loading'))
                     : typeof MarkdownText === 'function' || (MarkdownText !== null && typeof MarkdownText === 'object')
                     ? h(MarkdownText, { text: previewData.markdown, variant: 'body' })
                     : renderMarkdown(previewData.markdown),
@@ -4146,7 +4384,7 @@ window.__ModuleLoader__.load({
       // 预览类窗口统一用这一处解析文件夹显示名，避免临时预览与保留窗口各写一套。
       function folderDisplayName(groupKey, folderId) {
         const id = typeof folderId === 'string' && folderId !== '' ? folderId : PRIMARY
-        if (id === PRIMARY) return '无文件夹'
+        if (id === PRIMARY) return tr('noFolder')
         const group = findLiveGroup(groupKey)
         const nodes = group === null || group === undefined || !Array.isArray(group.folders) ? [] : group.folders
         const trail = []
@@ -4191,7 +4429,7 @@ window.__ModuleLoader__.load({
                 },
               },
               icon('chevronUp'),
-              '全部收起',
+              tr('menuCollapseAll'),
             ),
             h(
               'button',
@@ -4205,7 +4443,7 @@ window.__ModuleLoader__.load({
                 },
               },
               icon('chevronDown'),
-              '全部展开',
+              tr('menuExpandAll'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -4216,7 +4454,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); startRenameFolder(folderMenu.group, menuFolder) },
               },
               icon('edit'),
-              '重命名',
+              tr('menuRename'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -4227,13 +4465,13 @@ window.__ModuleLoader__.load({
                 onClick: function (event) {
                   event.stopPropagation()
                   copyText(menuFolder.name || folderLabel(menuFolder.id)).then(function () {
-                    showBubble('已复制标题文本', event)
+                    showBubble(tr('copiedTitleText'), event)
                     setFolderMenu(null)
                   })
                 },
               },
               icon('fileText'),
-              '复制标题文本',
+              tr('copyTitleText'),
             ),
             h(
               'button',
@@ -4244,19 +4482,19 @@ window.__ModuleLoader__.load({
                   event.stopPropagation()
                   const liveGroup = findLiveGroup(folderMenu.group.key) || folderMenu.group
                   const scope = liveGroup.kind === 'user'
-                    ? '用户级'
+                    ? tr('levelUser')
                     : liveGroup.kind === 'workspace'
-                      ? '工作区级 ' + (liveGroup.title || '')
-                      : '会话级 ' + (liveGroup.subtitle || liveGroup.title || '')
+                      ? tr('levelWorkspace', { title: liveGroup.title || '' })
+                      : tr('levelSession', { title: liveGroup.subtitle || liveGroup.title || '' })
                   const chain = scope + ' / ' + folderDisplayName(liveGroup.key, folderMenu.folderId)
                   copyText(chain).then(function () {
-                    showBubble('已复制层级链文本', event)
+                    showBubble(tr('copiedChainText'), event)
                     setFolderMenu(null)
                   })
                 },
               },
               icon('copy'),
-              '复制层级链文本',
+              tr('copyChainText'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -4269,7 +4507,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'folder-move' ? '' : 'folder-move') },
               },
               icon('folder'),
-              '移动到',
+              tr('menuMoveTo'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -4315,7 +4553,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); deleteFolder(folderMenu.group, menuFolder.id, event) },
               },
               icon('folder'),
-              '解除文件夹',
+              tr('menuUnlinkFolder'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -4326,7 +4564,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); deleteFolderTree(folderMenu.group, menuFolder.id, event) },
               },
               icon('trash'),
-              '删除整个文件夹',
+              tr('menuDeleteFolder'),
             ),
           )
 
@@ -4348,7 +4586,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); toggleTree(treeMenu.target, false) },
               },
               icon('chevronUp'),
-              '全部收起',
+              tr('menuCollapseAll'),
             ),
             h(
               'button',
@@ -4358,7 +4596,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); toggleTree(treeMenu.target, true) },
               },
               icon('chevronDown'),
-              '全部展开',
+              tr('menuExpandAll'),
             ),
           )
 
@@ -4384,7 +4622,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'todo-prio' ? '' : 'todo-prio') },
               },
               icon('flag'),
-              '设置优先级',
+              tr('menuSetPriority'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -4400,7 +4638,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); startRenameTodo(todoMenuGroup, menuTodo) },
               },
               icon('edit'),
-              '重命名',
+              tr('menuRename'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -4411,13 +4649,13 @@ window.__ModuleLoader__.load({
                 onClick: function (event) {
                   event.stopPropagation()
                   copyText(menuTodo.title || '').then(function () {
-                    showBubble('已复制标题文本', event)
+                    showBubble(tr('copiedTitleText'), event)
                     setTodoMenu(null)
                   })
                 },
               },
               icon('fileText'),
-              '复制标题文本',
+              tr('copyTitleText'),
             ),
             h(
               'button',
@@ -4429,19 +4667,19 @@ window.__ModuleLoader__.load({
                   const liveGroup = todoMenuGroup
                   const folderId = todoMenu.folderId !== undefined && todoMenu.folderId !== null ? todoMenu.folderId : menuTodo.primaryFolder
                   const scope = liveGroup.kind === 'user'
-                    ? '用户级'
+                    ? tr('levelUser')
                     : liveGroup.kind === 'workspace'
-                      ? '工作区级 ' + (liveGroup.title || '')
-                      : '会话级 ' + (liveGroup.subtitle || liveGroup.title || '')
+                      ? tr('levelWorkspace', { title: liveGroup.title || '' })
+                      : tr('levelSession', { title: liveGroup.subtitle || liveGroup.title || '' })
                   const chain = scope + ' / ' + folderDisplayName(liveGroup.key, folderId) + ' / ' + (menuTodo.title || '')
                   copyText(chain).then(function () {
-                    showBubble('已复制层级链文本', event)
+                    showBubble(tr('copiedChainText'), event)
                     setTodoMenu(null)
                   })
                 },
               },
               icon('copy'),
-              '复制层级链文本',
+              tr('copyChainText'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -4454,7 +4692,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'todo-move' ? '' : 'todo-move') },
               },
               icon('folder'),
-              '移动到',
+              tr('menuMoveTo'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -4497,7 +4735,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'todo-collect' ? '' : 'todo-collect') },
               },
               icon('folder'),
-              '管理收录',
+              tr('menuManageRefs'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -4544,7 +4782,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); deleteTodo(todoMenuGroup, menuTodo.id, event) },
               },
               icon('trash'),
-              '删除',
+              tr('menuDelete'),
             ),
           )
 
@@ -4563,17 +4801,17 @@ window.__ModuleLoader__.load({
               h(
                 'div',
                 { key: 'head', className: 'dtn-preview-head', onPointerDown: function (event) { startWindowMove(event, 'batchCreate') } },
-                h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
+                h('span', { className: 'dtn-preview-title' }, tr('batchNewTodo')),
                 h(
                   'div',
                   { className: 'dtn-actions' },
-                  h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { closeBatchCreate() } }, icon('close')),
+                  h('button', { type: 'button', className: 'dtn-btn', title: tr('close'), onClick: function () { closeBatchCreate() } }, icon('close')),
                 ),
               ),
               h(
                 'div',
                 { key: 'body', className: 'dtn-preview-body' },
-                h('div', { className: 'dtn-batch-hint' }, '每行一条，确认后按行创建'),
+                h('div', { className: 'dtn-batch-hint' }, tr('batchCreateHint')),
                 h(
                   'div',
                   { className: 'dtn-batch-field' },
@@ -4589,7 +4827,7 @@ window.__ModuleLoader__.load({
                     value: batchCreate.value,
                     autoFocus: true,
                     wrap: 'off',
-                    placeholder: '第一件事\n第二件事',
+                    placeholder: tr('batchCreatePlaceholder'),
                     onScroll: function (event) {
                       if (batchGutterRef.current !== null) batchGutterRef.current.scrollTop = event.currentTarget.scrollTop
                     },
@@ -4602,8 +4840,8 @@ window.__ModuleLoader__.load({
                 h(
                   'div',
                   { className: 'dtn-batch-actions' },
-                  h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { closeBatchCreate() } }, '取消'),
-                  h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmBatchCreate() } }, '确认'),
+                  h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { closeBatchCreate() } }, tr('cancel')),
+                  h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmBatchCreate() } }, tr('confirm')),
                 ),
               ),
             ],
@@ -4956,10 +5194,10 @@ window.__ModuleLoader__.load({
       postApi({ action: 'saveTodoBody', key: win.groupKey, id: win.todoId, body: win.draft })
         .then(function () {
           updatePin(id, { markdown: win.draft })
-          showBubble('正文已保存', { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
+          showBubble(tr('bodySaved'), { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
-          showBubble('保存失败：' + String(failure && failure.message ? failure.message : failure), {
+          showBubble(tr('saveFailed', { detail: String(failure && failure.message ? failure.message : failure) }), {
             clientX: win.pos.x + 160,
             clientY: win.pos.y + 14,
           })
@@ -4982,10 +5220,10 @@ window.__ModuleLoader__.load({
           updatePin(id, { title: title, renameDraft: undefined })
           syncTodoTitle(win.groupKey, win.todoId, title)
           refresh()
-          showBubble(clamped.truncated ? '标题最多 ' + clamped.limit + ' 个字，已截断并保存' : '标题已保存', { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
+          showBubble(clamped.truncated ? tr('titleTruncatedSaved', { limit: clamped.limit }) : tr('titleSaved'), { clientX: win.pos.x + 160, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
-          showBubble('标题保存失败：' + String(failure && failure.message ? failure.message : failure), {
+          showBubble(tr('titleSaveFailed', { detail: String(failure && failure.message ? failure.message : failure) }), {
             clientX: win.pos.x + 160,
             clientY: win.pos.y + 14,
           })
@@ -5060,14 +5298,14 @@ window.__ModuleLoader__.load({
       if (bodyChanged) {
         postApi({ action: 'saveTodoBody', key: win.groupKey, id: win.todoId, body: baseMarkdown })
           .then(function () { refresh(true) })
-          .catch(function (error) { showBubble('撤销失败：' + (error && error.message ? error.message : String(error)), { clientX: win.pos.x + 40, clientY: win.pos.y + 16 }) })
+          .catch(function (error) { showBubble(tr('undoFailed', { detail: error && error.message ? error.message : String(error) }), { clientX: win.pos.x + 40, clientY: win.pos.y + 16 }) })
       }
       if (titleChanged) {
         postApi({ action: 'renameTodo', key: win.groupKey, id: win.todoId, title: baseTitle })
           .then(function () { syncTodoTitle(win.groupKey, win.todoId, baseTitle); refresh(true) })
           .catch(function () {})
       }
-      showBubble('已撤销编辑', { clientX: win.pos.x + 40, clientY: win.pos.y + 16 })
+      showBubble(tr('editUndone'), { clientX: win.pos.x + 40, clientY: win.pos.y + 16 })
     }
 
     function confirmPinBatchCreate(id) {
@@ -5080,7 +5318,7 @@ window.__ModuleLoader__.load({
         return clamped.text
       }).filter(function (line) { return line !== '' })
       if (titles.length === 0) {
-        showBubble('没有可创建的内容', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+        showBubble(tr('nothingToCreate'), { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
         return
       }
       postApi({ action: 'createTodos', key: win.groupKey, folder: win.folderId, titles: titles })
@@ -5089,12 +5327,12 @@ window.__ModuleLoader__.load({
           animatePendingRef.current = true
           refresh()
           if (truncatedLimit > 0) {
-            showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+            showBubble(tr('titleTruncated', { limit: truncatedLimit }), { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
           }
-          showBubble('已创建 ' + titles.length + ' 条 TODO', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+          showBubble(tr('createdCount', { count: titles.length }), { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
-          showBubble('创建失败：' + String(failure && failure.message ? failure.message : failure), {
+          showBubble(tr('createFailed', { detail: String(failure && failure.message ? failure.message : failure) }), {
             clientX: win.pos.x + 120,
             clientY: win.pos.y + 14,
           })
@@ -5137,10 +5375,10 @@ window.__ModuleLoader__.load({
           setSelectionNow([])
           animatePendingRef.current = true
           refresh()
-          showBubble('批量重命名已完成', { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
+          showBubble(tr('batchRenameDone'), { clientX: win.pos.x + 120, clientY: win.pos.y + 14 })
         })
         .catch(function (failure) {
-          showBubble('重命名失败：' + String(failure && failure.message ? failure.message : failure), {
+          showBubble(tr('renameFailed', { detail: String(failure && failure.message ? failure.message : failure) }), {
             clientX: win.pos.x + 120,
             clientY: win.pos.y + 14,
           })
@@ -5181,7 +5419,7 @@ window.__ModuleLoader__.load({
       return h('button', {
         type: 'button',
         className: 'dtn-btn dtn-head-collapse dtn-collapse-pin',
-        title: win.collapsed ? '展开' : '收起',
+        title: win.collapsed ? tr('pinExpand') : tr('pinCollapse'),
         'data-open': win.collapsed ? 'false' : 'true',
         onClick: function (event) {
           event.stopPropagation()
@@ -5252,7 +5490,7 @@ window.__ModuleLoader__.load({
     function renderPinPreview(win) {
       const meta = win.meta
       const head = [
-        h('span', { className: 'dtn-pin-type', title: '预览' }, icon('fileText', 13)),
+        h('span', { className: 'dtn-pin-type', title: tr('preview') }, icon('fileText', 13)),
         win.editing
           ? h('input', {
               className: 'dtn-pin-title-input',
@@ -5282,13 +5520,13 @@ window.__ModuleLoader__.load({
           h('button', {
             type: 'button',
             className: 'dtn-btn',
-            title: win.editing ? '保存并完成编辑' : '编辑正文',
+            title: win.editing ? tr('saveAndFinishEdit') : tr('editBody'),
             onClick: function (event) { event.stopPropagation(); togglePinEditing(win.id) },
           }, icon(win.editing ? 'check' : 'edit')),
           h('button', {
             type: 'button',
             className: 'dtn-btn',
-            title: win.editing ? '取消编辑并还原内容' : '关闭',
+            title: win.editing ? tr('cancelEdit') : tr('close'),
             onClick: function (event) {
               event.stopPropagation()
               if (win.editing === true) cancelPinEditing(win.id)
@@ -5299,13 +5537,13 @@ window.__ModuleLoader__.load({
         ),
       ]
       const metaNodes = meta === null || meta === undefined
-        ? [h('span', { key: 'loading' }, win.loading ? '加载中…' : '')]
+        ? [h('span', { key: 'loading' }, win.loading ? tr('loading') : '')]
         : [
-            h('span', { key: 'status', className: 'dtn-meta-item' }, icon(meta.status === 'done' ? 'check' : 'clock', 11), meta.status === 'done' ? '条目已完成' : meta.status === 'partial' ? '条目待确认' : '条目未完成'),
-            h('span', { key: 'priority', className: 'dtn-meta-item', style: { color: prioColor(meta.priority) } }, icon('flag', 11), '优先级 T' + (typeof meta.priority === 'number' ? meta.priority : 1)),
+            h('span', { key: 'status', className: 'dtn-meta-item' }, icon(meta.status === 'done' ? 'check' : 'clock', 11), meta.status === 'done' ? tr('metaDone') : meta.status === 'partial' ? tr('metaPartial') : tr('metaOpen')),
+            h('span', { key: 'priority', className: 'dtn-meta-item', style: { color: prioColor(meta.priority) } }, icon('flag', 11), tr('priorityLabel', { level: typeof meta.priority === 'number' ? meta.priority : 1 })),
             h('span', { key: 'folder', className: 'dtn-meta-item' }, icon('folder', 11), pinFolderLabel(win)),
-            meta.created !== '' ? h('span', { key: 'created', className: 'dtn-meta-item' }, icon('clock', 11), '创建 ' + formatStamp(meta.created)) : null,
-            isAiSource(meta.source) ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13)) : null,
+            meta.created !== '' ? h('span', { key: 'created', className: 'dtn-meta-item' }, icon('clock', 11), tr('createdAt', { stamp: formatStamp(meta.created) })) : null,
+            isAiSource(meta.source) ? h('span', { key: 'source', className: 'dtn-ai-chip', title: tr('agentCreatedChip') }, icon('robot', 13)) : null,
           ]
       const bodyNodes = [
         h('div', { key: 'meta', className: 'dtn-preview-meta' }, metaNodes),
@@ -5354,7 +5592,7 @@ window.__ModuleLoader__.load({
               'div',
               { key: 'markdown', className: 'dtn-preview-body dtn-md' },
               win.error !== ''
-                ? h('div', { className: 'dtn-error' }, '读取失败：' + win.error)
+                ? h('div', { className: 'dtn-error' }, tr('loadFailed', { detail: win.error }))
                 : typeof MarkdownText === 'function' || (MarkdownText !== null && typeof MarkdownText === 'object')
                 ? h(MarkdownText, { text: win.markdown, variant: 'body' })
                 : renderMarkdown(win.markdown),
@@ -5371,12 +5609,12 @@ window.__ModuleLoader__.load({
     function renderPinBatchCreate(win) {
       const lines = String(win.value || '').split(/\r?\n/)
       const head = [
-        h('span', { className: 'dtn-pin-type', title: '批量新建' }, icon('addBatch', 13)),
-        h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
+        h('span', { className: 'dtn-pin-type', title: tr('batchNew') }, icon('addBatch', 13)),
+        h('span', { className: 'dtn-preview-title' }, tr('batchNewTodo')),
         h(
           'div',
           { className: 'dtn-actions' },
-          h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
+          h('button', { type: 'button', className: 'dtn-btn', title: tr('close'), onClick: function () { removePin(win.id) } }, icon('close')),
           pinHeadCommon(win),
         ),
       ]
@@ -5387,7 +5625,7 @@ window.__ModuleLoader__.load({
         body: h(
           'div',
           { className: 'dtn-preview-body' },
-          h('div', { className: 'dtn-batch-hint' }, '每行一条，空行忽略'),
+          h('div', { className: 'dtn-batch-hint' }, tr('batchCreateEmptyHint')),
           h(
             'div',
             { className: 'dtn-batch-field' },
@@ -5404,8 +5642,8 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { className: 'dtn-batch-actions' },
-            h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { removePin(win.id) } }, '取消'),
-            h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchCreate(win.id) } }, '确认'),
+            h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { removePin(win.id) } }, tr('cancel')),
+            h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchCreate(win.id) } }, tr('confirm')),
           ),
         ),
       })
@@ -5413,12 +5651,12 @@ window.__ModuleLoader__.load({
 
     function renderPinBatchRename(win) {
       const head = [
-        h('span', { className: 'dtn-pin-type', title: '批量重命名' }, icon('edit', 13)),
-        h('span', { className: 'dtn-preview-title' }, '批量重命名'),
+        h('span', { className: 'dtn-pin-type', title: tr('batchRename') }, icon('edit', 13)),
+        h('span', { className: 'dtn-preview-title' }, tr('batchRename')),
         h(
           'div',
           { className: 'dtn-actions' },
-          h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
+          h('button', { type: 'button', className: 'dtn-btn', title: tr('close'), onClick: function () { removePin(win.id) } }, icon('close')),
           pinHeadCommon(win),
         ),
       ]
@@ -5429,7 +5667,7 @@ window.__ModuleLoader__.load({
         body: h(
           'div',
           { className: 'dtn-preview-body' },
-          h('div', { className: 'dtn-batch-hint' }, '行数固定为选中条目数，不能增加或删除换行；清空的行会被跳过'),
+          h('div', { className: 'dtn-batch-hint' }, tr('batchRenameHint')),
           h(
             'div',
             { className: 'dtn-batch-field' },
@@ -5452,8 +5690,8 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { className: 'dtn-batch-actions' },
-            h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { removePin(win.id) } }, '取消'),
-            h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchRename(win.id) } }, '确认'),
+            h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { removePin(win.id) } }, tr('cancel')),
+            h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchRename(win.id) } }, tr('confirm')),
           ),
         ),
       })
@@ -5480,7 +5718,7 @@ window.__ModuleLoader__.load({
                 type: 'button',
                 className: 'dtn-prio-item' + (on ? ' dtn-prio-on' : ''),
                 style: { color: prioColor(value) },
-                title: '优先级 T' + value,
+                title: tr('priorityLabel', { level: value }),
                 onClick: function (event) { choosePriority(value, event) },
               },
               'T' + value,
@@ -5524,7 +5762,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'batch-prio' ? '' : 'batch-prio') },
               },
               icon('flag'),
-              '批量设置优先级',
+              tr('batchPriorityMenu'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -5540,7 +5778,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); openBatchRename() },
               },
               icon('edit'),
-              '批量重命名',
+              tr('batchRename'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -5551,7 +5789,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); batchCopyTitles(event) },
               },
               icon('fileText'),
-              '复制标题文本',
+              tr('copyTitleText'),
             ),
             h(
               'button',
@@ -5561,7 +5799,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); batchCopyChains(event) },
               },
               icon('copy'),
-              '复制层级链文本',
+              tr('copyChainText'),
             ),
             h('div', { className: 'dtn-menu-sep' + (batchTodoTotal === 0 ? ' dtn-menu-hide' : '') }),
             h(
@@ -5574,7 +5812,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'batch-move' ? '' : 'batch-move') },
               },
               icon('folder'),
-              '批量移动到',
+              tr('batchMoveTo'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -5605,7 +5843,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); setSubOpen(subOpen === 'batch-collect' ? '' : 'batch-collect') },
               },
               icon('folder'),
-              '批量管理收录',
+              tr('batchManageRefs'),
               h('span', { className: 'dtn-menu-arrow' }, '›'),
               h(
                 'div',
@@ -5652,7 +5890,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); applyBatchExpand(false) },
               },
               icon('chevronUp'),
-              '批量全部收起',
+              tr('batchCollapseAll'),
             ),
             h(
               'button',
@@ -5662,7 +5900,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); applyBatchExpand(true) },
               },
               icon('chevronDown'),
-              '批量全部展开',
+              tr('batchExpandAll'),
             ),
             h('div', { className: 'dtn-menu-sep' }),
             h(
@@ -5673,7 +5911,7 @@ window.__ModuleLoader__.load({
                 onClick: function (event) { event.stopPropagation(); applyBatchDelete(event) },
               },
               icon('trash'),
-              '批量删除',
+              tr('batchDelete'),
             ),
           )
 
@@ -5690,17 +5928,17 @@ window.__ModuleLoader__.load({
             h(
               'div',
               { className: 'dtn-preview-head', onPointerDown: function (event) { startWindowMove(event, 'batchRename') } },
-              h('span', { className: 'dtn-preview-title' }, '批量重命名'),
+              h('span', { className: 'dtn-preview-title' }, tr('batchRename')),
               h(
                 'div',
                 { className: 'dtn-actions' },
-                h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { setBatchRename(null) } }, icon('close')),
+                h('button', { type: 'button', className: 'dtn-btn', title: tr('close'), onClick: function () { setBatchRename(null) } }, icon('close')),
               ),
             ),
             h(
               'div',
               { className: 'dtn-preview-body' },
-              h('div', { className: 'dtn-batch-hint' }, '行数固定为选中条目数，不能增加或删除换行；清空的行会被跳过'),
+              h('div', { className: 'dtn-batch-hint' }, tr('batchRenameHint')),
               h(
                 'div',
                 { className: 'dtn-batch-field' },
@@ -5734,8 +5972,8 @@ window.__ModuleLoader__.load({
               h(
                 'div',
                 { className: 'dtn-batch-actions' },
-                h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { setBatchRename(null) } }, '取消'),
-                h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: confirmBatchRename }, '确认'),
+                h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { setBatchRename(null) } }, tr('cancel')),
+                h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: confirmBatchRename }, tr('confirm')),
               ),
             ),
           )
@@ -5765,8 +6003,8 @@ window.__ModuleLoader__.load({
             h(
               'div',
               { className: 'dtn-confirm-actions' },
-              h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { settleConfirm(false) } }, '取消'),
-              h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-danger', onClick: function () { settleConfirm(true) } }, '确认删除'),
+              h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { settleConfirm(false) } }, tr('cancel')),
+              h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-danger', onClick: function () { settleConfirm(true) } }, tr('confirmDelete')),
             ),
           )
 
@@ -6316,7 +6554,7 @@ window.__ModuleLoader__.load({
             return h('div', {
               key: 'resize-' + dir,
               className: 'dtn-resize dtn-resize-' + dir,
-              title: dir === 'br' ? '拖动调整大小' : dir === 'l' || dir === 'r' ? '拖动调整宽度' : '拖动调整高度',
+              title: dir === 'br' ? tr('resizeBoth') : dir === 'l' || dir === 'r' ? tr('resizeWidth') : tr('resizeHeight'),
               onPointerDown: function (event) { props.onResize(event, dir) },
             })
           })

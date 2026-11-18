@@ -26,9 +26,9 @@
       }
 
       function scopeLabelOf(group) {
-        if (group.kind === 'user') return '用户级'
-        if (group.kind === 'workspace') return '工作区级 ' + (group.title || '')
-        return '会话级 ' + (group.subtitle || group.title || '')
+        if (group.kind === 'user') return tr('levelUser')
+        if (group.kind === 'workspace') return tr('levelWorkspace', { title: group.title || '' })
+        return tr('levelSession', { title: group.subtitle || group.title || '' })
       }
 
       function batchCopyTitles(event) {
@@ -45,7 +45,7 @@
         })
         if (lines.length === 0) return
         copyText(lines.join('\n')).then(function () {
-          showBubble('已复制标题文本', event)
+          showBubble(tr('copiedTitleText'), event)
           setBatchMenu(null)
         })
       }
@@ -65,7 +65,7 @@
         })
         if (lines.length === 0) return
         copyText(lines.join('\n')).then(function () {
-          showBubble('已复制层级链文本', event)
+          showBubble(tr('copiedChainText'), event)
           setBatchMenu(null)
         })
       }
@@ -100,9 +100,9 @@
           .then(function () {
             animatePendingRef.current = true
             refresh()
-            showBubble((checked ? '已取消收录 ' : '已收录 ') + tasks.length + ' 条', { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+            showBubble(checked ? tr('unreferencedCount', { count: tasks.length }) : tr('referencedCount', { count: tasks.length }), { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
       }
 
       function runSequential(tasks) {
@@ -133,9 +133,9 @@
             setSelectionNow([])
             animatePendingRef.current = true
             refresh()
-            showBubble('已移动 ' + tasks.length + ' 条', null)
+            showBubble(tr('movedCount', { count: tasks.length }), null)
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
       }
 
       function applyBatchReference(folderId) {
@@ -148,9 +148,9 @@
           .then(function () {
             animatePendingRef.current = true
             refresh()
-            showBubble('已收录 ' + tasks.length + ' 条', null)
+            showBubble(tr('referencedCount', { count: tasks.length }), null)
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
       }
 
       function applyBatchDelete(event) {
@@ -176,12 +176,12 @@
               setSelectionNow([])
               animatePendingRef.current = true
               refresh()
-              showBubble('已删除 ' + tasks.length + ' 项', null)
+              showBubble(tr('deletedCount', { count: tasks.length }), null)
             })
-            .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+            .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
         }
         if (allEmptyFolders) { run(); return }
-        confirmDelete(event, '确定删除选中的 ' + (todos.length + folders.length) + ' 项？删除后不可恢复。').then(function (ok) {
+        confirmDelete(event, tr('batchDeleteConfirm', { count: todos.length + folders.length })).then(function (ok) {
           if (ok === true) run()
         })
       }
@@ -235,11 +235,11 @@
             animatePendingRef.current = true
             refresh()
             if (truncatedLimit > 0) {
-              showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+              showBubble(tr('titleTruncated', { limit: truncatedLimit }), { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
             }
-            showBubble('已重命名 ' + tasks.length + ' 项', null)
+            showBubble(tr('renamedCount', { count: tasks.length }), null)
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
       }
 
       function startRenameTodo(group, todo) {
@@ -259,7 +259,7 @@
           .then(function () {
             syncTodoTitle(group.key, state.id, title)
             if (clamped.truncated) {
-              showBubble('标题最多 ' + clamped.limit + ' 个字，已截断并保存', event !== null && event !== undefined && typeof event.clientX === 'number' ? event : { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+              showBubble(tr('titleTruncatedSaved', { limit: clamped.limit }), event !== null && event !== undefined && typeof event.clientX === 'number' ? event : { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
             }
             refresh()
           })
@@ -272,7 +272,7 @@
 
       async function deleteTodo(group, todoId, event) {
         setTodoMenu(null)
-        const ok = await confirmDelete(event, '删除后不可恢复，确认删除这条 TODO？')
+        const ok = await confirmDelete(event, tr('singleDeleteConfirm'))
         if (ok !== true) return
         postApi({ action: 'deleteTodo', key: group.key, id: todoId })
           .then(function () {
@@ -311,11 +311,11 @@
         setTodoMenu(null)
         postApi({ action: 'moveTodo', key: group.key, id: todoId, folder: folderId })
           .then(function () {
-            showBubble('已移动到' + folderLabel(folderId), event)
+            showBubble(tr('movedToFolder', { folder: folderLabel(folderId) }), event)
             animatePendingRef.current = true
             refresh()
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       // 右键「管理收录」：勾选/取消某条 TODO 与各文件夹的收录关系。
@@ -329,26 +329,26 @@
             return key !== PRIMARY && Array.isArray(lists[key]) && lists[key].indexOf(todo.id) >= 0
           })
           if (others.length === 0) {
-            showBubble('至少保留一个收录位置', event)
+            showBubble(tr('keepOneReference'), event)
             return
           }
           const target = others[0]
           postApi({ action: 'moveTodo', key: group.key, id: todo.id, folder: target })
             .then(function () {
-              showBubble('已取消无文件夹收录，主归属改为' + folderLabel(target), event)
+              showBubble(tr('primaryReassigned', { folder: folderLabel(target) }), event)
               animatePendingRef.current = true
               refresh()
             })
-            .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+            .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
           return
         }
         postApi({ action: joined ? 'removeReference' : 'reference', key: group.key, id: todo.id, folder: folderId })
           .then(function () {
-            showBubble(joined ? '已取消收录到' + folderLabel(folderId) : '已收录到' + folderLabel(folderId), event)
+            showBubble(tr(joined ? 'unreferencedFrom' : 'referencedTo', { folder: folderLabel(folderId) }), event)
             animatePendingRef.current = true
             refresh()
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function todoJoined(group, todo, folderId) {
@@ -388,10 +388,10 @@
         postApi({ action: 'priority', key: key, id: id, priority: value })
           .then(function () {
             animatePendingRef.current = true
-            showBubble('已调整优先级为T' + value, event)
+            showBubble(tr('prioritySet', { level: value }), event)
             refresh()
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function choosePriority(value, event) {
@@ -421,9 +421,9 @@
           .then(function () {
             animatePendingRef.current = true
             refresh()
-            showBubble('已调整 ' + todos.length + ' 项优先级为T' + value, event)
+            showBubble(tr('batchPrioritySet', { count: todos.length, level: value }), event)
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function prioChoiceNodes(action) {

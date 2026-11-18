@@ -123,7 +123,7 @@
             return h('div', {
               key: 'resize-' + dir,
               className: 'dtn-resize dtn-resize-' + dir,
-              title: dir === 'br' ? '拖动调整大小' : dir === 'l' || dir === 'r' ? '拖动调整宽度' : '拖动调整高度',
+              title: dir === 'br' ? tr('resizeBoth') : dir === 'l' || dir === 'r' ? tr('resizeWidth') : tr('resizeHeight'),
               onPointerDown: function (event) { props.onResize(event, dir) },
             })
           })
