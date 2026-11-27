@@ -9,7 +9,7 @@
           for (let i = 0; i < tree.length; i += 1) {
             if (tree[i] !== null && typeof tree[i] === 'object' && tree[i].id === PRIMARY) { primary = tree[i]; break }
           }
-          if (primary === null) tree.unshift({ id: PRIMARY, name: '无文件夹', children: [moved] })
+          if (primary === null) tree.unshift({ id: PRIMARY, name: tr('noFolder'), children: [moved] })
           else {
             if (!Array.isArray(primary.children)) primary.children = []
             primary.children.push(moved)
@@ -21,9 +21,9 @@
           targetNode.children.push(moved)
         }
         postApi({ action: 'folders', key: group.key, folders: tree }).then(function () {
-          showBubble('已移动到' + folderLabel(targetId), event)
+          showBubble(tr('movedToFolder', { folder: folderLabel(targetId) }), event)
           refresh()
-        }).catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+        }).catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function onFolderDrop(event, group, target, intoChild) {
@@ -44,7 +44,7 @@
         } else if (!insertAfterFolder(tree, target.id, moved)) {
           return
         }
-        postApi({ action: 'folders', key: group.key, folders: tree }).then(refresh).catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+        postApi({ action: 'folders', key: group.key, folders: tree }).then(refresh).catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       // 主面板与保留浮窗共用的拖动缩放逻辑：只在各自的状态更新与持久化上不同。
@@ -127,12 +127,12 @@
         const hasPrimary = tree.some(function (node) {
           return node !== null && typeof node === 'object' && node.id === PRIMARY
         })
-        if (!hasPrimary) tree.unshift({ id: PRIMARY, name: '无文件夹', children: [] })
+        if (!hasPrimary) tree.unshift({ id: PRIMARY, name: tr('noFolder'), children: [] })
         return tree
       }
 
       function failWith(event, err) {
-        showBubble('保存失败：' + (err && err.message ? err.message : err), event && typeof event.clientX === 'number' ? event : { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
+        showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event && typeof event.clientX === 'number' ? event : { clientX: panelPos.x + 40, clientY: panelPos.y + 56 })
       }
 
       function saveFolders(group, tree, event) {
@@ -144,10 +144,10 @@
       function createFolder(group, event) {
         const tree = ensurePrimary(cloneFolders(group))
         const id = 'f-' + Date.now().toString(36)
-        tree.push({ id: id, name: '新建文件夹', children: [] })
+        tree.push({ id: id, name: tr('newFolderName'), children: [] })
         postApi({ action: 'folders', key: group.key, folders: tree })
           .then(function () {
-            setEditingFolder({ key: group.key, folderId: id, draft: '新建文件夹' })
+            setEditingFolder({ key: group.key, folderId: id, draft: tr('newFolderName') })
             refresh()
           })
           .catch(function (err) { failWith(event, err) })
@@ -159,7 +159,7 @@
         if (node === null) return
         if (!Array.isArray(node.children)) node.children = []
         const id = 'f-' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36)
-        node.children.push({ id: id, name: '新建文件夹', children: [] })
+        node.children.push({ id: id, name: tr('newFolderName'), children: [] })
         postApi({ action: 'folders', key: group.key, folders: tree })
           .then(function () {
             setOpenFolders(function (state) {
@@ -167,7 +167,7 @@
               next[group.key + '/' + folder.id] = true
               return next
             })
-            setEditingFolder({ key: group.key, folderId: id, draft: '新建文件夹' })
+            setEditingFolder({ key: group.key, folderId: id, draft: tr('newFolderName') })
             refresh()
           })
           .catch(function (err) { failWith(event, err) })
@@ -220,8 +220,8 @@
         setFolderMenu(null)
         if (folderId === PRIMARY) return
         postApi({ action: 'detachFolder', key: group.key, folder: folderId })
-          .then(function () { showBubble('已解除文件夹', event); refresh() })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .then(function () { showBubble(tr('folderUnlinked'), event); refresh() })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       function folderIsEmpty(group, folder) {
@@ -241,14 +241,14 @@
         const live = findLiveGroup(group.key) || group
         const folder = findFolder(Array.isArray(live.folders) ? live.folders : [], folderId)
         // 空文件夹没有可丢的内容，直接删，不再二次确认。
-        const ok = folderIsEmpty(live, folder) ? true : await confirmDelete(event, '会连同子文件夹里的全部 TODO 一起删除，且不可恢复，确认删除整个文件夹？')
+        const ok = folderIsEmpty(live, folder) ? true : await confirmDelete(event, tr('folderDeleteConfirm'))
         if (ok !== true) return
         postApi({ action: 'deleteFolderTree', key: group.key, folder: folderId })
           .then(function (result) {
-            showBubble('已删除整个文件夹' + (result !== null && result !== undefined && result.count !== undefined ? '（' + result.count + ' 条）' : ''), event)
+            showBubble(result !== null && result !== undefined && result.count !== undefined ? tr('folderDeletedCount', { count: result.count }) : tr('folderDeleted'), event)
             refresh()
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
       }
 
       // 批量拖拽：把选中的多条 TODO 一起移动到目标文件夹。
@@ -266,7 +266,7 @@
           })
         })
         chain.then(function () {
-          showBubble('已移动 ' + unique.length + ' 条到' + folderLabel(folderId), event)
+          showBubble(tr('movedCountToFolder', { count: unique.length, folder: folderLabel(folderId) }), event)
           refresh()
         }).catch(function (err) { failWith(event, err) })
       }
@@ -283,7 +283,7 @@
         dragPayloadKey.current = ''
         const action = event.ctrlKey === true ? 'reference' : 'moveTodo'
         postApi({ action: action, key: group.key, id: payload.id, folder: folder.id })
-          .then(function () { showBubble(action === 'reference' ? '已加入' + folderLabel(folder.id) : '已移动到' + folderLabel(folder.id), event); refresh() })
+          .then(function () { showBubble(tr(action === 'reference' ? 'addedToFolder' : 'movedToFolder', { folder: folderLabel(folder.id) }), event); refresh() })
           .catch(function (err) { failWith(event, err) })
       }
 
@@ -320,7 +320,7 @@
       function createTodo(group, event, folderId) {
         postApi({ action: 'createTodo', key: group.key, folder: folderId || PRIMARY })
           .then(function (result) {
-            setEditingTodo({ key: group.key, id: result.id, draft: result.title || '新建待办' })
+            setEditingTodo({ key: group.key, id: result.id, draft: result.title || tr('newTodoDraft') })
             animatePendingRef.current = true
             refresh()
           })
@@ -359,13 +359,13 @@
             animatePendingRef.current = true
             refresh()
             if (truncatedLimit > 0) {
-              showBubble('标题最多 ' + truncatedLimit + ' 个字，超出部分已截断', { clientX: state.pos.x + 20, clientY: state.pos.y + 14 })
+              showBubble(tr('titleTruncated', { limit: truncatedLimit }), { clientX: state.pos.x + 20, clientY: state.pos.y + 14 })
             }
             if (result !== null && typeof result === 'object' && typeof result.count === 'number') {
               setVersion(function (value) { return value + 1 })
             }
           })
-          .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), null) })
+          .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), null) })
       }
 
       // ---------------------------------------------------------- 选择、框选与批量操作

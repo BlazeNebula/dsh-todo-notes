@@ -60,12 +60,12 @@
           .then(function (payload) {
             if (!alive) return
             if (payload !== null && payload !== undefined && payload.ok === true) applyUi(payload.ui, payload.config)
-            else setError('读取设置失败')
+            else setError(tr('settingsLoadFailed'))
             setLoading(false)
           })
           .catch(function (err) {
             if (!alive) return
-            setError('读取设置失败：' + (err !== null && err !== undefined && err.message ? err.message : err))
+            setError(tr('settingsLoadFailedDetail', { detail: err !== null && err !== undefined && err.message ? err.message : err }))
             setLoading(false)
           })
         return function () { alive = false }
@@ -83,14 +83,14 @@
           .then(function (payload) {
             if (payload !== null && payload !== undefined && payload.ok === true) {
               applyUi(payload.ui, payload.config)
-              setStatus('已保存')
+              setStatus(tr('settingsSaved'))
             } else {
-              setStatus('保存失败：' + (payload !== null && payload !== undefined && payload.error ? payload.error : '未知错误'))
+              setStatus(tr('settingsSaveFailedDetail', { detail: payload !== null && payload !== undefined && payload.error ? payload.error : tr('settingsUnknownError') }))
             }
             setBusy(false)
           })
           .catch(function (err) {
-            setStatus('保存失败：' + (err !== null && err !== undefined && err.message ? err.message : err))
+            setStatus(tr('settingsSaveFailedDetail', { detail: err !== null && err !== undefined && err.message ? err.message : err }))
             setBusy(false)
           })
       }
@@ -160,9 +160,9 @@
       return h(
         'div',
         { className: 'tns-page' },
-        h('p', { className: 'tns-desc' }, '调整完成状态的外观与优先级颜色。改完点“保存”，设置会立即应用到所有面板。'),
+        h('p', { className: 'tns-desc' }, tr('settingsIntro')),
         loading
-          ? h('div', { className: 'tns-loading' }, '读取设置…')
+          ? h('div', { className: 'tns-loading' }, tr('settingsLoading'))
           : h(
               React.Fragment,
               null,
@@ -170,14 +170,14 @@
               h(
                 'div',
                 { className: 'tns-actions' },
-                h('button', { type: 'button', className: 'tns-btn', disabled: busy, onClick: reset }, '恢复默认'),
-                h('button', { type: 'button', className: 'tns-btn tns-btn-primary', disabled: busy, onClick: save }, busy ? '保存中…' : '保存'),
+                h('button', { type: 'button', className: 'tns-btn', disabled: busy, onClick: reset }, tr('settingsReset')),
+                h('button', { type: 'button', className: 'tns-btn tns-btn-primary', disabled: busy, onClick: save }, busy ? tr('settingsSaving') : tr('settingsSave')),
                 status !== '' ? h('span', { className: 'tns-status' }, status) : null,
               ),
               h(
                 'div',
                 { className: 'tns-preview-grid' },
-                [['浅色主题', '#ffffff', '#1f1f24'], ['深色主题', '#1a1a1a', '#e8e8ea']].map(function (theme) {
+                [[tr('previewLight'), '#ffffff', '#1f1f24'], [tr('previewDark'), '#1a1a1a', '#e8e8ea']].map(function (theme) {
                   return h(
                     'div',
                     { key: theme[0], className: 'tns-preview-box', style: { background: theme[1], color: theme[2], '--dsw-alias-label-primary': theme[2] } },
@@ -187,21 +187,21 @@
                       { className: 'tns-preview-row' },
                       h('span', { className: 'tns-preview-check' }, '☐'),
                       h('span', { className: 'tns-preview-prio', style: { color: prioInk(palette[3]) } }, 'T3'),
-                      h('span', null, '未完成的条目'),
+                      h('span', null, tr('previewOpen')),
                     ),
                     h(
                       'div',
                       { className: 'tns-preview-row', style: { opacity: doneOpacity / 100 } },
                       h('span', { className: 'tns-preview-check' }, '☑'),
                       h('span', { className: 'tns-preview-prio', style: { color: prioInk(palette[1]) } }, 'T1'),
-                      h('span', null, '已完成的条目'),
+                      h('span', null, tr('previewDone')),
                     ),
                     h(
                       'div',
                       { className: 'tns-preview-row', style: { opacity: partialOpacity / 100 } },
                       h('span', { className: 'tns-preview-check' }, '◐'),
                       h('span', { className: 'tns-preview-prio', style: { color: prioInk(palette[2]) } }, 'T2'),
-                      h('span', null, '半完成、等待确认的条目'),
+                      h('span', null, tr('previewPartial')),
                     ),
                   )
                 }),
@@ -209,15 +209,15 @@
               h(
                 'section',
                 { className: 'tns-section' },
-                h('h3', { className: 'tns-section-title' }, '状态外观'),
-                opacityRow('已完成', '整行变淡，便于把注意力留在未完成项上', doneOpacity, setDoneOpacity),
-                opacityRow('半完成', '智能体已勾选、等待你确认的条目', partialOpacity, setPartialOpacity),
+                h('h3', { className: 'tns-section-title' }, tr('sectionAppearance')),
+                opacityRow(tr('doneLabel'), tr('doneHint'), doneOpacity, setDoneOpacity),
+                opacityRow(tr('partialLabel'), tr('partialHint'), partialOpacity, setPartialOpacity),
               ),
               h(
                 'section',
                 { className: 'tns-section' },
-                h('h3', { className: 'tns-section-title' }, '优先级颜色'),
-                h('p', { className: 'tns-hint' }, 'T0 最高，T9 最低。T0 默认跟随 DSH 错误色；10 档都可以点色块或用取色器改。'),
+                h('h3', { className: 'tns-section-title' }, tr('sectionPriority')),
+                h('p', { className: 'tns-hint' }, tr('priorityHint')),
                 h(
                   'div',
                   { className: 'tns-colors' },
@@ -255,15 +255,15 @@
               h(
                 'section',
                 { className: 'tns-section' },
-                h('h3', { className: 'tns-section-title' }, '智能体上下文'),
+                h('h3', { className: 'tns-section-title' }, tr('sectionAgent')),
                 h(
                   'div',
                   { className: 'tns-row' },
                   h(
                     'div',
                     { className: 'tns-row-text' },
-                    h('div', { className: 'tns-label' }, '每轮注入当前会话的智能体 TODO'),
-                    h('div', { className: 'tns-hint' }, '只注入会话级、由智能体创建且未完成的条目；默认开启'),
+                    h('div', { className: 'tns-label' }, tr('injectLabel')),
+                    h('div', { className: 'tns-hint' }, tr('injectHint')),
                   ),
                   h('input', {
                     type: 'checkbox', className: 'tns-check', checked: injectAgentTodos,
@@ -276,8 +276,8 @@
                   h(
                     'div',
                     { className: 'tns-row-text' },
-                    h('div', { className: 'tns-label' }, '注入最低优先级'),
-                    h('div', { className: 'tns-hint' }, '只注入该优先级及更高的条目（T0 最高）'),
+                    h('div', { className: 'tns-label' }, tr('minPriorityLabel')),
+                    h('div', { className: 'tns-hint' }, tr('minPriorityHint')),
                   ),
                   h(
                     'select',
@@ -296,8 +296,8 @@
                   h(
                     'div',
                     { className: 'tns-row-text' },
-                    h('div', { className: 'tns-label' }, '注入颗粒度'),
-                    h('div', { className: 'tns-hint' }, '控制正文随标题注入多少内容'),
+                    h('div', { className: 'tns-label' }, tr('detailLabel')),
+                    h('div', { className: 'tns-hint' }, tr('detailHint')),
                   ),
                   h(
                     'select',
@@ -305,9 +305,9 @@
                       className: 'tns-select', value: injectDetail,
                       onChange: function (event) { setInjectDetail(event.target.value) },
                     },
-                    h('option', { value: 'title' }, '仅TODO条目标题'),
-                    h('option', { value: 'headings' }, 'TODO条目标题 + 所有正文 Markdown 标题'),
-                    h('option', { value: 'body200' }, '条目标题 + 正文标题 + 正文前200行'),
+                    h('option', { value: 'title' }, tr('detailTitle')),
+                    h('option', { value: 'headings' }, tr('detailHeadings')),
+                    h('option', { value: 'body200' }, tr('detailBody200')),
                   ),
                 ),
                 h(
@@ -316,8 +316,8 @@
                   h(
                     'div',
                     { className: 'tns-row-text' },
-                    h('div', { className: 'tns-label' }, '单次最多注入条目数'),
-                    h('div', { className: 'tns-hint' }, '超过上限的条目不会进入本轮上下文，默认 20 条'),
+                    h('div', { className: 'tns-label' }, tr('maxItemsLabel')),
+                    h('div', { className: 'tns-hint' }, tr('maxItemsHint')),
                   ),
                   h(
                     'div',
@@ -326,7 +326,7 @@
                       type: 'number', min: 1, max: 50, value: injectMaxItems, className: 'tns-number',
                       onChange: function (event) { setInjectMaxItems(event.target.value) },
                     }),
-                    h('span', { className: 'tns-unit' }, '条'),
+                    h('span', { className: 'tns-unit' }, tr('itemsUnit')),
                   ),
                 ),
                 h(
@@ -335,8 +335,8 @@
                   h(
                     'div',
                     { className: 'tns-row-text' },
-                    h('div', { className: 'tns-label' }, '智能体存写（写入、修改、勾选、删除）行为'),
-                    h('div', { className: 'tns-hint' }, '决定智能体调用工具时是否放行、是否先进入 DSH 审批'),
+                    h('div', { className: 'tns-label' }, tr('writePolicyLabel')),
+                    h('div', { className: 'tns-hint' }, tr('writePolicyHint')),
                   ),
                   h(
                     'select',
@@ -344,25 +344,25 @@
                       className: 'tns-select', value: writePolicy,
                       onChange: function (event) { setWritePolicy(event.target.value) },
                     },
-                    h('option', { value: 'deny' }, '完全拒绝'),
-                    h('option', { value: 'ask' }, '需要审批'),
-                    h('option', { value: 'agent-only' }, '仅放行由智能体创建的条目'),
-                    h('option', { value: 'allow-all' }, '放行所有条目'),
+                    h('option', { value: 'deny' }, tr('policyDeny')),
+                    h('option', { value: 'ask' }, tr('policyAsk')),
+                    h('option', { value: 'agent-only' }, tr('policyAgentOnly')),
+                    h('option', { value: 'allow-all' }, tr('policyAllowAll')),
                   ),
                 ),
               ),
               h(
                 'section',
                 { className: 'tns-section' },
-                h('h3', { className: 'tns-section-title' }, '编辑与保存'),
+                h('h3', { className: 'tns-section-title' }, tr('sectionEditing')),
                 h(
                   'div',
                   { className: 'tns-row' },
                   h(
                     'div',
                     { className: 'tns-row-text' },
-                    h('div', { className: 'tns-label' }, '正文自动保存'),
-                    h('div', { className: 'tns-hint' }, '停止输入后等待多久保存；标题使用同一个间隔'),
+                    h('div', { className: 'tns-label' }, tr('autosaveLabel')),
+                    h('div', { className: 'tns-hint' }, tr('autosaveHint')),
                   ),
                   h(
                     'div',
@@ -371,7 +371,7 @@
                       type: 'number', min: 1, max: 60, value: autosaveSec, className: 'tns-number',
                       onChange: function (event) { setAutosaveSec(event.target.value) },
                     }),
-                    h('span', { className: 'tns-unit' }, '秒'),
+                    h('span', { className: 'tns-unit' }, tr('secondsUnit')),
                   ),
                 ),
                 h(
@@ -380,8 +380,8 @@
                   h(
                     'div',
                     { className: 'tns-row-text' },
-                    h('div', { className: 'tns-label' }, '标题最大长度'),
-                    h('div', { className: 'tns-hint' }, '手动改名与智能体创建、改名都受此限制；超出部分会被截掉，默认 30 个字'),
+                    h('div', { className: 'tns-label' }, tr('titleMaxLabel')),
+                    h('div', { className: 'tns-hint' }, tr('titleMaxHint')),
                   ),
                   h(
                     'div',
@@ -390,7 +390,7 @@
                       type: 'number', min: 1, max: 200, value: titleMax, className: 'tns-number',
                       onChange: function (event) { setTitleMax(event.target.value) },
                     }),
-                    h('span', { className: 'tns-unit' }, '字'),
+                    h('span', { className: 'tns-unit' }, tr('charsUnit')),
                   ),
                 ),
                 h(
@@ -399,8 +399,8 @@
                   h(
                     'div',
                     { className: 'tns-row-text' },
-                    h('div', { className: 'tns-label' }, '启用 CSS 动画'),
-                    h('div', { className: 'tns-hint' }, '关闭后收展、气泡与悬停过渡都不再播放'),
+                    h('div', { className: 'tns-label' }, tr('animationsLabel')),
+                    h('div', { className: 'tns-hint' }, tr('animationsHint')),
                   ),
                   h('input', {
                     type: 'checkbox', className: 'tns-check', checked: enableAnimations,

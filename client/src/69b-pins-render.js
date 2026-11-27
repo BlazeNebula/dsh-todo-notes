@@ -32,7 +32,7 @@
       return h('button', {
         type: 'button',
         className: 'dtn-btn dtn-head-collapse dtn-collapse-pin',
-        title: win.collapsed ? '展开' : '收起',
+        title: win.collapsed ? tr('pinExpand') : tr('pinCollapse'),
         'data-open': win.collapsed ? 'false' : 'true',
         onClick: function (event) {
           event.stopPropagation()
@@ -103,7 +103,7 @@
     function renderPinPreview(win) {
       const meta = win.meta
       const head = [
-        h('span', { className: 'dtn-pin-type', title: '预览' }, icon('fileText', 13)),
+        h('span', { className: 'dtn-pin-type', title: tr('preview') }, icon('fileText', 13)),
         win.editing
           ? h('input', {
               className: 'dtn-pin-title-input',
@@ -133,13 +133,13 @@
           h('button', {
             type: 'button',
             className: 'dtn-btn',
-            title: win.editing ? '保存并完成编辑' : '编辑正文',
+            title: win.editing ? tr('saveAndFinishEdit') : tr('editBody'),
             onClick: function (event) { event.stopPropagation(); togglePinEditing(win.id) },
           }, icon(win.editing ? 'check' : 'edit')),
           h('button', {
             type: 'button',
             className: 'dtn-btn',
-            title: win.editing ? '取消编辑并还原内容' : '关闭',
+            title: win.editing ? tr('cancelEdit') : tr('close'),
             onClick: function (event) {
               event.stopPropagation()
               if (win.editing === true) cancelPinEditing(win.id)
@@ -150,13 +150,13 @@
         ),
       ]
       const metaNodes = meta === null || meta === undefined
-        ? [h('span', { key: 'loading' }, win.loading ? '加载中…' : '')]
+        ? [h('span', { key: 'loading' }, win.loading ? tr('loading') : '')]
         : [
-            h('span', { key: 'status', className: 'dtn-meta-item' }, icon(meta.status === 'done' ? 'check' : 'clock', 11), meta.status === 'done' ? '条目已完成' : meta.status === 'partial' ? '条目待确认' : '条目未完成'),
-            h('span', { key: 'priority', className: 'dtn-meta-item', style: { color: prioColor(meta.priority) } }, icon('flag', 11), '优先级 T' + (typeof meta.priority === 'number' ? meta.priority : 1)),
+            h('span', { key: 'status', className: 'dtn-meta-item' }, icon(meta.status === 'done' ? 'check' : 'clock', 11), meta.status === 'done' ? tr('metaDone') : meta.status === 'partial' ? tr('metaPartial') : tr('metaOpen')),
+            h('span', { key: 'priority', className: 'dtn-meta-item', style: { color: prioColor(meta.priority) } }, icon('flag', 11), tr('priorityLabel', { level: typeof meta.priority === 'number' ? meta.priority : 1 })),
             h('span', { key: 'folder', className: 'dtn-meta-item' }, icon('folder', 11), pinFolderLabel(win)),
-            meta.created !== '' ? h('span', { key: 'created', className: 'dtn-meta-item' }, icon('clock', 11), '创建 ' + formatStamp(meta.created)) : null,
-            isAiSource(meta.source) ? h('span', { key: 'source', className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13)) : null,
+            meta.created !== '' ? h('span', { key: 'created', className: 'dtn-meta-item' }, icon('clock', 11), tr('createdAt', { stamp: formatStamp(meta.created) })) : null,
+            isAiSource(meta.source) ? h('span', { key: 'source', className: 'dtn-ai-chip', title: tr('agentCreatedChip') }, icon('robot', 13)) : null,
           ]
       const bodyNodes = [
         h('div', { key: 'meta', className: 'dtn-preview-meta' }, metaNodes),
@@ -205,7 +205,7 @@
               'div',
               { key: 'markdown', className: 'dtn-preview-body dtn-md' },
               win.error !== ''
-                ? h('div', { className: 'dtn-error' }, '读取失败：' + win.error)
+                ? h('div', { className: 'dtn-error' }, tr('loadFailed', { detail: win.error }))
                 : typeof MarkdownText === 'function' || (MarkdownText !== null && typeof MarkdownText === 'object')
                 ? h(MarkdownText, { text: win.markdown, variant: 'body' })
                 : renderMarkdown(win.markdown),
@@ -222,12 +222,12 @@
     function renderPinBatchCreate(win) {
       const lines = String(win.value || '').split(/\r?\n/)
       const head = [
-        h('span', { className: 'dtn-pin-type', title: '批量新建' }, icon('addBatch', 13)),
-        h('span', { className: 'dtn-preview-title' }, '批量新建 TODO'),
+        h('span', { className: 'dtn-pin-type', title: tr('batchNew') }, icon('addBatch', 13)),
+        h('span', { className: 'dtn-preview-title' }, tr('batchNewTodo')),
         h(
           'div',
           { className: 'dtn-actions' },
-          h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
+          h('button', { type: 'button', className: 'dtn-btn', title: tr('close'), onClick: function () { removePin(win.id) } }, icon('close')),
           pinHeadCommon(win),
         ),
       ]
@@ -238,7 +238,7 @@
         body: h(
           'div',
           { className: 'dtn-preview-body' },
-          h('div', { className: 'dtn-batch-hint' }, '每行一条，空行忽略'),
+          h('div', { className: 'dtn-batch-hint' }, tr('batchCreateEmptyHint')),
           h(
             'div',
             { className: 'dtn-batch-field' },
@@ -255,8 +255,8 @@
           h(
             'div',
             { className: 'dtn-batch-actions' },
-            h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { removePin(win.id) } }, '取消'),
-            h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchCreate(win.id) } }, '确认'),
+            h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { removePin(win.id) } }, tr('cancel')),
+            h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchCreate(win.id) } }, tr('confirm')),
           ),
         ),
       })
@@ -264,12 +264,12 @@
 
     function renderPinBatchRename(win) {
       const head = [
-        h('span', { className: 'dtn-pin-type', title: '批量重命名' }, icon('edit', 13)),
-        h('span', { className: 'dtn-preview-title' }, '批量重命名'),
+        h('span', { className: 'dtn-pin-type', title: tr('batchRename') }, icon('edit', 13)),
+        h('span', { className: 'dtn-preview-title' }, tr('batchRename')),
         h(
           'div',
           { className: 'dtn-actions' },
-          h('button', { type: 'button', className: 'dtn-btn', title: '关闭', onClick: function () { removePin(win.id) } }, icon('close')),
+          h('button', { type: 'button', className: 'dtn-btn', title: tr('close'), onClick: function () { removePin(win.id) } }, icon('close')),
           pinHeadCommon(win),
         ),
       ]
@@ -280,7 +280,7 @@
         body: h(
           'div',
           { className: 'dtn-preview-body' },
-          h('div', { className: 'dtn-batch-hint' }, '行数固定为选中条目数，不能增加或删除换行；清空的行会被跳过'),
+          h('div', { className: 'dtn-batch-hint' }, tr('batchRenameHint')),
           h(
             'div',
             { className: 'dtn-batch-field' },
@@ -303,8 +303,8 @@
           h(
             'div',
             { className: 'dtn-batch-actions' },
-            h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { removePin(win.id) } }, '取消'),
-            h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchRename(win.id) } }, '确认'),
+            h('button', { type: 'button', className: 'dtn-preview-btn', onClick: function () { removePin(win.id) } }, tr('cancel')),
+            h('button', { type: 'button', className: 'dtn-preview-btn dtn-preview-btn-primary', onClick: function () { confirmPinBatchRename(win.id) } }, tr('confirm')),
           ),
         ),
       })

@@ -15,6 +15,28 @@
     exports.apply = function apply(ctx) {
       ctx.effect(function () { return injectStyles() }, 'dsh-todo-notes: styles')
 
+      // 注册 UI 字典并绑定翻译函数；没有 locale 服务时保持中文回退。
+      function bindLocale(locale) {
+        if (locale === undefined || locale === null) return false
+        if (typeof locale.register !== 'function' || typeof locale.bind !== 'function') return false
+        ctx.effect(function () { return locale.register(I18N_NS, { zh: I18N_ZH, en: I18N_EN }) }, 'dsh-todo-notes: locale dictionaries')
+        tr = locale.bind(I18N_NS)
+        return true
+      }
+      try {
+        const localeNow = typeof ctx.get === 'function'
+          ? ctx.get('locale')
+          : (ctx.locale !== undefined && ctx.locale !== null ? ctx.locale : undefined)
+        if (bindLocale(localeNow) !== true && typeof ctx.inject === 'function') {
+          // locale 服务稍后才就绪时再绑定一次，避免标签页加载顺序造成永久中文回退。
+          ctx.inject(['locale'], function (child) {
+            try {
+              bindLocale(typeof child.get === 'function' ? child.get('locale') : child.locale)
+            } catch (error) { /* 保持中文回退 */ }
+          })
+        }
+      } catch (error) { /* locale 不可用时退回中文文案 */ }
+
       const host = {
         openSidebar: function (sessionId) {
           try {
@@ -41,14 +63,14 @@
 
       ctx.slots.inject('shell.overlay', function () {
         return ctx.slots.register(
-          { name: 'shell.overlay', id: 'todo-notes', order: 45, label: 'TODO 便签' },
+          { name: 'shell.overlay', id: 'todo-notes', order: 45, label: tr('appTitle') },
           wrap(host),
         )
       })
       // 与 billion-context 相同的注册方式：设置左侧导航的独立页面 + 插件详情页的配置区。
       ctx.slots.inject('settings.section', function () {
         return ctx.slots.register(
-          { name: 'settings.section', id: 'todo-notes', order: 60, label: 'TODO 便签' },
+          { name: 'settings.section', id: 'todo-notes', order: 60, label: tr('appTitle') },
           TodoNotesSettings,
         )
       })
@@ -73,7 +95,7 @@
             kind: 'todo-notes',
             priority: 'builtin',
             keepMounted: true,
-            title: function () { return 'TODO 便签' },
+            title: function () { return tr('appTitle') },
             canOpen: function (address) { return address === 'todo-notes://panel' },
           })
         }, 'dsh-todo-notes: right sidebar tab type')

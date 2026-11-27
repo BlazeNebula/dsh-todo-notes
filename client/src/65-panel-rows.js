@@ -68,7 +68,7 @@
             {
               type: 'button',
               className: 'dtn-check' + (isDone ? ' dtn-check-on' : '') + (isPartial ? ' dtn-check-partial' : ''),
-              title: isDone ? '取消完成' : isPartial ? '中间态：点一下确认完成' : '标记完成',
+              title: isDone ? tr('markUndone') : isPartial ? tr('markPartial') : tr('markDone'),
               onClick: function (event) {
                 event.stopPropagation()
                 const action = isDone ? 'reopen' : 'complete'
@@ -77,7 +77,7 @@
                     animatePendingRef.current = true
                     refresh()
                   })
-                  .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+                  .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
               },
             },
             isDone ? '✓' : isPartial ? '–' : '',
@@ -88,7 +88,7 @@
               type: 'button',
               className: 'dtn-prio',
               style: { color: prioColor(todo.priority) },
-              title: '优先级 T0 最高，点开选择',
+              title: tr('priorityHint2'),
               onClick: function (event) { openPrioMenu(event, group, todo) },
             },
             'T' + (typeof todo.priority === 'number' ? todo.priority : 1),
@@ -113,7 +113,7 @@
             : h('span', {
                 className: 'dtn-todo-title',
                 style: { color: prioColor(todo.priority) },
-                title: '双击文字重命名，右键更多',
+                title: tr('rowHintRename'),
               },
               h('span', {
                 className: 'dtn-todo-text',
@@ -121,11 +121,11 @@
               }, todo.title),
               ),
           isAiSource(todo.source)
-            ? h('span', { className: 'dtn-ai-chip', title: '该TODO条目由智能体创建' }, icon('robot', 13))
+            ? h('span', { className: 'dtn-ai-chip', title: tr('agentCreatedChip') }, icon('robot', 13))
             : null,
           h('span', {
             className: 'dtn-grip',
-            title: '按住拖动排序',
+            title: tr('dragToSort'),
             onPointerDown: function (event) { event.stopPropagation(); dragArmedRef.current = true },
             onPointerUp: function () { dragArmedRef.current = false },
             onClick: function (event) { event.stopPropagation() },
@@ -236,7 +236,7 @@
             },
             h('span', {
               className: 'dtn-folder-toggle',
-              title: folderOpen ? '收起文件夹' : '展开文件夹',
+              title: folderOpen ? tr('collapseFolder') : tr('expandFolder'),
               onClick: function (event) { event.stopPropagation(); toggleFolder(folderKey) },
             },
             folderOpen ? icon('chevronDown') : icon('chevronRight'),
@@ -262,7 +262,7 @@
                   'span',
                   {
                     className: 'dtn-folder-name',
-                    title: '双击文字重命名，右键更多',
+                    title: tr('rowHintRename'),
                   },
                   h('span', {
                     className: 'dtn-folder-text',
@@ -281,7 +281,7 @@
               {
                 type: 'button',
                 className: 'dtn-copy',
-                title: '在此文件夹新建子文件夹',
+                title: tr('newSubfolder'),
                 onClick: function (event) { event.stopPropagation(); createSubFolder(group, folder, event) },
               },
               icon('folderAdd'),
@@ -291,7 +291,7 @@
               {
                 type: 'button',
                 className: 'dtn-copy',
-                title: '在此文件夹新建 TODO',
+                title: tr('newTodoHere'),
                 onClick: function (event) { event.stopPropagation(); createTodo(group, event, folder.id) },
               },
               icon('add'),
@@ -301,7 +301,7 @@
               {
                 type: 'button',
                 className: 'dtn-copy',
-                title: '在此文件夹批量新建 TODO',
+                title: tr('newTodoBatchHere'),
                 onClick: function (event) { event.stopPropagation(); openBatchCreate(group, event, folder.id) },
               },
               icon('addBatch'),
@@ -309,7 +309,7 @@
             h('span', { className: 'dtn-folder-count' }, String(todos.length)),
             h('span', {
               className: 'dtn-grip',
-              title: '按住拖动文件夹',
+              title: tr('dragFolder'),
               onPointerDown: function (event) { event.stopPropagation(); dragArmedRef.current = true },
               onPointerUp: function () { dragArmedRef.current = false },
               onClick: function (event) { event.stopPropagation() },
@@ -386,8 +386,8 @@
                         return
                       }
                       postApi({ action: 'moveTodo', key: group.key, id: payload.id, folder: PRIMARY })
-                        .then(function () { showBubble('已归入无文件夹', event); refresh() })
-                        .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+                        .then(function () { showBubble(tr('movedToNoFolder'), event); refresh() })
+                        .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
                     } else if (payload.kind === 'folder') {
                       moveFolderToPrimary(group, payload.id, event)
                     }
@@ -424,8 +424,8 @@
                         return
                       }
                       postApi({ action: 'moveTodo', key: group.key, id: payload.id, folder: PRIMARY })
-                        .then(function () { showBubble('已归入无文件夹', event); refresh() })
-                        .catch(function (err) { showBubble('保存失败：' + (err && err.message ? err.message : err), event) })
+                        .then(function () { showBubble(tr('movedToNoFolder'), event); refresh() })
+                        .catch(function (err) { showBubble(tr('saveFailed', { detail: err && err.message ? err.message : err }), event) })
                     } else if (payload.kind === 'folder') {
                       moveFolderToPrimary(group, payload.id, event)
                     }
@@ -436,18 +436,18 @@
                   className: 'dtn-group-name',
                   style: group.current === true && (group.kind === 'workspace' || group.kind === 'session') ? { fontStyle: 'italic' } : undefined,
                   title: (group.subtitle || group.title || '') +
-                    (group.current === true && group.kind === 'workspace' ? '（当前工作区）' : group.current === true && group.kind === 'session' ? '（当前会话）' : ''),
-                }, group.title || '未命名组'),
+                    (group.current === true && group.kind === 'workspace' ? tr('currentWorkspaceSuffix') : group.current === true && group.kind === 'session' ? tr('currentSessionSuffix') : ''),
+                }, group.title || tr('unnamedGroup')),
                 group.kind === 'workspace' || group.kind === 'session'
                   ? h(
                       'button',
                       {
                         type: 'button',
                         className: 'dtn-copy',
-                        title: group.kind === 'workspace' ? '复制工作区路径' : '复制 Session ID',
+                        title: group.kind === 'workspace' ? tr('copyWorkspacePath') : tr('copySessionId'),
                         onClick: function (event) {
                           event.stopPropagation()
-                          copyGroup(group, event, group.kind === 'workspace' ? '已复制工作区路径' : '已复制SessionID')
+                          copyGroup(group, event, group.kind === 'workspace' ? tr('copiedWorkspacePath') : tr('copiedSessionId'))
                         },
                       },
                       icon('copy'),
@@ -459,7 +459,7 @@
                       {
                         type: 'button',
                         className: 'dtn-copy',
-                        title: '新建文件夹',
+                        title: tr('newFolderName'),
                         onClick: function (event) {
                           event.stopPropagation()
                           createFolder(group, event)
@@ -474,7 +474,7 @@
                       {
                         type: 'button',
                         className: 'dtn-copy',
-                        title: '新建 TODO',
+                        title: tr('newTodo'),
                         onClick: function (event) {
                           event.stopPropagation()
                           createTodo(group, event)
@@ -489,7 +489,7 @@
                       {
                         type: 'button',
                         className: 'dtn-copy',
-                        title: '批量新建 TODO',
+                        title: tr('batchNewTodo'),
                         onClick: function (event) {
                           event.stopPropagation()
                           openBatchCreate(group, event)

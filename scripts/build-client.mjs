@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const sources = [
   '00-bootstrap.js',
+  '05-i18n.js',
   '10-styles.js',
   '20-storage.js',
   '30-markdown.js',

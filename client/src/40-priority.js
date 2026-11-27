@@ -109,7 +109,7 @@
     }
 
     function folderLabel(folderId) {
-      return folderId === PRIMARY ? '无文件夹' : String(folderId)
+      return folderId === PRIMARY ? tr('noFolder') : String(folderId)
     }
 
     // 图标统一用 NaiveUI 推荐的 vicons 图标库：界面图标取 Ionicons 5（@vicons/ionicons5），
